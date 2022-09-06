@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model G84_bike_net_pt {
+  id         Int                      @id @default(autoincrement())
+  geom       Unsupported("geometry")?
+  objectid   String?                  @db.VarChar(254)
+  cnn        BigInt?
+  corner     String?                  @db.VarChar(254)
+  street1    String?                  @db.VarChar(254)
+  street2    String?                  @db.VarChar(254)
+  descript   String?                  @db.VarChar(254)
+  count      BigInt?
+  install_mo String?                  @db.VarChar(254)
+  install_yr BigInt?
+  update_mo  String?                  @db.VarChar(254)
+  update_yr  BigInt?
+  sf_find_ne BigInt?                  @map("sf find ne")
+  current_po BigInt?                  @map("current po")
+  current_su BigInt?                  @map("current su")
+  analysis_n BigInt?                  @map("analysis n")
+  neighborho BigInt?
+}
+
+model SFMTA_Bikeway_Network_Point_Features {
+  id                             Int     @id @default(autoincrement())
+  OBJECTID                       String? @db.VarChar
+  CNN                            String? @db.VarChar
+  CORNER                         String? @db.VarChar
+  STREET1                        String? @db.VarChar
+  STREET2                        String? @db.VarChar
+  DESCRIPT                       String? @db.VarChar
+  COUNT                          String? @db.VarChar
+  INSTALL_MO                     String? @db.VarChar
+  INSTALL_YR                     String? @db.VarChar
+  UPDATE_MO                      String? @db.VarChar
+  UPDATE_YR                      String? @db.VarChar
+  shape                          String? @db.VarChar
+  SF_Find_Neighborhoods_2        String? @map("SF Find Neighborhoods 2") @db.VarChar
+  Current_Police_Districts_2     String? @map("Current Police Districts 2") @db.VarChar
+  Current_Supervisor_Districts_2 String? @map("Current Supervisor Districts 2") @db.VarChar
+  Analysis_Neighborhoods_2       String? @map("Analysis Neighborhoods 2") @db.VarChar
+  Neighborhoods                  String? @db.VarChar
+}
+
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
