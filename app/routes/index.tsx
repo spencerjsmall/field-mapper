@@ -12,6 +12,7 @@ import Map, {
 import styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
+
 import Layout from "~/components/layout";
 import { getFirstPt } from "~/utils/test.server";
 
@@ -39,31 +40,24 @@ export const loader = async ({ request }: LoaderArgs) => {
 };
 
 export default function MapBox() {
-  const data = useLoaderData();
-  const [showNav, setShowNav] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-  const [destCoord, setDestCoord] = useState({ lng: 0, lat: 0 });
-  const [currCoor, setCurrCoord] = useState({ lng: 0, lat: 0 });
-
-  // if (navigator.geolocation) {
-  //   console.log('true')
-  //   navigator.geolocation.getCurrentPosition(function (position) {
-  //     console.log("pos", position)
-  //     setCurrCoord({lng: position.coords.latitude, lat: position.coords.longitude});
-  //   });
-  // }
+  const data = useLoaderData();  
+  const [showPopup, setShowPopup] = useState(false);  
+  const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
+  const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
 
   const geolocateRef = useCallback((ref) => {
-    if (ref) {
-      // Activate as soon as the control is loaded
-      ref.trigger();
+    if (ref !== null) {
+      setTimeout(() => {
+        // Activate as soon as the control is loaded
+        ref.trigger();
+      }, 1000);
     }
   }, []);
 
   const onFeatureClick = (e) => {
     console.log(e);
     if (e.features.length > 0) {
-      setDestCoord(e.lngLat);
+      setDCoords(e.lngLat);
       setShowPopup(true);
     }
   };
@@ -83,14 +77,23 @@ export default function MapBox() {
   };
 
   const getDirections = (e) => {
-    mapDirections.setOrigin([-122.47, 37.76]);
-    mapDirections.setDestination([destCoord.lng, destCoord.lat]);
+    //setShowPopup(false);
+    mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
+    mapDirections.setDestination([dCoords.lng, dCoords.lat]);
     mapDirections.on("route", () => {
       try {
         mapDirections.mapState();
       } catch (e) {
         console.error(e);
       }
+    });
+  };
+
+  const setCurrentLocation = (e) => {
+    console.log(e.coords);
+    setCCoords({
+      lng: e.coords.longitude,
+      lat: e.coords.latitude,
     });
   };
 
@@ -122,15 +125,25 @@ export default function MapBox() {
         </Source>
         {showPopup && (
           <Popup
-            longitude={destCoord.lng}
-            latitude={destCoord.lat}
+            longitude={dCoords.lng}
+            latitude={dCoords.lat}
             anchor="bottom"
-            onClose={() => setShowPopup(false)}
+            onClose={() => setShowPopup(false)}        
           >
-            <div onClick={getDirections}>Navigate here</div>
+            <div className="flex flex-col items-center space-y-2">
+              <button
+                onClick={getDirections}
+                className="btn btn-xs btn-outline btn-primary"
+              >
+                Get Directions
+              </button>
+              <button className="btn btn-xs btn-outline btn-secondary">
+                Complete Survey
+              </button>
+            </div>
           </Popup>
         )}
-        <GeolocateControl ref={geolocateRef} />
+        <GeolocateControl onGeolocate={setCurrentLocation} ref={geolocateRef} />
         <DirectionsControl />
       </Map>
     </Layout>
