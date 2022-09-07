@@ -56,3 +56,84 @@ model spatial_ref_sys {
   srtext    String? @db.VarChar(2048)
   proj4text String? @db.VarChar(2048)
 }
+
+model G84_st_ctl_li {
+  id         Int                      @id @default(autoincrement())
+  geom       Unsupported("geometry")?
+  fid        Int?
+  jurisdicti String?                  @db.VarChar
+  zip_code   String?                  @db.VarChar
+  f_node_cnn String?                  @db.VarChar
+  date_dropp String?                  @db.VarChar
+  gds_chg_id String?                  @db.VarChar
+  classcode  String?                  @db.VarChar
+  t_st       String?                  @db.VarChar
+  accepted   String?                  @db.VarChar
+  street_gc  String?                  @db.VarChar
+  cnn        String?                  @db.VarChar
+  layer      String?                  @db.VarChar
+  nhood      String?                  @db.VarChar
+  st_type    String?                  @db.VarChar
+  streetname String?                  @db.VarChar
+  rt_fadd    String?                  @db.VarChar
+  f_st       String?                  @db.VarChar
+  streetna_1 String?                  @db.VarChar
+  lf_fadd    String?                  @db.VarChar
+  date_alter String?                  @db.VarChar
+  t_node_cnn String?                  @db.VarChar
+  date_added String?                  @db.VarChar
+  street     String?                  @db.VarChar
+  gds_chg__1 String?                  @db.VarChar
+  lf_toadd   String?                  @db.VarChar
+  gds_chg__2 String?                  @db.VarChar
+  oneway     String?                  @db.VarChar
+  rt_toadd   String?                  @db.VarChar
+  active     String?                  @db.VarChar
+  ASSIGNEE   String?                  @db.VarChar
+
+  @@index([geom], map: "sidx_G84_st_ctl_li_geom", type: Gist)
+}
+
+model bikeway2_pt {
+  id                             Int                      @id @default(autoincrement())
+  geom                           Unsupported("geometry")?
+  fid                            BigInt?
+  OBJECTID                       Int?
+  CNN                            Int?
+  CORNER                         String?                  @db.VarChar
+  STREET1                        String?                  @db.VarChar
+  STREET2                        String?                  @db.VarChar
+  DESCRIPT                       String?                  @db.VarChar
+  COUNT                          Int?
+  INSTALL_MO                     Int?
+  INSTALL_YR                     Int?
+  UPDATE_MO                      Int?
+  UPDATE_YR                      Int?
+  SF_Find_Neighborhoods_2        Int?                     @map("SF Find Neighborhoods 2")
+  Current_Police_Districts_2     Int?                     @map("Current Police Districts 2")
+  Current_Supervisor_Districts_2 Int?                     @map("Current Supervisor Districts 2")
+  Analysis_Neighborhoods_2       Int?                     @map("Analysis Neighborhoods 2")
+  Neighborhoods                  Int?
+}
+
+model mta_bikeway_pt {
+  id                             Int                      @id @default(autoincrement())
+  geom                           Unsupported("geometry")?
+  fid                            BigInt?
+  OBJECTID                       Int?
+  CNN                            Int?
+  CORNER                         String?                  @db.VarChar
+  STREET1                        String?                  @db.VarChar
+  STREET2                        String?                  @db.VarChar
+  DESCRIPT                       String?                  @db.VarChar
+  COUNT                          Int?
+  INSTALL_MO                     Int?
+  INSTALL_YR                     Int?
+  UPDATE_MO                      Int?
+  UPDATE_YR                      Int?
+  SF_Find_Neighborhoods_2        Int?                     @map("SF Find Neighborhoods 2")
+  Current_Police_Districts_2     Int?                     @map("Current Police Districts 2")
+  Current_Supervisor_Districts_2 Int?                     @map("Current Supervisor Districts 2")
+  Analysis_Neighborhoods_2       Int?                     @map("Analysis Neighborhoods 2")
+  Neighborhoods                  Int?
+}
