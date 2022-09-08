@@ -15,7 +15,6 @@
     "@remix-run/serve": "1.7.0",
     "acorn": "8.8.0",
     "bcryptjs": "^2.4.3",
-    "check-peer-dependencies": "^4.1.0",
     "clsx": "^1.2.1",
     "daisyui": "^2.24.0",
     "geojson": "^0.5.0",
@@ -24,7 +23,9 @@
     "react-dom": "^17.0.2",
     "react-icons": "^4.4.0",
     "react-map-gl": "^7.0.19",
-    "redux": "4.2.0"
+    "redux": "4.2.0",
+    "survey-core": "^1.9.47",
+    "survey-react-ui": "^1.9.47"
   },
   "devDependencies": {
     "@remix-run/dev": "1.7.0",
@@ -37,7 +38,7 @@
     "concurrently": "^7.3.0",
     "eslint": "^8.20.0",
     "postcss": "^8.4.14",
-    "prisma": "^4.1.1",
+    "prisma": "^4.3.1",
     "rmx-cli": "^0.3.1",
     "tailwindcss": "^3.1.7",
     "typescript": "^4.7.4"

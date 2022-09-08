@@ -3,7 +3,6 @@ module.exports = {
   serverDependenciesToBundle: [
     "@mapbox/tiny-sdf",
     "mapbox-gl",
-    //"@mapbox/mapbox-gl-directions",
   ],
   ignoredRouteFiles: ["**/.*"],
   // appDirectory: "app",
