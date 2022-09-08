@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   return (
     <div className="h-screen w-screen flex flex-col">
-      <div className="flex flex-row flex-none bg-blue items-center sticky top-0 z-50 justify-between text-white text-2xl py-4 px-6">
+      <div className="flex flex-row basis-1/12 bg-blue items-center sticky top-0 z-50 justify-between bg-black text-white text-2xl py-4 px-6">
         {pathname != "/" && (
           <div onClick={() => navigate(-1)}>
             <IoIosArrowDropleftCircle />
@@ -26,8 +26,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <IoIosContact />
       </div>
 
-      <div className="h-full w-full">{children}</div>
-      <div className="btm-nav btm-nav-md w-full h-18 z-50 bg-blue">
+      <div className="w-full basis-10/12">{children}</div>
+      <div className="btm-nav btm-nav-md w-full basis-1/12 bg-blue">
         <Link
           to="/"
           className={clsx({
