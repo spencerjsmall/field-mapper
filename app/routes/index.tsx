@@ -9,8 +9,9 @@ import Map, {
   Popup,
   GeolocateControl,
 } from "react-map-gl";
-import styles from "mapbox-gl/dist/mapbox-gl.css";
+import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
+import m_styles from "../styles/mapbox.css"
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
 
 import Layout from "~/components/layout";
@@ -19,10 +20,14 @@ import clsx from "clsx";
 
 export function links() {
   return [
-    { rel: "stylesheet", href: styles },
+    { rel: "stylesheet", href: mb_styles },
     {
       rel: "stylesheet",
       href: d_styles,
+    },
+    {
+      rel: "stylesheet",
+      href: m_styles,
     },
   ];
 }
@@ -43,6 +48,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 export default function MapBox() {
   const data = useLoaderData();
   const [showPopup, setShowPopup] = useState(false);
+  const [showMark, setShowMark] = useState(false);
   const [basemap, setBasemap] = useState("streets-v11");
   const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
   const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
@@ -58,9 +64,11 @@ export default function MapBox() {
 
   const onFeatureClick = (e) => {
     console.log(e);
-    if (e.features.length > 0) {
-      setDCoords(e.lngLat);
+    setDCoords(e.lngLat);
+    if (e.features.length > 0) {      
       setShowPopup(true);
+    } else {
+      setShowMark(true);
     }
   };
 
@@ -78,8 +86,7 @@ export default function MapBox() {
     return null;
   };
 
-  const getDirections = (e) => {
-    //setShowPopup(false);
+  const getDirections = (e) => {    
     mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
     mapDirections.setDestination([dCoords.lng, dCoords.lat]);
     mapDirections.on("route", () => {
@@ -90,6 +97,11 @@ export default function MapBox() {
       }
     });
   };
+
+  // const addPoint = (e) => {
+  //   //setShowMark(false);
+
+  // };
 
   const setCurrentLocation = (e) => {
     console.log(e.coords);
@@ -108,9 +120,10 @@ export default function MapBox() {
             latitude: 37.75,
             zoom: 12,
           }}
+          onMove={(e) => setShowPopup(false)}
           mapStyle={
             basemap == "custom"
-              ? "mapbox://styles/mapbox/streets-v11"
+              ? "mapbox://styles/mapbox/satellite-v9"
               : `mapbox://styles/mapbox/${basemap}`
           }
           mapboxAccessToken={
@@ -119,21 +132,28 @@ export default function MapBox() {
           interactiveLayerIds={["bike_data"]}
           onClick={onFeatureClick}
         >
-          {basemap == "custom" && (
-            <Source
-              id="tiles"
-              type="raster"
-              tiles={[
-                "https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png",
-              ]}
-              tileSize={256}
-            >
-              <Layer type="raster" />
+          {basemap == "custom" ? (
+            <>
+              <Source
+                id="tiles"
+                type="raster"
+                tiles={[
+                  "https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png",
+                ]}
+                tileSize={256}
+              >
+                <Layer type="raster" />
+              </Source>
+              <Source id="my-data" type="geojson" data={data}>
+                <Layer id="bike_data" {...layerStyle} />
+              </Source>
+            </>
+          ) : (
+            <Source id="my-data" type="geojson" data={data}>
+              <Layer id="bike_data" {...layerStyle} />
             </Source>
           )}
-          <Source id="my-data" type="geojson" data={data}>
-            <Layer id="bike_data" {...layerStyle} />
-          </Source>
+
           {showPopup && (
             <Popup
               longitude={dCoords.lng}
@@ -154,6 +174,19 @@ export default function MapBox() {
                   </button>
                 </Link>
               </div>
+            </Popup>
+          )}
+
+          {showMark && (
+            <Popup
+              longitude={dCoords.lng}
+              latitude={dCoords.lat}
+              anchor="bottom"
+              onClose={() => setShowMark(false)}
+            >
+              <button className="btn btn-xs btn-outline btn-primary">
+                Add Point
+              </button>
             </Popup>
           )}
           <GeolocateControl

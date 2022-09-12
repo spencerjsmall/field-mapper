@@ -26,13 +26,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <IoIosContact />
       </div>
 
-      <div className="w-full basis-10/12">{children}</div>
-      <div className="btm-nav btm-nav-md w-full basis-1/12 bg-blue">
+      <div className="w-full basis-10/12 z-0">{children}</div>
+      <div className="btm-nav btm-nav-md w-full basis-1/12 bg-black z-50">
         <Link
           to="/"
           className={clsx({
             "text-white bg-blue": true, //always applies
-            active: pathname == "/",
+            active: pathname == "/home",
           })}
         >
           <button className="flex flex-row items-center text-2xl">
@@ -43,7 +43,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           to="/map"
           className={clsx({
             "text-white bg-blue": true, //always applies
-            active: pathname == "/map",
+            active: pathname == "/",
           })}
         >
           <button className="flex flex-row items-center text-2xl">

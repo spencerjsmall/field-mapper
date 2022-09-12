@@ -2859,6 +2859,14 @@ html {
   border-bottom-left-radius: unset;
 }
 
+.visible {
+  visibility: visible;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
 .absolute {
   position: absolute;
 }
@@ -2886,6 +2894,10 @@ html {
 
 .z-50 {
   z-index: 50;
+}
+
+.z-0 {
+  z-index: 0;
 }
 
 .flex {

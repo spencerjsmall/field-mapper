@@ -6,8 +6,8 @@
     "build:css": "tailwindcss -m -i ./styles/app.css -o app/styles/app.css",
     "dev": "concurrently \"npm run dev:css\" \"remix dev\" \"npm run dev:sass\"",
     "dev:css": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
-    "build:sass": "node-sass ./sass -o ./app/styles --output-style compressed",
-    "dev:sass": "npm run build:sass && node-sass -rw ./sass -o ./app/styles"
+    "build:sass": "node-sass ./styles -o ./app/styles --output-style compressed",
+    "dev:sass": "npm run build:sass && node-sass -rw ./styles -o ./app/styles"
   },
   "dependencies": {
     "@mapbox/mapbox-gl-directions": "^4.1.0",
