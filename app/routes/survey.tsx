@@ -3,9 +3,8 @@ import * as Survey from "survey-core";
 import * as SurveyReact from "survey-react-ui";
 import type { SurveyModel } from "survey-core";
 import styles from "survey-core/defaultV2.css";
-import { json } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
-import Layout from "~/components/layout";
+import { Layout } from "~/components/layout";
 
 export function links() {
   return [{ rel: "stylesheet", href: styles }];

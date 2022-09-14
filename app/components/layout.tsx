@@ -7,7 +7,7 @@ import { AiOutlineHome } from "react-icons/ai";
 import { CgNotes } from "react-icons/cg";
 import { IoIosArrowDropleftCircle, IoIosContact } from "react-icons/io";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   return (
@@ -23,13 +23,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {pathname == "/" ? "home" : pathname.substring(1)}
           </span>
         )}
-        <IoIosContact />
-      </div>
+        <div className="btn btn-sm btn-ghost">
+          <form action="/logout" method="post">
+            <button type="submit">
+              Sign Out
+            </button>
+          </form>
+        </div>
+      </div> 
 
       <div className="w-full basis-10/12 z-0">{children}</div>
       <div className="btm-nav btm-nav-md w-full basis-1/12 bg-black z-50">
         <Link
-          to="/"
+          to="/home"
           className={clsx({
             "text-white bg-blue": true, //always applies
             active: pathname == "/home",
@@ -43,7 +49,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           to="/map"
           className={clsx({
             "text-white bg-blue": true, //always applies
-            active: pathname == "/",
+            active: pathname == "/map",
           })}
         >
           <button className="flex flex-row items-center text-2xl">

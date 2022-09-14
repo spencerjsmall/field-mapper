@@ -27,12 +27,12 @@ export async function getFirstPt() {
 
   //console.log(results)
 
-  const parsedResults: ReturnedResult[] = results.map((item) => {    
+  const parsedResults: ReturnedResult[] = results.map((item) => {
     return {
       // Parse GeoJSON
       geometry: JSON.parse(item.location),
-      // name: item.name,
-      // id: item.id,
+      //name: item.name,
+      id: item.id,
       type: "Feature",
     };
   });
@@ -45,10 +45,10 @@ export async function getFirstPt() {
         name: "EPSG:3857",
       },
     },
-    features: parsedResults
+    features: parsedResults,
   };
 
-  return(geoJsonResult)
+  return geoJsonResult;
 }
 
 // async function getFirstRawPt() {
