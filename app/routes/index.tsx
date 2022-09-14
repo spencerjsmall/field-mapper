@@ -11,8 +11,9 @@ import Map, {
 } from "react-map-gl";
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
-import m_styles from "../styles/mapbox.css"
+import m_styles from "../styles/mapbox.css";
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
+import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
 import Layout from "~/components/layout";
 import { getFirstPt } from "~/utils/test.server";
@@ -49,6 +50,7 @@ export default function MapBox() {
   const data = useLoaderData();
   const [showPopup, setShowPopup] = useState(false);
   const [showMark, setShowMark] = useState(false);
+  const [addPoint, setAddPoint] = useState(false);
   const [basemap, setBasemap] = useState("streets-v11");
   const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
   const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
@@ -64,12 +66,13 @@ export default function MapBox() {
 
   const onFeatureClick = (e) => {
     console.log(e);
+    console.log(e.features)
     setDCoords(e.lngLat);
-    if (e.features.length > 0) {      
-      setShowPopup(true);
-    } else {
-      setShowMark(true);
-    }
+    e.features.length > 0
+      ? setShowPopup(true)
+      : addPoint
+      ? setShowMark(true)
+      : setAddPoint(false);
   };
 
   const mapDirections = new MapboxDirections({
@@ -78,7 +81,9 @@ export default function MapBox() {
     placeholderOrigin: "Current Location",
     controls: {
       inputs: false,
+      instructions: false,
     },
+    zoom: 14,
   });
 
   const DirectionsControl = () => {
@@ -86,7 +91,7 @@ export default function MapBox() {
     return null;
   };
 
-  const getDirections = (e) => {    
+  const getDirections = () => {
     mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
     mapDirections.setDestination([dCoords.lng, dCoords.lat]);
     mapDirections.on("route", () => {
@@ -177,7 +182,7 @@ export default function MapBox() {
             </Popup>
           )}
 
-          {showMark && (
+          {showMark && addPoint && (
             <Popup
               longitude={dCoords.lng}
               latitude={dCoords.lat}
@@ -193,8 +198,9 @@ export default function MapBox() {
             onGeolocate={setCurrentLocation}
             ref={geolocateRef}
           />
-          <DirectionsControl />
+          {mapDirections != null && <DirectionsControl />}
         </Map>
+
         <ul className="menu menu-horizontal bg-base-100 w-auto absolute top-1 left-1 text-xs p-1 rounded-box">
           <li>
             <div
@@ -221,6 +227,13 @@ export default function MapBox() {
             </div>
           </li>
         </ul>
+
+        <button
+          onClick={() => setAddPoint(!addPoint)}
+          className="btn btn-sm absolute top-14 right-2.5 btn-square bg-white text-black"
+        >
+          {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
+        </button>
       </div>
     </Layout>
   );
