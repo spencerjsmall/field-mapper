@@ -1,14 +1,12 @@
-import { useEffect, useState } from "react";
-import type { LoaderFunction } from "@remix-run/node"
+import { useEffect, useState, useCallback } from "react";
+import type { LoaderFunction } from "@remix-run/node";
 import { useCatch, useLoaderData } from "@remix-run/react";
 
 import * as Survey from "survey-core";
 import * as SurveyReact from "survey-react-ui";
 import type { SurveyModel } from "survey-core";
 import styles from "survey-core/defaultV2.css";
-
-import { Layout } from "~/components/layout";
-import { requireSurveyId } from "~/utils/auth.server";
+import { requireSurveyIds } from "~/utils/auth.server";
 
 export function links() {
   return [{ rel: "stylesheet", href: styles }];
@@ -17,23 +15,36 @@ export function links() {
 Survey.StylesManager.applyTheme("defaultV2");
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const session = await requireSurveyId(request);
-  const surveyId = session.get("surveyId")
+  const session = await requireSurveyIds(request);
+  const surveyId = session.get("surveyId");
+  const recordId = session.get("recordId")
+  console.log("surveyId", surveyId)
+  console.log("recordId", recordId);
   return surveyId;
 };
 
-
 export default function SurveyPage() {
-  const data = useLoaderData()
+  const data = useLoaderData();
+  const [model, setModel] = useState<SurveyModel>();
+
   var surveyJson = {
     surveyId: data,
-  };
-  const [model, setModel] = useState<SurveyModel>();
+  };  
+
+  const alertResults = useCallback((sender) => {
+    const results = JSON.stringify(sender.data);
+    alert(results);
+  }, []);
+  
   useEffect(() => {
     var survey = new Survey.Model(surveyJson);
+    survey.onComplete.add(alertResults);
     setModel(survey);
-  }, []);
-  return <Layout>{model && <SurveyReact.Survey model={model} />}</Layout>;
+  }, []);  
+
+  if (model && model != null) {
+    return <SurveyReact.Survey model={model} />;
+  } else return <h1>error</h1>;
 }
 
 export function ErrorBoundary({ error }: { error: Error }) {

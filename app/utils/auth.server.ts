@@ -92,7 +92,20 @@ export async function requireUserId(
   return userId;
 }
 
-export async function requireSurveyId(
+export async function requireMapIds(
+  request: Request,
+  redirectTo: string = new URL(request.url).pathname
+) {
+  const session = await getUserSession(request);
+  const layerId = session.get("layerId");
+  if (!layerId || typeof layerId !== "string") {
+    const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
+    throw redirect(`/login?${searchParams}`);
+  }
+  return session;
+}
+
+export async function requireSurveyIds(
   request: Request,
   redirectTo: string = new URL(request.url).pathname
 ) {
