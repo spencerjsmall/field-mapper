@@ -18,7 +18,7 @@ import { useActionData } from "@remix-run/react";
 
 export const loader: LoaderFunction = async ({ request }) => {
   // If there's already a user in the session, redirect to the home page
-  return (await getUser(request)) ? redirect("/") : null;
+  return (await getUser(request)) ? redirect("/home") : null;
 };
 
 export const action: ActionFunction = async ({ request }) => {

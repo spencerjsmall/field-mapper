@@ -3,5 +3,5 @@ import { requireUserId } from "~/utils/auth.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   await requireUserId(request);
-  return redirect("/map");
+  return redirect("/home");
 };

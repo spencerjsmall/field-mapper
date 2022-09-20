@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import type { LoaderArgs } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import { useLoaderData, useSubmit } from "@remix-run/react";
+import { redirect } from "@remix-run/node";
 
 import Map, {
   Source,
@@ -16,7 +17,12 @@ import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-direct
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
 import { Layout } from "~/components/layout";
-import { getFirstPt } from "~/utils/geo.server";
+import { getAssignedPoints } from "~/utils/geo.server";
+import {
+  commitSession,
+  getUserSession,
+  requireUserSession,
+} from "~/utils/auth.server";
 import clsx from "clsx";
 
 export function links() {
@@ -42,18 +48,41 @@ const layerStyle = {
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
-  const point = getFirstPt();
-  return point;
+  const session = await requireUserSession(request);
+  const userId = session.get("userId");
+  const layerId = session.get("layerId");
+  const points = await getAssignedPoints(userId, layerId);
+  return points;
 };
 
-export default function MapBox() {
+export async function action({ request }) {
+  const form = await request.formData();
+  const surveyId = form.get("surveyId");
+  const recordId = form.get("recordId");
+  
+  const session = await getUserSession(request);
+  session.set("surveyId", surveyId);
+  session.set("recordId", recordId);
+
+  return redirect("/survey", {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  });
+}
+
+export default function MapPage() {
   const data = useLoaderData();
+  const submit = useSubmit();
+
   const [showPopup, setShowPopup] = useState(false);
   const [showMark, setShowMark] = useState(false);
   const [addPoint, setAddPoint] = useState(false);
   const [basemap, setBasemap] = useState("streets-v11");
   const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
   const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
+  const [surveyId, setSurveyId] = useState<String>();
+  const [recordId, setRecordId] = useState<Number>();
 
   const geolocateRef = useCallback((ref) => {
     if (ref !== null) {
@@ -68,11 +97,19 @@ export default function MapBox() {
     console.log(e);
     console.log(e.features);
     setDCoords(e.lngLat);
-    e.features.length > 0
-      ? setShowPopup(true)
-      : addPoint
-      ? setShowMark(true)
-      : setAddPoint(false);
+    if (e.features.length > 0) {
+      setShowPopup(true);
+      setSurveyId(e.features[0].properties.surveyId);
+      setRecordId(e.features[0].id);
+    } else if (addPoint) {
+      setShowMark(true);
+    } else {
+      setAddPoint(false);
+    }
+  };
+
+  const getSurvey = (e) => {
+    submit({ surveyId: surveyId, recordId: recordId }, { method: "post" });
   };
 
   const mapDirections = new MapboxDirections({
@@ -134,7 +171,7 @@ export default function MapBox() {
           mapboxAccessToken={
             "pk.eyJ1Ijoic3BlbmNlcmpzbWFsbCIsImEiOiJjbDdmNGY5d2YwNnJuM3hsZ2IyN2thc2QyIn0.hLfNqU8faCraSSKrXbtnHQ"
           }
-          interactiveLayerIds={["bike_data"]}
+          interactiveLayerIds={["data-layer"]}
           onClick={onFeatureClick}
         >
           {basemap == "custom" ? (
@@ -149,13 +186,13 @@ export default function MapBox() {
               >
                 <Layer type="raster" />
               </Source>
-              <Source id="my-data" type="geojson" data={data}>
-                <Layer id="bike_data" {...layerStyle} />
+              <Source id="postgres" type="geojson" data={data}>
+                <Layer id="data-layer" {...layerStyle} />
               </Source>
             </>
           ) : (
-            <Source id="my-data" type="geojson" data={data}>
-              <Layer id="bike_data" {...layerStyle} />
+            <Source id="postgres" type="geojson" data={data}>
+              <Layer id="data-layer" {...layerStyle} />
             </Source>
           )}
 
@@ -173,11 +210,13 @@ export default function MapBox() {
                 >
                   Get Directions
                 </button>
-                <Link to="/survey">
-                  <button className="btn btn-xs btn-outline btn-secondary">
-                    Complete Survey
-                  </button>
-                </Link>
+
+                <button
+                  onClick={getSurvey}
+                  className="btn btn-xs btn-outline btn-secondary"
+                >
+                  Complete Survey
+                </button>
               </div>
             </Popup>
           )}

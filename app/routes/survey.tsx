@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+import type { LoaderFunction } from "@remix-run/node"
+import { useCatch, useLoaderData } from "@remix-run/react";
+
 import * as Survey from "survey-core";
 import * as SurveyReact from "survey-react-ui";
 import type { SurveyModel } from "survey-core";
 import styles from "survey-core/defaultV2.css";
-import { useCatch, useLoaderData } from "@remix-run/react";
+
 import { Layout } from "~/components/layout";
+import { requireSurveyId } from "~/utils/auth.server";
 
 export function links() {
   return [{ rel: "stylesheet", href: styles }];
@@ -12,9 +16,17 @@ export function links() {
 
 Survey.StylesManager.applyTheme("defaultV2");
 
+export const loader: LoaderFunction = async ({ request }) => {
+  const session = await requireSurveyId(request);
+  const surveyId = session.get("surveyId")
+  return surveyId;
+};
+
+
 export default function SurveyPage() {
+  const data = useLoaderData()
   var surveyJson = {
-    surveyId: "f690f329-c015-4e62-9fcc-bf8b4be0d507",
+    surveyId: data,
   };
   const [model, setModel] = useState<SurveyModel>();
   useEffect(() => {

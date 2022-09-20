@@ -1,68 +1,97 @@
 import { prisma } from "./db.server";
-export type { G84_bike_net_pt } from "@prisma/client";
-import {
-  GeoJsonObject,
-  GeoJsonProperties,
-  GeoJsonGeometryTypes,
-} from "geojson";
+
+export type { SFMTA_Bikeway_Network_Point_Features } from "@prisma/client";
 
 type QueryResult = {
   id: number;
   location: string;
-  type: string;
-  name: string;
 };
 
 type ReturnedResult = {
-  geometry: GeoJsonObject & GeoJsonProperties & GeoJsonGeometryTypes;
+  geometry: any;
   type: string;
-  //name: string;
+  properties: any;
 };
 
-export async function getFirstPt() {
-  const results = await prisma.$queryRaw<
+export async function getAllPoints(layer: string) {
+  const results = await prisma.$queryRawUnsafe<
     QueryResult[]
-  >`SELECT ST_AsGeoJSON(geom) as location, id, objectid as name
-  FROM "G84_bike_net_pt"`;
-
-  //console.log(results)
+  >(`SELECT ST_AsGeoJSON(geom) as location, id
+  FROM "${layer}"`);
 
   const parsedResults: ReturnedResult[] = results.map((item) => {
     return {
-      // Parse GeoJSON
-      geometry: JSON.parse(item.location),
-      //name: item.name,
-      id: item.id,
       type: "Feature",
+      geometry: {
+        coordinates: JSON.parse(item.location).coordinates,
+        type: JSON.parse(item.location).type,
+      },
+      properties: {
+        title: item.id,
+      },
     };
   });
 
   const geoJsonResult = {
     type: "FeatureCollection",
-    crs: {
-      type: "name",
-      properties: {
-        name: "EPSG:3857",
-      },
-    },
     features: parsedResults,
   };
 
   return geoJsonResult;
 }
 
-// async function getFirstRawPt() {
-//   const pt = await prisma.g84_bike_net_pt.findUnique({
-//     where: {
-//       id: 1,
-//     },
-//   });
-//   console.log(pt);
-//   if (pt) {
-//     const rawPt =
-//       await prisma.$queryRaw`SELECT geom::json FROM "G84_bike_net_pt" WHERE id = ${pt.id}`;
-//     console.log(rawPt);
-//   }
-// }
+async function getGeomFromId(layer: string, recordId: number) {
+  const queryResult = await prisma.$queryRawUnsafe<QueryResult[]>(
+    `SELECT ST_AsGeoJSON(geom) as location
+  FROM "${layer}" WHERE id = $1`,
+    recordId
+  );
+  const result = JSON.parse(queryResult[0].location);
+  return result;
+}
 
-// getFirstPt();
+export async function getAssignedPoints(userId: number, layer: string) {
+  const assnArr = await prisma.assignment.findMany({
+    where: {
+      layer: layer,
+      OR: [{ assigneeId: userId }, { assigneeId: null }],
+    },
+    select: {
+      recordId: true,
+      surveyId: true,
+      completed: true,
+    },
+  });
+
+  const featureArr = await Promise.all(
+    assnArr.map(async (assn) => {
+      return {
+        type: "Feature",
+        id: assn.recordId,
+        geometry: await getGeomFromId(layer, assn.recordId),
+        properties: {
+          surveyId: assn.surveyId,
+          completed: assn.completed,
+        },
+      };
+    })
+  );
+
+  const geoJsonResult = {
+    type: "FeatureCollection",
+    features: featureArr,
+  };
+
+  return geoJsonResult;
+}
+
+export async function getUserLayers(userId: number) {
+  const assnArr = await prisma.assignment.groupBy({
+    by: ["layer"],
+    where: {
+      assigneeId: userId,
+    },
+  });
+  const layerArr = assnArr.map(assn => assn.layer)
+  return layerArr
+}

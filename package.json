@@ -1,6 +1,9 @@
 {
   "private": true,
   "sideEffects": false,
+  "prisma": {
+    "seed": "node --require esbuild-register prisma/seed.ts"
+  },
   "scripts": {
     "build": "concurrently \"npm run build:css\" \"npm run build:sass\" \"remix build\"",
     "build:css": "tailwindcss -m -i ./styles/app.css -o app/styles/app.css",
@@ -19,7 +22,6 @@
     "bcryptjs": "^2.4.3",
     "clsx": "^1.2.1",
     "daisyui": "^2.24.0",
-    "geojson": "^0.5.0",
     "mapbox-gl": "^2.10.0",
     "node-sass": "^7.0.3",
     "react": "^17.0.2",
@@ -35,16 +37,19 @@
     "@remix-run/eslint-config": "1.7.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/leaflet": "^1.7.11",
+    "@types/node": "^18.7.18",
     "@types/react": "^17.0.47",
     "@types/react-dom": "^17.0.17",
     "autoprefixer": "^10.4.8",
     "concurrently": "^7.3.0",
+    "esbuild-register": "^3.3.3",
     "eslint": "^8.20.0",
     "postcss": "^8.4.14",
     "prisma": "^4.3.1",
     "rmx-cli": "^0.3.1",
     "tailwindcss": "^3.1.7",
-    "typescript": "^4.7.4"
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.3"
   },
   "engines": {
     "node": ">=14"

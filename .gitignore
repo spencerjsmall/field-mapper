@@ -15,6 +15,7 @@ node_modules
 /build
 /public/build
 .env
+.DS_Store
 
 /app/styles/tailwind.css
 /tmp
