@@ -50,10 +50,15 @@ async function getGeomFromId(layer: string, recordId: number) {
   return result;
 }
 
-export async function getAssignedPoints(userId: number, layer: string) {
+export async function getAssignedPoints(
+  userId: number,
+  layer: string,
+  isCompleted: boolean
+) {
   const assnArr = await prisma.assignment.findMany({
     where: {
       layer: layer,
+      completed: isCompleted,
       OR: [{ assigneeId: userId }, { assigneeId: null }],
     },
     select: {
@@ -92,6 +97,40 @@ export async function getUserLayers(userId: number) {
       assigneeId: userId,
     },
   });
-  const layerArr = assnArr.map(assn => assn.layer)
-  return layerArr
+  const layerArr = assnArr.map((assn) => assn.layer);
+  return layerArr;
+}
+
+async function getAssignment(
+  layerId: string,
+  recordId: number,
+  surveyId: string
+) {
+  const assnArr = await prisma.assignment.findFirst({
+    where: {
+      layer: layerId,
+      recordId: recordId,
+      surveyId: surveyId,
+    },
+  });
+  return assnArr;
+}
+
+export async function completeAssignment(
+  layerId: string,
+  recordId: number,
+  surveyId: string,
+  results: JSON
+) {
+  const assn = await getAssignment(layerId, recordId, surveyId);
+  const updateAssn = await prisma.assignment.update({
+    where: {
+      id: assn.id,
+    },
+    data: {
+      completed: true,
+      results: results,
+    },
+  });
+  return updateAssn;
 }

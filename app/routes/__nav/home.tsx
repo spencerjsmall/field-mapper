@@ -4,7 +4,6 @@ import {
   useLoaderData,
   useSubmit,
   Form,
-  useOutletContext,
 } from "@remix-run/react";
 import {
   requireUserId,
@@ -12,7 +11,6 @@ import {
   commitSession,
 } from "~/utils/auth.server";
 import { getUserLayers } from "~/utils/geo.server";
-import { Layout } from "~/components/layout";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
@@ -27,6 +25,7 @@ export async function action({ request }) {
   console.log("layer", layerId);
   session.set("layerId", layerId);
   session.unset("recordId")
+  session.unset("surveyId");
   return redirect("/map", {
     headers: {
       "Set-Cookie": await commitSession(session),

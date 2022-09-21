@@ -16,12 +16,11 @@ import m_styles from "../../styles/mapbox.css";
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
-import { Layout } from "~/components/layout";
 import { getAssignedPoints } from "~/utils/geo.server";
 import {
   commitSession,
   getUserSession,
-  requireMapIds
+  requireMapIds,
 } from "~/utils/auth.server";
 import clsx from "clsx";
 
@@ -39,11 +38,19 @@ export function links() {
   ];
 }
 
-const layerStyle = {
+const todoStyle = {
   type: "circle",
   paint: {
     "circle-radius": 10,
-    "circle-color": "#007cbf",
+    "circle-color": "#0000FF",
+  },
+};
+
+const doneStyle = {
+  type: "circle",
+  paint: {
+    "circle-radius": 10,
+    "circle-color": "#FF0000",
   },
 };
 
@@ -51,8 +58,9 @@ export const loader = async ({ request }: LoaderArgs) => {
   const session = await requireMapIds(request);
   const userId = session.get("userId");
   const layerId = session.get("layerId");
-  const points = await getAssignedPoints(userId, layerId);
-  return points;
+  const pointsTodo = await getAssignedPoints(userId, layerId, false);
+  const pointsDone = await getAssignedPoints(userId, layerId, true);
+  return { pointsTodo, pointsDone };
 };
 
 export async function action({ request }) {
@@ -72,7 +80,7 @@ export async function action({ request }) {
 }
 
 export default function MapPage() {
-  const points = useLoaderData();
+  const { pointsTodo, pointsDone } = useLoaderData();
   const submit = useSubmit();
 
   const [showPopup, setShowPopup] = useState(false);
@@ -83,6 +91,7 @@ export default function MapPage() {
   const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
   const [surveyId, setSurveyId] = useState<String>();
   const [recordId, setRecordId] = useState<Number>();
+  const [completed, setCompleted] = useState<Boolean>();
 
   const geolocateRef = useCallback((ref) => {
     if (ref !== null) {
@@ -99,6 +108,7 @@ export default function MapPage() {
     setDCoords(e.lngLat);
     if (e.features.length > 0) {
       setShowPopup(true);
+      setCompleted(e.features[0].properties.completed);
       setSurveyId(e.features[0].properties.surveyId);
       setRecordId(e.features[0].id);
     } else if (addPoint) {
@@ -170,7 +180,7 @@ export default function MapPage() {
         mapboxAccessToken={
           "pk.eyJ1Ijoic3BlbmNlcmpzbWFsbCIsImEiOiJjbDdmNGY5d2YwNnJuM3hsZ2IyN2thc2QyIn0.hLfNqU8faCraSSKrXbtnHQ"
         }
-        interactiveLayerIds={["data-layer"]}
+        interactiveLayerIds={["todo", "done"]}
         onClick={onFeatureClick}
       >
         {basemap == "custom" ? (
@@ -185,14 +195,22 @@ export default function MapPage() {
             >
               <Layer type="raster" />
             </Source>
-            <Source id="postgres" type="geojson" data={points}>
-              <Layer id="data-layer" {...layerStyle} />
+            <Source id="todo" type="geojson" data={pointsTodo}>
+              <Layer id="todo" {...todoStyle} />
+            </Source>
+            <Source id="done" type="geojson" data={pointsDone}>
+              <Layer id="done" {...doneStyle} />
             </Source>
           </>
         ) : (
-          <Source id="postgres" type="geojson" data={points}>
-            <Layer id="data-layer" {...layerStyle} />
-          </Source>
+          <>
+            <Source id="todo" type="geojson" data={pointsTodo}>
+              <Layer id="todo" {...todoStyle} />
+            </Source>
+            <Source id="done" type="geojson" data={pointsDone}>
+              <Layer id="done" {...doneStyle} />
+            </Source>
+          </>
         )}
 
         {showPopup && (
@@ -209,13 +227,14 @@ export default function MapPage() {
               >
                 Get Directions
               </button>
-
-              <button
-                onClick={getSurvey}
-                className="btn btn-xs btn-outline btn-secondary"
-              >
-                Complete Survey
-              </button>
+              {!completed && (
+                <button
+                  onClick={getSurvey}
+                  className="btn btn-xs btn-outline btn-secondary"
+                >
+                  Complete Survey
+                </button>
+              )}
             </div>
           </Popup>
         )}
