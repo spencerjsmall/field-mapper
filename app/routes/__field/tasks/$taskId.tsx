@@ -12,15 +12,13 @@ import Map, {
 } from "react-map-gl";
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
-import m_styles from "../../styles/mapbox.css";
+import m_styles from "../../../styles/mapbox.css";
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
 import { getAssignedPoints } from "~/utils/geo.server";
 import {
-  commitSession,
-  getUserSession,
-  requireMapIds,
+  requireUserId,
 } from "~/utils/auth.server";
 import clsx from "clsx";
 
@@ -54,29 +52,20 @@ const doneStyle = {
   },
 };
 
-export const loader = async ({ request }: LoaderArgs) => {
-  const session = await requireMapIds(request);
-  const userId = session.get("userId");
-  const layerId = session.get("layerId");
-  const pointsTodo = await getAssignedPoints(userId, layerId, false);
-  const pointsDone = await getAssignedPoints(userId, layerId, true);
+export const loader = async ({ request, params }: LoaderArgs) => {
+  const userId = requireUserId(request);
+  const taskId = params.taskId;
+  const pointsTodo = await getAssignedPoints(userId, taskId, false);
+  const pointsDone = await getAssignedPoints(userId, taskId, true);
   return { pointsTodo, pointsDone };
 };
 
-export async function action({ request }) {
+export async function action({ request, params }) {
+  const taskId = params.taskId;
   const form = await request.formData();
   const surveyId = form.get("surveyId");
   const recordId = form.get("recordId");
-
-  const session = await getUserSession(request);
-  session.set("surveyId", surveyId);
-  session.set("recordId", recordId);
-
-  return redirect("/survey", {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
+  return redirect(`tasks/${taskId}/${recordId}/${surveyId}`);
 }
 
 export default function MapPage() {

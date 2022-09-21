@@ -1,10 +1,6 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import {
-  useLoaderData,
-  useSubmit,
-  Form,
-} from "@remix-run/react";
+import { useLoaderData, useSubmit, Form } from "@remix-run/react";
 import {
   requireUserId,
   getUserSession,
@@ -14,18 +10,16 @@ import { getUserLayers } from "~/utils/geo.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const userLayers = getUserLayers(userId);
+  const userLayers = await getUserLayers(userId);
   return userLayers;
 };
 
 export async function action({ request }) {
   const session = await getUserSession(request);
   const form = await request.formData();
-  const layerId = form.get("layerId");
-  session.set("layerId", layerId);
-  session.unset("recordId")
-  session.unset("surveyId");
-  return redirect("/map", {
+  const taskId = form.get("taskId");
+  session.set("taskId", taskId);
+  return redirect(`/tasks/${taskId}`, {
     headers: {
       "Set-Cookie": await commitSession(session),
     },
@@ -33,11 +27,11 @@ export async function action({ request }) {
 }
 
 export default function HomePage() {
-  const userLayers = useLoaderData();  
+  const userLayers = useLoaderData();
   const submit = useSubmit();
 
-  const handleSubmit = (layerId: string) => {
-    submit({ layerId: layerId }, { method: "post" });
+  const handleSubmit = (taskId: string) => {
+    submit({ taskId: taskId }, { method: "post" });
   };
 
   return (
@@ -45,13 +39,13 @@ export default function HomePage() {
       <h1 className="text-white">Welcome!</h1>
       <h3 className="pb-5">Choose a layer to begin field collection</h3>
       <ul className="justify-center items-center flex flex-col space-y-2">
-        {userLayers.map((layerId: string, i) => (
+        {userLayers.map((taskId: string, i) => (
           <li key={i}>
             <button
-              onClick={() => handleSubmit(layerId)}
+              onClick={() => handleSubmit(taskId)}
               className="btn btn-lg btn-secondary"
             >
-              <label>{layerId.split(/(?=[A-Z])/).join(" ")}</label>
+              <label>{taskId.split(/(?=[A-Z])/).join(" ")}</label>
             </button>
           </li>
         ))}

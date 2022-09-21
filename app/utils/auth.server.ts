@@ -97,8 +97,8 @@ export async function requireMapIds(
   redirectTo: string = new URL(request.url).pathname
 ) {
   const session = await getUserSession(request);
-  const layerId = session.get("layerId");
-  if (!layerId || typeof layerId !== "string") {
+  const taskId = session.get("taskId");
+  if (!taskId || typeof taskId !== "string") {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
     throw redirect(`/login?${searchParams}`);
   }
@@ -110,14 +110,14 @@ export async function requireSurveyIds(
   redirectTo: string = new URL(request.url).pathname
 ) {
   const session = await getUserSession(request);
-  const layerId = session.get("layerId");
+  const taskId = session.get("taskId");
   const recordId = session.get("recordId");
   const surveyId = session.get("surveyId");
   if (
     !surveyId ||
-    !layerId ||
+    !taskId ||
     !recordId ||
-    typeof layerId !== "string" ||    
+    typeof taskId !== "string" ||    
     typeof surveyId !== "string"
   ) {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
