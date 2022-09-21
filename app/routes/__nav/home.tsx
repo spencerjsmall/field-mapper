@@ -22,7 +22,6 @@ export async function action({ request }) {
   const session = await getUserSession(request);
   const form = await request.formData();
   const layerId = form.get("layerId");
-  console.log("layer", layerId);
   session.set("layerId", layerId);
   session.unset("recordId")
   session.unset("surveyId");

@@ -7,7 +7,11 @@ import * as Survey from "survey-core";
 import * as SurveyReact from "survey-react-ui";
 import type { SurveyModel } from "survey-core";
 import styles from "survey-core/defaultV2.css";
-import { getUserSession, requireSurveyIds } from "~/utils/auth.server";
+import {
+  getUserSession,
+  requireSurveyIds,
+  commitSession,
+} from "~/utils/auth.server";
 import { completeAssignment } from "~/utils/geo.server";
 
 export function links() {
@@ -29,11 +33,14 @@ export async function action({ request }) {
   const surveyId = session.get("surveyId");
   const form = await request.formData();
   const results = JSON.parse(form.get("results"));
-  console.log("results 2", results);
   await completeAssignment(layerId, recordId, surveyId, results);
   session.unset("recordId");
   session.unset("surveyId");
-  return redirect("/map");
+  return redirect("/map", {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  });
 }
 
 export default function SurveyPage() {

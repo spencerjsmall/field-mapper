@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import type { LoaderArgs } from "@remix-run/node";
-import { useLoaderData, useOutletContext, useSubmit } from "@remix-run/react";
+import { useLoaderData, useSubmit } from "@remix-run/react";
 import { redirect } from "@remix-run/node";
 
 import Map, {
@@ -103,7 +103,6 @@ export default function MapPage() {
   }, []);
 
   const onFeatureClick = (e) => {
-    console.log(e);
     console.log(e.features);
     setDCoords(e.lngLat);
     if (e.features.length > 0) {
@@ -156,7 +155,6 @@ export default function MapPage() {
   // };
 
   const setCurrentLocation = (e) => {
-    console.log(e.coords);
     setCCoords({
       lng: e.coords.longitude,
       lat: e.coords.latitude,
