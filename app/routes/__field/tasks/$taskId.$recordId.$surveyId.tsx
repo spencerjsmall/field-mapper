@@ -26,7 +26,8 @@ export async function action({ request, params }) {
   const surveyId = params.surveyId;
   const form = await request.formData();
   const results = JSON.parse(form.get("results"));
-  await completeAssignment(taskId, recordId, surveyId, results);  
+  const userId = parseInt(form.get("userId"))
+  await completeAssignment(userId, taskId, recordId, surveyId, results);  
   return redirect(`/tasks/${taskId}`)
 }
 
@@ -45,6 +46,7 @@ export default function SurveyPage() {
       submit(
         {
           results: JSON.stringify(sender.data),
+          userId: String(userId)
         },
         { method: "post" }
       );

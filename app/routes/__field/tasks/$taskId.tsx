@@ -17,9 +17,7 @@ import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-direct
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
 import { getAssignedPoints } from "~/utils/geo.server";
-import {
-  requireUserId,
-} from "~/utils/auth.server";
+import { requireUserId } from "~/utils/auth.server";
 import clsx from "clsx";
 
 export function links() {
@@ -127,15 +125,15 @@ export default function MapPage() {
   };
 
   const getDirections = () => {
-    mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
-    mapDirections.setDestination([dCoords.lng, dCoords.lat]);
     mapDirections.on("route", () => {
       try {
         mapDirections.mapState();
       } catch (e) {
-        console.error(e);
+        console.error("errorrr", e);
       }
     });
+    mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
+    mapDirections.setDestination([dCoords.lng, dCoords.lat]);
   };
 
   // const addPoint = (e) => {

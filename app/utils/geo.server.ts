@@ -102,25 +102,28 @@ export async function getUserLayers(userId: number) {
 async function getAssignment(
   taskId: string,
   recordId: number,
-  surveyId: string
+  surveyId: string,
+  userId?: number
 ) {
   const assnArr = await prisma.assignment.findFirst({
     where: {
       layer: taskId,
       recordId: recordId,
       surveyId: surveyId,
+      OR: [{ assigneeId: userId }, { assigneeId: null }],
     },
   });
   return assnArr;
 }
 
 export async function completeAssignment(
+  userId: number,
   taskId: string,
   recordId: number,
   surveyId: string,
   results: JSON
 ) {
-  const assn = await getAssignment(taskId, recordId, surveyId);
+  const assn = await getAssignment(taskId, recordId, surveyId, userId);
   const updateAssn = await prisma.assignment.update({
     where: {
       id: assn.id,
