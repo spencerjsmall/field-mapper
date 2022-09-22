@@ -60,6 +60,7 @@ export async function getAssignedPoints(
       OR: [{ assigneeId: userId }, { assigneeId: null }],
     },
     select: {
+      assigneeId: true,
       recordId: true,
       surveyId: true,
       completed: true,
@@ -73,6 +74,8 @@ export async function getAssignedPoints(
         id: assn.recordId,
         geometry: await getGeomFromId(layer, assn.recordId),
         properties: {
+          assigneeId: assn.assigneeId,
+          recordId: assn.recordId,
           surveyId: assn.surveyId,
           completed: assn.completed,
         },

@@ -51,7 +51,7 @@ const doneStyle = {
 };
 
 export const loader = async ({ request, params }: LoaderArgs) => {
-  const userId = requireUserId(request);
+  const userId = await requireUserId(request);
   const taskId = params.taskId;
   const pointsTodo = await getAssignedPoints(userId, taskId, false);
   const pointsDone = await getAssignedPoints(userId, taskId, true);
