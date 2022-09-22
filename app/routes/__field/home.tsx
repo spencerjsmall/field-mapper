@@ -35,7 +35,7 @@ export default function HomePage() {
   };
 
   return (
-    <Form className="w-full h-full justify-center items-center flex flex-col">
+    <div className="w-full h-full justify-center items-center flex flex-col">
       <h1 className="text-white">Welcome!</h1>
       <h3 className="pb-5">Choose a layer to begin field collection</h3>
       <ul className="justify-center items-center flex flex-col space-y-2">
@@ -50,6 +50,6 @@ export default function HomePage() {
           </li>
         ))}
       </ul>
-    </Form>
+    </div>
   );
 }
