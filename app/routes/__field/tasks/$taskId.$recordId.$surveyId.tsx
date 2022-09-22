@@ -1,17 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import type { LoaderFunction } from "@remix-run/node";
-import { useCatch, useLoaderData, useSubmit } from "@remix-run/react";
+import { useCatch, useLoaderData, useOutletContext, useSubmit } from "@remix-run/react";
 import { redirect } from "@remix-run/node";
 
 import * as Survey from "survey-core";
 import * as SurveyReact from "survey-react-ui";
 import type { SurveyModel } from "survey-core";
 import styles from "survey-core/defaultV2.css";
-import {
-  getUserSession,
-  requireSurveyIds,
-  commitSession,
-} from "~/utils/auth.server";
 import { completeAssignment } from "~/utils/geo.server";
 
 export function links() {
@@ -20,31 +15,25 @@ export function links() {
 
 Survey.StylesManager.applyTheme("defaultV2");
 
-export const loader: LoaderFunction = async ({ request }) => {
-  const session = await requireSurveyIds(request);
-  const surveyId = session.get("surveyId");
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const surveyId = params.surveyId;
   return surveyId;
 };
 
-export async function action({ request }) {
-  const session = await getUserSession(request);
-  const layerId = session.get("layerId");
-  const recordId = parseInt(session.get("recordId"));
-  const surveyId = session.get("surveyId");
+export async function action({ request, params }) {  
+  const taskId = params.taskId;
+  const recordId = parseInt(params.recordId);
+  const surveyId = params.surveyId;
   const form = await request.formData();
   const results = JSON.parse(form.get("results"));
-  await completeAssignment(layerId, recordId, surveyId, results);
-  session.unset("recordId");
-  session.unset("surveyId");
-  return redirect("/map", {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
+  const userId = parseInt(form.get("userId"))
+  await completeAssignment(userId, taskId, recordId, surveyId, results);  
+  return redirect(`/tasks/${taskId}`)
 }
 
 export default function SurveyPage() {
   const surveyId = useLoaderData();
+  const userId = useOutletContext<Number>();
   const submit = useSubmit();
   const [model, setModel] = useState<SurveyModel>();
 
@@ -57,6 +46,7 @@ export default function SurveyPage() {
       submit(
         {
           results: JSON.stringify(sender.data),
+          userId: String(userId)
         },
         { method: "post" }
       );

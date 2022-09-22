@@ -1,5 +1,5 @@
 diff --git a/dist/mapbox-gl-directions.js b/dist/mapbox-gl-directions.js
-index 4f9d6aef1e0d9449b355e99d61031e6178797806..657579486878e4b7eb98e3f2504f932a508822ea 100644
+index 4f9d6aef1e0d9449b355e99d61031e6178797806..1a85e600adfd5617d4f93137cc4a8684c3f7439d 100644
 --- a/dist/mapbox-gl-directions.js
 +++ b/dist/mapbox-gl-directions.js
 @@ -1,8858 +1,10317 @@
@@ -17277,7 +17277,7 @@ index 4f9d6aef1e0d9449b355e99d61031e6178797806..657579486878e4b7eb98e3f2504f932a
 +                  };
 +
 +                  // Add and set data theme layer/style
-+                  this._map.addSource("directions", geojson);
++                  if (this._map) this._map.addSource("directions", geojson);
 +
 +                  // Add direction specific styles to the map
 +                  if (styles && styles.length)
@@ -17286,7 +17286,7 @@ index 4f9d6aef1e0d9449b355e99d61031e6178797806..657579486878e4b7eb98e3f2504f932a
 +                    });
 +                  _directions_style2.default.forEach(function (style) {
 +                    // only add the default style layer if a custom layer wasn't provided
-+                    if (!_this2._map.getLayer(style.id))
++                    if (_this2._map && !_this2._map.getLayer(style.id))
 +                      _this2._map.addLayer(style);
 +                  });
  
@@ -17295,7 +17295,7 @@ index 4f9d6aef1e0d9449b355e99d61031e6178797806..657579486878e4b7eb98e3f2504f932a
 -    value: function getDestination() {
 -      return store.getState().destination;
 -    }
-+                  if (interactive) {
++                  if (this._map && interactive) {
 +                    this._map.on("mousedown", this.onDragDown);
 +                    this._map.on("mousemove", this.move);
 +                    this._map.on("click", this.onClick);
@@ -18785,4 +18785,3 @@ index 4f9d6aef1e0d9449b355e99d61031e6178797806..657579486878e4b7eb98e3f2504f932a
 +    [45]
 +  )(45);
  });
-\ No newline at end of file

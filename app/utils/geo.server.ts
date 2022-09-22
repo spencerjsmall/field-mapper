@@ -1,7 +1,5 @@
 import { prisma } from "./db.server";
 
-export type { SFMTA_Bikeway_Network_Point_Features } from "@prisma/client";
-
 type QueryResult = {
   id: number;
   location: string;
@@ -102,27 +100,30 @@ export async function getUserLayers(userId: number) {
 }
 
 async function getAssignment(
-  layerId: string,
+  taskId: string,
   recordId: number,
-  surveyId: string
+  surveyId: string,
+  userId?: number
 ) {
   const assnArr = await prisma.assignment.findFirst({
     where: {
-      layer: layerId,
+      layer: taskId,
       recordId: recordId,
       surveyId: surveyId,
+      OR: [{ assigneeId: userId }, { assigneeId: null }],
     },
   });
   return assnArr;
 }
 
 export async function completeAssignment(
-  layerId: string,
+  userId: number,
+  taskId: string,
   recordId: number,
   surveyId: string,
   results: JSON
 ) {
-  const assn = await getAssignment(layerId, recordId, surveyId);
+  const assn = await getAssignment(taskId, recordId, surveyId, userId);
   const updateAssn = await prisma.assignment.update({
     where: {
       id: assn.id,
