@@ -3,9 +3,11 @@ import { prisma } from "./db.server";
 type QueryResult = {
   id: number;
   location: string;
+  title: string;
 };
 
 type ReturnedResult = {
+  id: any;
   geometry: any;
   type: string;
   properties: any;
@@ -14,18 +16,19 @@ type ReturnedResult = {
 export async function getAllPoints(layer: string) {
   const results = await prisma.$queryRawUnsafe<
     QueryResult[]
-  >(`SELECT ST_AsGeoJSON(geom) as location, id
+  >(`SELECT ST_AsGeoJSON(geom) as location, id, title
   FROM "${layer}"`);
 
   const parsedResults: ReturnedResult[] = results.map((item) => {
     return {
+      id: item.id,
       type: "Feature",
       geometry: {
         coordinates: JSON.parse(item.location).coordinates,
         type: JSON.parse(item.location).type,
       },
       properties: {
-        title: item.id,
+        title: item.title,
       },
     };
   });
