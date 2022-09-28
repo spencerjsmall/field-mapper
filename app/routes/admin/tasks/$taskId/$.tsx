@@ -1,5 +1,6 @@
 import { prisma } from "~/utils/db.server";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useOutletContext } from "@remix-run/react";
+import { json } from "@remix-run/node";
 
 export const loader = async ({ params }: LoaderArgs) => {
   const taskId = params.taskId;
@@ -9,37 +10,102 @@ export const loader = async ({ params }: LoaderArgs) => {
     ids.map(async (id) => {
       let assignment = await prisma.assignment.findFirst({
         where: { recordId: id, layer: taskId },
+        select: {
+          surveyId: true,
+          recordId: true,
+          assignee: {
+            select: {
+              email: true,
+            },
+          },
+        },
       });
       return {
         recordId: id,
         surveyId: assignment?.surveyId,
-        assignee: assignment?.assigneeId
-          ? await prisma.user.findUnique({
-              where: { id: assignment?.assigneeId },
-            })
-          : undefined,
+        assignee: assignment?.assignee,
       };
     })
-  );  
+  );
   return assignments;
 };
 
-export async function action({ request }) {  
-  let { recordId, assigneeEmail, surveyId, actionId } = Object.fromEntries(
+export async function action({ request, params }) {
+  const taskId = params.taskId;
+  const pathname = params["*"];
+  const ids = pathname.split("/").map((i) => parseInt(i));
+
+  const { recordId, assigneeEmail, surveyId, actionId } = Object.fromEntries(
     await request.formData()
   );
-  console.log("recordId", recordId);
-  console.log("email", assigneeEmail);
-  console.log("surveyId", surveyId);
-  console.log("actionId", actionId);
-  if (typeof assigneeEmail !== "string" || typeof surveyId !== "string") {
-    return { formError: `Form not submitted correctly.` };
+  const recId = parseInt(recordId);
+  const assignee = await prisma.user.findUnique({
+    where: { email: assigneeEmail },
+  });
+
+  if (assignee == null) {
+    return json(
+      { error: `User with that email does not yet exist` },
+      { status: 400 }
+    );
   }
-  return null
-};
+
+  switch (actionId) {
+    case "create": {
+      return await prisma.assignment.create({
+        data: {
+          layer: taskId,
+          recordId: recId,
+          surveyId: surveyId,
+          assignee: { connect: { id: assignee.id } },
+        },
+      });
+    }
+    case "update": {
+      let assignment = await prisma.assignment.findFirstOrThrow({
+        where: { layer: taskId, recordId: recId },
+      });
+      return await prisma.assignment.update({
+        where: {
+          id: assignment.id,
+        },
+        data: {
+          surveyId: surveyId,
+          assignee: { connect: { id: assignee.id } },
+        },
+      });
+    }
+    case "upsert": {
+      const resultArr = [];
+      for (const id of ids) {
+        let assignment = await prisma.assignment.findFirst({
+          where: { layer: taskId, recordId: id },
+        });
+        const result = await prisma.assignment.upsert({
+          where: { id: assignment?.id ? assignment.id : -1 },
+          update: {
+            surveyId: surveyId,
+            assignee: { connect: { id: assignee.id } },
+          },
+          create: {
+            layer: taskId,
+            recordId: id,
+            surveyId: surveyId,
+            assignee: { connect: { id: assignee.id } },
+          },
+        });
+        resultArr.push(result);
+      }
+      return resultArr;
+    }
+    default:
+      return json({ error: `Invalid Form Data` }, { status: 400 });
+  }
+}
 
 export default function TaskSidebar() {
   const assignments = useLoaderData();
+  
   return (
     <div className="bg-black h-full p-4">
       <ul className="justify-center items-center flex flex-col space-y-2">
@@ -54,12 +120,12 @@ export default function TaskSidebar() {
                 Update {assignments.length} records
               </div>
               <div className="collapse-content text-black">
-                <form method="post">                  
-                  <p>Assignee:</p>
+                <form method="post" className="flex flex-col">
+                  <h2>Assignee:</h2>
                   <label>
                     <input type="text" name="assigneeEmail" />
                   </label>
-                  <p>Survey ID:</p>
+                  <h2>Survey ID:</h2>
                   <label>
                     <input type="text" name="surveyId" />
                   </label>
@@ -87,9 +153,9 @@ export default function TaskSidebar() {
                 Record #{assn.recordId}
               </div>
               <div className="collapse-content">
-                <form method="post">
+                <form method="post" className="flex flex-col">
                   <input type="hidden" name="recordId" value={assn.recordId} />
-                  <p>Assignee:</p>
+                  <h2>Assignee:</h2>
                   <label>
                     <input
                       type="text"
@@ -97,7 +163,7 @@ export default function TaskSidebar() {
                       name="assigneeEmail"
                     />
                   </label>
-                  <p>Survey ID:</p>
+                  <h2>Survey ID:</h2>
                   <label>
                     <input
                       type="text"

@@ -63,6 +63,11 @@ export async function getAllAssignedPoints(
       recordId: true,
       surveyId: true,
       completed: true,
+      assignee: {
+        select: {
+          email: true
+        }
+      }
     },
   });
 
@@ -74,6 +79,7 @@ export async function getAllAssignedPoints(
         geometry: await getGeomFromId(layer, assn.recordId),
         properties: {
           assigneeId: assn.assigneeId,
+          assigneeEmail: assn.assignee?.email,
           recordId: assn.recordId,
           surveyId: assn.surveyId,
           completed: assn.completed,
