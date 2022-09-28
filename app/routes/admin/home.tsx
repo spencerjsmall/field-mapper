@@ -1,6 +1,7 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { useLoaderData, useSubmit, Form } from "@remix-run/react";
+import { LayerUploader } from "~/components/layer-uploader";
 import {
   requireUserId,
   getUserSession,
@@ -34,6 +35,20 @@ export default function HomePage() {
     submit({ taskId: taskId }, { method: "post" });
   };
 
+  const handleFileUpload = async (file: File) => {
+    const inputFormData = new FormData();
+    inputFormData.append("layer", file);
+    console.log(inputFormData.get("layer"))
+    console.log('body', inputFormData)
+    console.log('file', file)
+    const response = await fetch("/layer", {
+      method: "POST",
+      body: inputFormData,
+    });
+    const { layerUrl } = await response.json();
+    console.log("layerUrl", layerUrl);
+  };
+
   return (
     <div className="w-full h-full justify-center items-center flex flex-col">
       <h1 className="text-white">Welcome!</h1>
@@ -50,6 +65,8 @@ export default function HomePage() {
           </li>
         ))}
       </ul>
+      <h3 className="pb-5">Or upload your own below</h3>
+      <LayerUploader onChange={handleFileUpload} />
     </div>
   );
 }

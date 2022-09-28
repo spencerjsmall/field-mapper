@@ -16,6 +16,13 @@ model User {
   lastName    String
   email       String       @unique
   assignments Assignment[]
+  layerUploads String[]
+  role Role @default(USER)
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model Assignment {
