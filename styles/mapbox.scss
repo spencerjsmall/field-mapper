@@ -1,5 +1,4 @@
 .mapboxgl-map {
-
   .mapboxgl-popup.mapboxgl-popup-anchor-bottom {
     .mapboxgl-popup-content {
       background-color: white !important;
@@ -40,6 +39,16 @@
     width: auto;
     min-width: 0px;
     margin-bottom: 35px;
-    overflow: hidden;    
+    overflow: hidden;
   }
+}
+
+.boxdraw {
+  background: rgba(56, 135, 190, 0.1);
+  border: 2px solid #3887be;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
 }

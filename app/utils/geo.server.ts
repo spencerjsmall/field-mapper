@@ -3,9 +3,11 @@ import { prisma } from "./db.server";
 type QueryResult = {
   id: number;
   location: string;
+  //title: string;
 };
 
 type ReturnedResult = {
+  id: any;
   geometry: any;
   type: string;
   properties: any;
@@ -19,13 +21,14 @@ export async function getAllPoints(layer: string) {
 
   const parsedResults: ReturnedResult[] = results.map((item) => {
     return {
+      id: item.id,
       type: "Feature",
       geometry: {
         coordinates: JSON.parse(item.location).coordinates,
         type: JSON.parse(item.location).type,
       },
       properties: {
-        title: item.id,
+        //title: item.title,
       },
     };
   });
@@ -46,6 +49,51 @@ async function getGeomFromId(layer: string, recordId: number) {
   );
   const result = JSON.parse(queryResult[0].location);
   return result;
+}
+
+export async function getAllAssignedPoints(
+  layer: string
+) {
+  const assnArr = await prisma.assignment.findMany({
+    where: {
+      layer: layer,      
+    },
+    select: {
+      assigneeId: true,
+      recordId: true,
+      surveyId: true,
+      completed: true,
+      assignee: {
+        select: {
+          email: true
+        }
+      }
+    },
+  });
+
+  const featureArr = await Promise.all(
+    assnArr.map(async (assn) => {
+      return {
+        type: "Feature",
+        id: assn.recordId,
+        geometry: await getGeomFromId(layer, assn.recordId),
+        properties: {
+          assigneeId: assn.assigneeId,
+          assigneeEmail: assn.assignee?.email,
+          recordId: assn.recordId,
+          surveyId: assn.surveyId,
+          completed: assn.completed,
+        },
+      };
+    })
+  );
+
+  const geoJsonResult = {
+    type: "FeatureCollection",
+    features: featureArr,
+  };
+
+  return geoJsonResult;
 }
 
 export async function getAssignedPoints(

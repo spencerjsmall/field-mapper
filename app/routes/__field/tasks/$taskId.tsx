@@ -66,7 +66,7 @@ export async function action({ request, params }) {
   return redirect(`tasks/${taskId}/${recordId}/${surveyId}`);
 }
 
-export default function MapPage() {
+export default function TaskMap() {
   const { pointsTodo, pointsDone } = useLoaderData();
   const submit = useSubmit();
 
@@ -252,15 +252,15 @@ export default function MapPage() {
         <li>
           <div
             onClick={() => setBasemap("dark-v10")}
-            className={clsx("p2", { active: basemap == "satellite-v9" })}
+            className={clsx("p2", { active: basemap == "dark-v10" })}
           >
             Dark
           </div>
         </li>
         <li>
           <div
-            onClick={() => setBasemap("custom")}
-            className={clsx("p2", { active: basemap == "custom" })}
+            onClick={() => setBasemap("satellite-v9")} //FIX CUSTOM
+            className={clsx("p2", { active: basemap == "satellite-v9" })}
           >
             Custom
           </div>
