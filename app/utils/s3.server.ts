@@ -15,7 +15,7 @@ const uploadHandler: UploadHandler = async ({ name, filename, data }) => {
   // 2
   const stream = Readable.from(data);
 
-  if (name !== "layer") {    
+  if (name !== "layer") {
     stream.resume();
     return;
   }

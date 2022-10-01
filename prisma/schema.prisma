@@ -16,7 +16,7 @@ model User {
   lastName    String
   email       String       @unique
   assignments Assignment[]
-  layerUploads String[]
+  layers Layer[]
   role Role @default(USER)
 }
 
@@ -32,10 +32,22 @@ model Assignment {
   completedAt DateTime?     @updatedAt
   results Json?
   assigneeId Int?
-  layer      String
+  layerId Int
+  layer      Layer @relation(fields: [layerId], references: [id])
   recordId   Int
   surveyId   String
   assignee   User?    @relation(fields: [assigneeId], references: [id])
+}
+
+model Layer {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  name String?
+  titleField String?
+  url String @unique
+  assignments Assignment[]
+  dispatcherId Int
+  dispatcher User    @relation(fields: [dispatcherId], references: [id])
 }
 
 model PublicArtPoints {

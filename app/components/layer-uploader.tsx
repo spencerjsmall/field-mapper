@@ -2,11 +2,19 @@
 
 import React, { useRef, useState } from "react";
 
-interface props {
-  onChange: (file: File) => any;  
-}
+const handleFileUpload = async (file: File) => {
+  const inputFormData = new FormData();
+  inputFormData.append("layer", file);
+  const response = await fetch("/layer", {
+    method: "POST",
+    body: inputFormData,
+  });
+  const { layerUrl } = await response.json();
+  console.log("layerUrl", layerUrl);
+};
 
-export const LayerUploader = ({ onChange }: props) => {
+
+export const LayerUploader = () => {
   const [draggingOver, setDraggingOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef(null);
@@ -21,7 +29,7 @@ export const LayerUploader = ({ onChange }: props) => {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     preventDefaults(e);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onChange(e.dataTransfer.files[0]);
+      handleFileUpload(e.dataTransfer.files[0]);
       e.dataTransfer.clearData();
     }
   };
@@ -29,7 +37,7 @@ export const LayerUploader = ({ onChange }: props) => {
   // 3
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.currentTarget.files && event.currentTarget.files[0]) {
-      onChange(event.currentTarget.files[0]);
+      handleFileUpload(event.currentTarget.files[0]);
     }
   };
 

@@ -5,19 +5,24 @@ import { uploadLayer } from "~/utils/s3.server";
 import { prisma } from "~/utils/db.server";
 
 export const action: ActionFunction = async ({ request }) => {
-  // 1
   const userId = await requireUserId(request);
-  // 2
-  const layerUrl = await uploadLayer(request);
 
-  // 3
-  await prisma.user.update({
-    data: {
-      layerUploads: { push: layerUrl },
-    },
-    where: {
-      id: userId,
-    },
+  const layerUrl = await uploadLayer(request);
+  console.log('layerUrl', layerUrl)
+  const extension = layerUrl.split(".").pop();
+
+  if (
+    extension == "dbf" ||
+    extension == "shx" ||
+    extension == "prj" ||
+    extension == "cpg"
+  ) {
+    console.log('PASS')
+    return null;
+  }
+
+  await prisma.layer.create({
+    data: { url: layerUrl, dispatcher: { connect: { id: userId } } },
   });
 
   // 4

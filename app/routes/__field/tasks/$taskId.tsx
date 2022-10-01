@@ -1,7 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { LoaderArgs } from "@remix-run/node";
-import { useLoaderData, useSubmit } from "@remix-run/react";
-import { redirect } from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
+
+import "@loaders.gl/polyfills";
+import { KMLLoader } from "@loaders.gl/kml";
+import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
+import { load, selectLoader } from "@loaders.gl/core";
 
 import Map, {
   Source,
@@ -19,6 +23,7 @@ import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { getAssignedPoints } from "~/utils/geo.server";
 import { requireUserId } from "~/utils/auth.server";
 import clsx from "clsx";
+import { prisma } from "~/utils/db.server";
 
 export function links() {
   return [
@@ -42,7 +47,7 @@ const todoStyle = {
   },
 };
 
-const doneStyle = {
+const completedStyle = {
   type: "circle",
   paint: {
     "circle-radius": 10,
@@ -52,23 +57,26 @@ const doneStyle = {
 
 export const loader = async ({ request, params }: LoaderArgs) => {
   const userId = await requireUserId(request);
-  const taskId = params.taskId;
-  const pointsTodo = await getAssignedPoints(userId, taskId, false);
-  const pointsDone = await getAssignedPoints(userId, taskId, true);
-  return { pointsTodo, pointsDone };
+  const taskId = parseInt(params.taskId);
+  const layer = await prisma.layer.findUnique({ where: { id: taskId } });
+  const assignments = await prisma.assignment.findMany({
+    where: {
+      layerId: taskId,
+      assigneeId: userId,
+    },
+  });
+  const loader = await selectLoader(layer.url, [KMLLoader, GeoJSONLoader])
+  const points = await load(layer.url, loader);
+  const pointKeys = [];
+  for (let key of points.features.keys()) {
+    pointKeys.push(key);
+    points.features[key]["id"] = key;
+  }
+  return { assignments, points };
 };
 
-export async function action({ request, params }) {
-  const taskId = params.taskId;
-  const form = await request.formData();
-  const surveyId = form.get("surveyId");
-  const recordId = form.get("recordId");
-  return redirect(`tasks/${taskId}/${recordId}/${surveyId}`);
-}
-
 export default function TaskMap() {
-  const { pointsTodo, pointsDone } = useLoaderData();
-  const submit = useSubmit();
+  const { assignments, points } = useLoaderData();
 
   const [showPopup, setShowPopup] = useState(false);
   const [showMark, setShowMark] = useState(false);
@@ -76,9 +84,8 @@ export default function TaskMap() {
   const [basemap, setBasemap] = useState("streets-v11");
   const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
   const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
-  const [surveyId, setSurveyId] = useState<String>();
-  const [recordId, setRecordId] = useState<Number>();
   const [completed, setCompleted] = useState<Boolean>();
+  const [assignment, setAssignment] = useState();
 
   const geolocateRef = useCallback((ref) => {
     if (ref !== null) {
@@ -93,19 +100,16 @@ export default function TaskMap() {
     console.log(e.features);
     setDCoords(e.lngLat);
     if (e.features.length > 0) {
+      let id = e.features[0].id;
       setShowPopup(true);
-      setCompleted(e.features[0].properties.completed);
-      setSurveyId(e.features[0].properties.surveyId);
-      setRecordId(e.features[0].id);
+      let assn = assignments.find((a) => a.recordId == id);
+      setAssignment(assn);
+      setCompleted(assn.completed);
     } else if (addPoint) {
       setShowMark(true);
     } else {
       setAddPoint(false);
     }
-  };
-
-  const getSurvey = (e) => {
-    submit({ surveyId: surveyId, recordId: recordId }, { method: "post" });
   };
 
   const mapDirections = new MapboxDirections({
@@ -148,6 +152,30 @@ export default function TaskMap() {
     });
   };
 
+  const completedFilter = useMemo(
+    () => [
+      "in",
+      ["id"],
+      [
+        "literal",
+        assignments.filter((a) => a.completed).map((a) => a.recordId),
+      ],
+    ],
+    [assignments]
+  );
+
+  const todoFilter = useMemo(
+    () => [
+      "in",
+      ["id"],
+      [
+        "literal",
+        assignments.filter((a) => !a.completed).map((a) => a.recordId),
+      ],
+    ],
+    [assignments]
+  );
+
   return (
     <div className="h-full relative">
       <Map
@@ -180,20 +208,20 @@ export default function TaskMap() {
             >
               <Layer type="raster" />
             </Source>
-            <Source id="todo" type="geojson" data={pointsTodo}>
+            <Source id="todo" type="geojson" data={points}>
               <Layer id="todo" {...todoStyle} />
             </Source>
-            <Source id="done" type="geojson" data={pointsDone}>
-              <Layer id="done" {...doneStyle} />
+            <Source id="done" type="geojson" data={points}>
+              <Layer id="done" {...completedStyle} />
             </Source>
           </>
         ) : (
           <>
-            <Source id="todo" type="geojson" data={pointsTodo}>
-              <Layer id="todo" {...todoStyle} />
+            <Source id="todo" type="geojson" data={points}>
+              <Layer id="todo" {...todoStyle} filter={todoFilter} />
             </Source>
-            <Source id="done" type="geojson" data={pointsDone}>
-              <Layer id="done" {...doneStyle} />
+            <Source id="done" type="geojson" data={points}>
+              <Layer id="done" {...completedStyle} filter={completedFilter} />
             </Source>
           </>
         )}
@@ -212,13 +240,12 @@ export default function TaskMap() {
               >
                 Get Directions
               </button>
-              {!completed && (
-                <button
-                  onClick={getSurvey}
-                  className="btn btn-xs btn-outline btn-secondary"
-                >
-                  Complete Survey
-                </button>
+              {!completed && assignment && (
+                <Link to={`${assignment.id}`}>
+                  <button className="btn btn-xs btn-outline btn-secondary">
+                    Complete Survey
+                  </button>
+                </Link>
               )}
             </div>
           </Popup>

@@ -13,6 +13,13 @@
     "dev:sass": "npm run build:sass && node-sass -rw ./styles -o ./app/styles"
   },
   "dependencies": {
+    "@loaders.gl/core": "^3.2.9",
+    "@loaders.gl/geopackage": "^3.2.9",
+    "@loaders.gl/json": "^3.2.9",
+    "@loaders.gl/kml": "^3.2.9",
+    "@loaders.gl/polyfills": "^3.2.9",
+    "@loaders.gl/shapefile": "^3.2.9",
+    "@loaders.gl/zip": "^3.2.9",
     "@mapbox/mapbox-gl-directions": "^4.1.0",
     "@prisma/client": "^4.1.1",
     "@remix-run/node": "1.7.0",

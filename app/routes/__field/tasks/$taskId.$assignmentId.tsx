@@ -1,13 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
 import type { LoaderFunction } from "@remix-run/node";
-import { useCatch, useLoaderData, useOutletContext, useSubmit } from "@remix-run/react";
+import {
+  useCatch,
+  useLoaderData,
+  useOutletContext,
+  useSubmit,
+} from "@remix-run/react";
 import { redirect } from "@remix-run/node";
 
 import * as Survey from "survey-core";
 import * as SurveyReact from "survey-react-ui";
 import type { SurveyModel } from "survey-core";
 import styles from "survey-core/defaultV2.css";
-import { completeAssignment } from "~/utils/geo.server";
+import { prisma } from "~/utils/db.server";
 
 export function links() {
   return [{ rel: "stylesheet", href: styles }];
@@ -16,19 +21,30 @@ export function links() {
 Survey.StylesManager.applyTheme("defaultV2");
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const surveyId = params.surveyId;
-  return surveyId;
+  const assnId = parseInt(params.assignmentId);
+  const assn = await prisma.assignment.findUniqueOrThrow({
+    where: {
+      id: assnId,
+    },
+  });
+  return assn.surveyId;
 };
 
-export async function action({ request, params }) {  
+export async function action({ request, params }) {
+  const assnId = parseInt(params.assignmentId);
   const taskId = params.taskId;
-  const recordId = parseInt(params.recordId);
-  const surveyId = params.surveyId;
-  const form = await request.formData();
-  const results = JSON.parse(form.get("results"));
-  const userId = parseInt(form.get("userId"))
-  await completeAssignment(userId, taskId, recordId, surveyId, results);  
-  return redirect(`/tasks/${taskId}`)
+  const { results, userId } = Object.fromEntries(await request.formData());
+  await prisma.assignment.update({
+    where: {
+      id: assnId,
+    },
+    data: {
+      completed: true,
+      results: JSON.parse(results),
+      assignee: { connect: { id: parseInt(userId) } },
+    },
+  });
+  return redirect(`/tasks/${taskId}`);
 }
 
 export default function SurveyPage() {
@@ -46,7 +62,7 @@ export default function SurveyPage() {
       submit(
         {
           results: JSON.stringify(sender.data),
-          userId: String(userId)
+          userId: String(userId),
         },
         { method: "post" }
       );
