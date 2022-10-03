@@ -8,7 +8,6 @@ export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
 
   const layerUrl = await uploadLayer(request);
-  console.log('layerUrl', layerUrl)
   const extension = layerUrl.split(".").pop();
 
   if (
@@ -17,14 +16,14 @@ export const action: ActionFunction = async ({ request }) => {
     extension == "prj" ||
     extension == "cpg"
   ) {
-    console.log('PASS')
+    console.log("PASS");
     return null;
   }
 
-  await prisma.layer.create({
+  const newLayer = await prisma.layer.create({
     data: { url: layerUrl, dispatcher: { connect: { id: userId } } },
   });
 
   // 4
-  return json({ layerUrl });
+  return json(newLayer.id);
 };

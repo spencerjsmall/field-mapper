@@ -4,8 +4,11 @@ import { json } from "@remix-run/node";
 
 export const loader = async ({ params }: LoaderArgs) => {
   const pathname = params["*"];
+  const taskId = parseInt(params.taskId);
+  const layer = await prisma.layer.findUnique({ where: { id: taskId } });
+
   const ids = pathname.split("/").map((i) => parseInt(i));
-  return ids;
+  return { ids, layer };
 };
 
 export async function action({ request, params }) {
@@ -82,8 +85,8 @@ export async function action({ request, params }) {
 }
 
 export default function TaskSidebar() {
-  const ids = useLoaderData();
-  const assignments = useOutletContext();
+  const { ids, layer } = useLoaderData();
+  const { assignments, points } = useOutletContext();
   const selected = ids.map((id) => {
     let assn = assignments.find((a) => a.recordId === id);
     if (!assn) {
@@ -140,7 +143,9 @@ export default function TaskSidebar() {
             >
               <input type="checkbox" />
               <div className="collapse-title text-xl font-medium">
-                Record #{obj.recordId}
+                {layer.titleField
+                  ? `${points.features[obj.recordId].properties[layer.titleField]}`
+                  : `Record #${obj.recordId}`}
               </div>
               <div className="collapse-content">
                 <form method="post" className="flex flex-col">

@@ -39,7 +39,7 @@ export async function uploadLayer(request: Request) {
     uploadHandler
   );
 
-  const file = formData.get("layer")?.toString() || "";
+  const layerUrl = formData.get("layer")?.toString() || "";
 
-  return file;
+  return layerUrl;
 }

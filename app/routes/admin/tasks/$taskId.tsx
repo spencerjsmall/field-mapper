@@ -251,7 +251,7 @@ export default function AdminTaskMap() {
         </button>
       </Map>
       <div className="basis-1/3 max-h-full overflow-y-scroll bg-black">
-        <Outlet context={assignments} />
+        <Outlet context={{assignments, points}} />
       </div>
     </div>
   );
