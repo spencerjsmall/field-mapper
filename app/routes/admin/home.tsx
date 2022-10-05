@@ -1,56 +1,70 @@
 import { prisma } from "~/utils/db.server";
 import { LoaderFunction, ActionFunction, redirect } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import { useLoaderData, Link, useSubmit } from "@remix-run/react";
 import { LayerUploader } from "~/components/layer-uploader";
-import { requireUserId } from "~/utils/auth.server";
+import {
+  requireUserId,
+  getUserSession,
+  commitSession,
+} from "~/utils/auth.server";
 
 export const action: ActionFunction = async ({ request }) => {
-  const { layerId, name, field } = Object.fromEntries(await request.formData());
-  await prisma.layer.update({
-    where: {
-      id: parseInt(layerId),
-    },
-    data: {
-      name: name,
-      titleField: field,
+  const session = await getUserSession(request);
+  const { taskId } = Object.fromEntries(await request.formData());
+  session.set("task", taskId);
+  return redirect(`/admin/tasks/${taskId}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session),
     },
   });
-  return redirect(`/admin/tasks/${layerId}`);
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   const userLayers = await prisma.layer.findMany({
     where: {
       dispatcherId: userId,
     },
   });
-  return userLayers;
+  return { user, userLayers };
 };
 
 export default function HomePage() {
-  const userLayers = useLoaderData();
+  const { user, userLayers } = useLoaderData();
+  const submit = useSubmit();
+
+  const setTask = (layerName: string) => {
+    submit({ taskId: layerName }, { method: "post" });
+  };
 
   return (
-    <div className="w-full h-full justify-center items-center flex flex-row">
-      <div className="justify-center items-center flex flex-col">
-        <h1 className="text-white">Welcome!</h1>
-        <h3 className="pb-5">Choose a layer to begin field collection</h3>
-        <ul className="justify-center items-center flex flex-col space-y-2">
-          {userLayers.map((layer, i) => (
-            <li key={i}>
-              <Link to={`/admin/tasks/${layer.id}`}>
-                <button className="btn btn-lg btn-secondary">
-                  <label>{layer.name}</label>
+    <div className="flex flex-col items-center justify-center h-full w-full">
+      <h1 className="text-white text-5xl mb-3">Welcome, {user.firstName}!</h1>
+      <h1 className="text-gray-500 text-3xl mb-14">
+        Select a layer to make assignments
+      </h1>
+      <div className="justify-center space-x-24 w-full items-start flex flex-row">
+        {userLayers && (
+          <ul className="justify-center items-center flex flex-col">
+            <h2 className="pb-5 text-red-500 text-2xl">Your Layers</h2>
+            {userLayers.map((layer, i) => (
+              <li key={i}>
+                <button
+                  onClick={() => setTask(layer.name)}
+                  className="btn no-underline btn-lg text-white btn-ghost"
+                >
+                  {layer.name}
                 </button>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="flex flex-col items-center justify-center">
-        <h3 className="pb-5">Or upload your own below</h3>
-        <LayerUploader />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="flex flex-col items-center justify-center">
+          <h2 className="pb-7 text-red-500 text-2xl">Upload a Layer</h2>
+          <LayerUploader />
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { useLoaderData, Link } from "@remix-run/react";
 import "@loaders.gl/polyfills";
 import { KMLLoader } from "@loaders.gl/kml";
 import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
+import { ShapefileLoader } from "@loaders.gl/shapefile";
 import { load, selectLoader } from "@loaders.gl/core";
 
 import Map, {
@@ -20,7 +21,6 @@ import m_styles from "../../../styles/mapbox.css";
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
-import { getAssignedPoints } from "~/utils/geo.server";
 import { requireUserId } from "~/utils/auth.server";
 import clsx from "clsx";
 import { prisma } from "~/utils/db.server";
@@ -57,16 +57,29 @@ const completedStyle = {
 
 export const loader = async ({ request, params }: LoaderArgs) => {
   const userId = await requireUserId(request);
-  const taskId = parseInt(params.taskId);
-  const layer = await prisma.layer.findUnique({ where: { id: taskId } });
+  const taskId = params.taskId;
+  const layer = await prisma.layer.findUniqueOrThrow({
+    where: { name: taskId },
+  });
   const assignments = await prisma.assignment.findMany({
     where: {
-      layerId: taskId,
+      layerId: layer.id,
       assigneeId: userId,
     },
   });
-  const loader = await selectLoader(layer.url, [KMLLoader, GeoJSONLoader])
-  const points = await load(layer.url, loader);
+  const loader = await selectLoader(layer.url, [
+    KMLLoader,
+    GeoJSONLoader,
+    ShapefileLoader,
+  ]);
+  const data = await load(layer.url, loader);
+  const points =
+    loader == ShapefileLoader
+      ? {
+          type: "FeatureCollection",
+          features: data.data,
+        }
+      : data;
   const pointKeys = [];
   for (let key of points.features.keys()) {
     pointKeys.push(key);

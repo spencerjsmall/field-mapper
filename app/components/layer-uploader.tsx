@@ -2,11 +2,12 @@
 
 import React, { useRef, useState } from "react";
 import { Form } from "@remix-run/react";
+import { AiOutlinePlus, AiOutlineCheck } from "react-icons/ai";
 
 export const LayerUploader = () => {
   const [draggingOver, setDraggingOver] = useState(false);
   const [formData, setFormData] = useState({
-    layerId: "",
+    layerUrl: "",
     name: "",
     field: "",
   });
@@ -45,71 +46,74 @@ export const LayerUploader = () => {
   const handleFileUpload = async (file: File) => {
     let inputFormData = new FormData();
     inputFormData.append("layer", file);
-    const response = await fetch("/layer", {
+    const response = await fetch("/layer/layer-upload", {
       method: "POST",
       body: inputFormData,
     });
-    const layerId = await response.json();    
+    const layerUrl = await response.json();    
     setFormData((form) => ({
       ...form,
-      layerId: JSON.parse(layerId),
+      layerUrl: layerUrl,
     }));
   };
 
   // 4
   return (
-    <Form method="post">
-      <div
-        ref={dropRef}
-        className={`${
-          draggingOver
-            ? "border-4 border-dashed border-yellow-300 border-rounded"
-            : ""
-        } group rounded-full relative w-24 h-24 flex justify-center items-center bg-gray-400 transition duration-300 ease-in-out hover:bg-gray-500 cursor-pointer`}
-        onDragEnter={() => setDraggingOver(true)}
-        onDragLeave={() => setDraggingOver(false)}
-        onDrag={preventDefaults}
-        onDragStart={preventDefaults}
-        onDragEnd={preventDefaults}
-        onDragOver={preventDefaults}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        {
+    <Form method="post" action="/layer/layer-create" className="flex flex-col">
+      <div className="flex flex-row">
+        <div
+          ref={dropRef}
+          className={`${
+            draggingOver ? "border-4 border-dashed border-yellow-300" : ""
+          } group relative w-24 h-24 flex justify-center items-center bg-gray-400 transition duration-300 ease-in-out hover:bg-gray-500 cursor-pointer`}
+          onDragEnter={() => setDraggingOver(true)}
+          onDragLeave={() => setDraggingOver(false)}
+          onDrag={preventDefaults}
+          onDragStart={preventDefaults}
+          onDragEnd={preventDefaults}
+          onDragOver={preventDefaults}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+        >
           <p className="font-extrabold text-4xl text-gray-200 cursor-pointer select-none transition duration-300 ease-in-out group-hover:opacity-0 pointer-events-none z-10">
-            +
+            {formData.layerUrl ? <AiOutlineCheck /> : <AiOutlinePlus />}
           </p>
-        }
+
+          <input
+            type="file"
+            onChange={handleChange}
+            ref={fileInputRef}
+            className="hidden"
+          />
+        </div>
         <input
-          type="file"
-          onChange={handleChange}
-          ref={fileInputRef}
+          type="text"
+          name="layerUrl"
+          value={formData.layerUrl}
           className="hidden"
+          readOnly
         />
+        <div className="flex flex-col ml-4">
+          <label className="text-white font-semibold">Layer Name</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={(e) => handleInputChange(e, "name")}
+            required
+          />
+          <label className="text-white font-semibold">Label Field</label>
+          <input
+            type="text"
+            name="field"
+            value={formData.field}
+            onChange={(e) => handleInputChange(e, "field")}
+          />
+        </div>
       </div>
-      <input
-        type="text"
-        name="layerId"
-        value={formData.layerId}
-        className="hidden"
-        readOnly
-      />
-      <input
-        type="text"
-        name="name"
-        value={formData.name}
-        onChange={(e) => handleInputChange(e, "name")}
-        required
-      />
-      <input
-        type="text"
-        name="field"
-        value={formData.field}
-        onChange={(e) => handleInputChange(e, "field")}
-      />
       <button
         type="submit"
-        className="rounded-xl mt-2 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
+        className="rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
       >
         Upload layer
       </button>

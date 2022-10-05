@@ -27,8 +27,8 @@ export function links() {
 }
 
 export const loader = async ({ request, params }: LoaderArgs) => {
-  const taskId = parseInt(params.taskId);
-  const layer = await prisma.layer.findUnique({ where: { id: taskId } });
+  const taskId = params.taskId;
+  const layer = await prisma.layer.findUniqueOrThrow({ where: { name: taskId } });
   const loader = await selectLoader(layer.url, [
     KMLLoader,
     GeoJSONLoader,
@@ -50,7 +50,7 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   const assignments = await prisma.assignment.findMany({
     where: {
       recordId: { in: pointKeys },
-      layerId: taskId,
+      layerId: layer.id,
     },
     select: {
       surveyId: true,

@@ -27,15 +27,14 @@ async function main() {
     },
   });
 
-  const parksLayer = await prisma.layer.upsert({
+  const vaccineLayer = await prisma.layer.upsert({
     where: {
-      url: "https://field-mapping-layer-bucket.s3.us-west-1.amazonaws.com/cl8mkkstc0000n30z903n0314.kml",
+      url: "https://field-mapping-layer-bucket.s3.us-west-1.amazonaws.com/cl8p6l7rt00023o0z8h8mevx6.shp",
     },
     update: {},
     create: {
-      name: "Parks and Rec Properties",
-      titleField: "map_label",
-      url: "https://field-mapping-layer-bucket.s3.us-west-1.amazonaws.com/cl8mkkstc0000n30z903n0314.kml",
+      name: "Vaccine Access Points",
+      url: "https://field-mapping-layer-bucket.s3.us-west-1.amazonaws.com/cl8p6l7rt00023o0z8h8mevx6.shp",
       dispatcher: {
         connect: { id: sjs.id },
       },
@@ -49,7 +48,7 @@ async function main() {
     update: {},
     create: {
       name: "Pubic Art Points",
-      titleField: "title",
+      labelField: "title",
       url: "https://field-mapping-layer-bucket.s3.us-west-1.amazonaws.com/cl8nb0wr00001is0zhs333duj.geojson",
       dispatcher: {
         connect: { id: sjs.id },
@@ -66,7 +65,7 @@ async function main() {
     await prisma.assignment.create({ data });
   }
 
-  console.log({ sjs, bbq, parksLayer, artLayer });
+  console.log({ sjs, bbq, vaccineLayer, artLayer });
 }
 
 async function getAssignments() {
@@ -75,12 +74,12 @@ async function getAssignments() {
     recordId: i + 1,
     surveyId: "36dbb092-5ad3-420f-80de-50dfd0015448",
   }));
-  const parksArr = [...Array(50).keys()].map((i) => ({
-    layer: { connect: { id: 1 } },
+  const vaccineArr = [...Array(50).keys()].map((i) => ({
+    layer: { connect: { id: 5 } },
     recordId: i + 1,
     surveyId: "b2c4c00d-2640-46ae-bd02-58cf2cbe79c1",
   }));
-  const assnArr = artArr.concat(parksArr);
+  const assnArr = artArr.concat(vaccineArr);
   return assnArr;
 }
 
