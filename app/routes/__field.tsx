@@ -16,15 +16,14 @@ import { requireUserSession } from "~/utils/auth.server";
 export const loader: LoaderFunction = async ({ request, params }) => {
   const session = await requireUserSession(request);
   const userId = session.get("userId");
-  const taskId = params.taskId;
-  const recordId = params.recordId;
-  const surveyId = params.surveyId;
-  return { userId, taskId, recordId, surveyId };
+  const taskId = session.get('task')
+  const assignmentId = params.assignmentId;
+  return { userId, taskId, assignmentId };
 };
 
 export default function FieldLayout() {
-  const { userId, taskId, recordId, surveyId } = useLoaderData();
-  const { pathname } = useLocation();
+  const { userId, taskId, assignmentId } = useLoaderData();
+  const { pathname } = useLocation();  
   const navigate = useNavigate();
 
   return (
@@ -35,17 +34,18 @@ export default function FieldLayout() {
             <IoIosArrowDropleftCircle />
           </div>
         )}
-
-        <span className="uppercase text-xl pl-10">
-          {pathname == "/home"
-            ? "home"
-            : surveyId == undefined
-            ? taskId.split(/(?=[A-Z])/).join(" ")
-            : "survey"}
-        </span>
+        {pathname && (
+          <span className="uppercase text-xl pl-10">
+            {pathname == "/home"
+              ? "home"
+              : taskId && assignmentId == undefined
+              ? taskId.split(/(?=[A-Z])/).join(" ")
+              : "survey"}
+          </span>
+        )}
 
         <div className="btn btn-sm btn-ghost">
-          <form action="/logout" method="post">
+          <form action="/auth/logout" method="post">
             <button type="submit">Sign Out</button>
           </form>
         </div>
@@ -79,14 +79,11 @@ export default function FieldLayout() {
           </button>
         </Link>
         <Link
-          to={`/tasks/${taskId}/${recordId}/${surveyId}`}
+          to={`/tasks/${taskId}/${assignmentId}`}
           className={clsx({
             "text-white bg-blue": true, //always applies
             //active: pathname == `/tasks/${taskId}/${recordId}/${surveyId}`,
-            disabled:
-              taskId == undefined ||
-              recordId == undefined ||
-              surveyId == undefined,
+            disabled: taskId == undefined || assignmentId == undefined,
           })}
         >
           <button className="flex flex-row items-center text-2xl">

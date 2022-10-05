@@ -19,3 +19,5 @@ node_modules
 
 /app/styles/tailwind.css
 /tmp
+
+new_user_credentials.csv

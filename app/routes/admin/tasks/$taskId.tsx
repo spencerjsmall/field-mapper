@@ -1,20 +1,23 @@
 import { useState, useMemo, useRef } from "react";
+import { prisma } from "~/utils/db.server";
 import { LoaderArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Outlet, useFetcher, useSubmit } from "@remix-run/react";
+
+import "@loaders.gl/polyfills";
+import { KMLLoader } from "@loaders.gl/kml";
+import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
+import { ShapefileLoader } from "@loaders.gl/shapefile";
+import { load, selectLoader } from "@loaders.gl/core";
 
 import Map, { Source, Layer, useMap, Popup } from "react-map-gl";
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../../styles/mapbox.css";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
-import {
-  getAllAssignedPoints,
-  getAllPoints,
-} from "~/utils/geo.server";
 import clsx from "clsx";
 
 export function links() {
-  return [  
+  return [
     { rel: "stylesheet", href: mb_styles },
     {
       rel: "stylesheet",
@@ -25,11 +28,43 @@ export function links() {
 
 export const loader = async ({ request, params }: LoaderArgs) => {
   const taskId = params.taskId;
-  const points = await getAllPoints(taskId);
-  const assignedPoints = await getAllAssignedPoints(taskId);
+  const layer = await prisma.layer.findUniqueOrThrow({ where: { name: taskId } });
+  const loader = await selectLoader(layer.url, [
+    KMLLoader,
+    GeoJSONLoader,
+    ShapefileLoader,
+  ]);
+  const data = await load(layer.url, loader);
+  const points =
+    loader == ShapefileLoader
+      ? {
+          type: "FeatureCollection",
+          features: data.data,
+        }
+      : data;
+  const pointKeys = [];
+  for (let key of points.features.keys()) {
+    pointKeys.push(key);
+    points.features[key]["id"] = key;
+  }
+  const assignments = await prisma.assignment.findMany({
+    where: {
+      recordId: { in: pointKeys },
+      layerId: layer.id,
+    },
+    select: {
+      surveyId: true,
+      recordId: true,
+      assignee: {
+        select: {
+          email: true,
+        },
+      },
+    },
+  });
   const pathname = params["*"];
-  const urlIds = pathname ? pathname.split("/").map((i) => parseInt(i)) : [];
-  return { points, assignedPoints, urlIds };
+  const selectIds = pathname ? pathname.split("/").map((i) => parseInt(i)) : [];
+  return { points, assignments, selectIds };
 };
 
 export async function action({ request, params }) {
@@ -66,14 +101,15 @@ const highlightLayer = {
 };
 
 export default function AdminTaskMap() {
-  const { points, assignedPoints, urlIds } = useLoaderData();
+  const { points, assignments, selectIds } = useLoaderData();
+  console.log(points);
   const mapRef = useRef();
   const submit = useSubmit();
 
   const [basemap, setBasemap] = useState("streets-v11");
   const [addPoint, setAddPoint] = useState(false);
   const [start, setStart] = useState<Number[]>();
-  const [filterIds, setFilterIds] = useState<Number[]>(urlIds);
+  const [filterIds, setFilterIds] = useState<Number[]>(selectIds);
 
   const onFeatureClick = (e) => {
     console.log(e.lngLat);
@@ -117,8 +153,8 @@ export default function AdminTaskMap() {
   );
 
   const assigned = useMemo(
-    () => ["in", ["id"], ["literal", assignedPoints.features.map((f) => f.id)]],
-    [assignedPoints]
+    () => ["in", ["id"], ["literal", assignments.map((a) => a.recordId)]],
+    [assignments]
   );
 
   return (
@@ -215,7 +251,7 @@ export default function AdminTaskMap() {
         </button>
       </Map>
       <div className="basis-1/3 max-h-full overflow-y-scroll bg-black">
-        <Outlet />
+        <Outlet context={{assignments, points}} />
       </div>
     </div>
   );

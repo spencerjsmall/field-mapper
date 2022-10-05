@@ -3,35 +3,19 @@ import { useLoaderData, useOutletContext } from "@remix-run/react";
 import { json } from "@remix-run/node";
 
 export const loader = async ({ params }: LoaderArgs) => {
-  const taskId = params.taskId;
   const pathname = params["*"];
+  const taskId = params.taskId;
+  const layer = await prisma.layer.findUnique({ where: { name: taskId } });
+
   const ids = pathname.split("/").map((i) => parseInt(i));
-  const assignments = await Promise.all(
-    ids.map(async (id) => {
-      let assignment = await prisma.assignment.findFirst({
-        where: { recordId: id, layer: taskId },
-        select: {
-          surveyId: true,
-          recordId: true,
-          assignee: {
-            select: {
-              email: true,
-            },
-          },
-        },
-      });
-      return {
-        recordId: id,
-        surveyId: assignment?.surveyId,
-        assignee: assignment?.assignee,
-      };
-    })
-  );
-  return assignments;
+  return { ids, layer };
 };
 
 export async function action({ request, params }) {
   const taskId = params.taskId;
+  const layer = await prisma.layer.findUniqueOrThrow({
+    where: { name: taskId },
+  });
   const pathname = params["*"];
   const ids = pathname.split("/").map((i) => parseInt(i));
 
@@ -54,7 +38,7 @@ export async function action({ request, params }) {
     case "create": {
       return await prisma.assignment.create({
         data: {
-          layer: taskId,
+          layer: { connect: { id: layer.id } },
           recordId: recId,
           surveyId: surveyId,
           assignee: { connect: { id: assignee.id } },
@@ -63,7 +47,7 @@ export async function action({ request, params }) {
     }
     case "update": {
       let assignment = await prisma.assignment.findFirstOrThrow({
-        where: { layer: taskId, recordId: recId },
+        where: { layerId: layer.id, recordId: recId },
       });
       return await prisma.assignment.update({
         where: {
@@ -79,7 +63,7 @@ export async function action({ request, params }) {
       const resultArr = [];
       for (const id of ids) {
         let assignment = await prisma.assignment.findFirst({
-          where: { layer: taskId, recordId: id },
+          where: { layerId: layer.id, recordId: id },
         });
         const result = await prisma.assignment.upsert({
           where: { id: assignment?.id ? assignment.id : -1 },
@@ -88,7 +72,7 @@ export async function action({ request, params }) {
             assignee: { connect: { id: assignee.id } },
           },
           create: {
-            layer: taskId,
+            layer: { connect: { id: layer.id } },
             recordId: id,
             surveyId: surveyId,
             assignee: { connect: { id: assignee.id } },
@@ -104,23 +88,35 @@ export async function action({ request, params }) {
 }
 
 export default function TaskSidebar() {
-  const assignments = useLoaderData();
-  
+  const { ids, layer } = useLoaderData();
+  const { assignments, points } = useOutletContext();
+  const selected = ids.map((id) => {
+    let assn = assignments.find((a) => a.recordId === id);
+    if (!assn) {
+      return {
+        recordId: id,
+        surveyId: null,
+        assignee: null,
+      };
+    }
+    return assn;
+  });
+
   return (
     <div className="bg-black h-full p-4">
-      <ul className="justify-center items-center flex flex-col space-y-2">
-        {assignments.length > 1 && (
-          <li key={0}>
+      <ul className="justify-center items-center w-full flex flex-col space-y-2">
+        {selected.length > 1 && (
+          <li key={0} className='w-full'>
             <div
               tabIndex={0}
-              className="collapse collapse-arrow border w-full border-base-300 bg-blue-200 rounded-box"
+              className="collapse collapse-arrow w-full border w-full border-base-300 bg-blue-200 rounded-box"
             >
               <input type="checkbox" />
-              <div className="collapse-title text-black text-xl font-medium">
-                Update {assignments.length} records
+              <div className="collapse-title text-center text-black text-xl font-medium">
+                Update {selected.length} records
               </div>
-              <div className="collapse-content text-black">
-                <form method="post" className="flex flex-col">
+              <div className="collapse-content text-black w-full">
+                <form method="post" className="flex flex-col items-center">
                   <h2>Assignee:</h2>
                   <label>
                     <input type="text" name="assigneeEmail" />
@@ -142,24 +138,28 @@ export default function TaskSidebar() {
             </div>
           </li>
         )}
-        {assignments.map((assn) => (
-          <li key={assn.recordId}>
+        {selected.map((obj) => (
+          <li key={obj.recordId} className='w-full'>
             <div
-              tabIndex={assn.recordId}
-              className="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box"
+              tabIndex={obj.recordId}
+              className="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box w-full"
             >
               <input type="checkbox" />
-              <div className="collapse-title text-xl font-medium">
-                Record #{assn.recordId}
+              <div className="collapse-title text-center text-xl font-medium w-full">
+                {layer.labelField
+                  ? `${
+                      points.features[obj.recordId].properties[layer.labelField]
+                    }`
+                  : `Record #${obj.recordId}`}
               </div>
-              <div className="collapse-content">
-                <form method="post" className="flex flex-col">
-                  <input type="hidden" name="recordId" value={assn.recordId} />
+              <div className="collapse-content w-full">
+                <form method="post" className="flex flex-col w-full items-center">
+                  <input type="hidden" name="recordId" value={obj.recordId} />
                   <h2>Assignee:</h2>
                   <label>
                     <input
                       type="text"
-                      defaultValue={assn.assignee?.email}
+                      defaultValue={obj.assignee?.email}
                       name="assigneeEmail"
                     />
                   </label>
@@ -167,17 +167,17 @@ export default function TaskSidebar() {
                   <label>
                     <input
                       type="text"
-                      defaultValue={assn.surveyId}
+                      defaultValue={obj.surveyId}
                       name="surveyId"
                     />
                   </label>
                   <button
                     type="submit"
                     name="actionId"
-                    value={assn.surveyId ? "update" : "create"}
-                    className="rounded-xl mt-2 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
+                    value={obj.surveyId ? "update" : "create"}
+                    className="rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
                   >
-                    {assn.surveyId ? "Update" : "Assign"}
+                    {obj.surveyId ? "Update" : "Assign"}
                   </button>
                 </form>
               </div>

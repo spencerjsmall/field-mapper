@@ -16,6 +16,13 @@ model User {
   lastName    String
   email       String       @unique
   assignments Assignment[]
+  layers Layer[]
+  role Role @default(USER)
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model Assignment {
@@ -25,57 +32,20 @@ model Assignment {
   completedAt DateTime?     @updatedAt
   results Json?
   assigneeId Int?
-  layer      String
+  layerId Int
+  layer      Layer @relation(fields: [layerId], references: [id])
   recordId   Int
   surveyId   String
   assignee   User?    @relation(fields: [assigneeId], references: [id])
 }
 
-model PublicArtPoints {
-  id         Int                      @id @default(autoincrement())
-  geom       Unsupported("geometry")?
-  name       String?                  @db.VarChar
-  artistlink String?                  @db.VarChar
-  location   String?                  @db.VarChar
-  accessibil String?                  @db.VarChar
-  medium     String?                  @db.VarChar
-  requiredar String?                  @db.VarChar
-  title      String?                  @db.VarChar
-  type       String?                  @db.VarChar
-  descriptio String?                  @db.VarChar
-
-  @@index([geom], map: "sidx_PublicArtPoints_geom", type: Gist)
-}
-
-model VaccineAccessPoints {
-  id                         Int                      @id @default(autoincrement())
-  geom                       Unsupported("geometry")?
-  zip_code                   String?                  @db.VarChar
-  latitude                   String?                  @db.VarChar
-  wheelchair_accessible      String?                  @db.VarChar
-  parent_org                 String?                  @db.VarChar
-  dropins_allowed            String?                  @db.VarChar
-  data_anaylsis_neighborhood String?                  @db.VarChar
-  location_address           String?                  @db.VarChar
-  location_city              String?                  @db.VarChar
-  remote_language_services   String?                  @db.VarChar
-  booking_url                String?                  @db.VarChar
-  longitude                  String?                  @db.VarChar
-  info_url                   String?                  @db.VarChar
-  site_name                  String?                  @db.VarChar
-  vaccine_provider           String?                  @db.VarChar
-  language_served            String?                  @db.VarChar
-  booking_phone              String?                  @db.VarChar
-  census_tract               String?                  @db.VarChar
-  supevisor_district         String?                  @db.VarChar
-
-  @@index([geom], map: "sidx_VaccineAccessPoints_geom", type: Gist)
-}
-
-model spatial_ref_sys {
-  srid      Int     @id
-  auth_name String? @db.VarChar(256)
-  auth_srid Int?
-  srtext    String? @db.VarChar(2048)
-  proj4text String? @db.VarChar(2048)
+model Layer {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  name String @unique
+  labelField String?
+  url String @unique
+  assignments Assignment[]
+  dispatcherId Int
+  dispatcher User    @relation(fields: [dispatcherId], references: [id])
 }

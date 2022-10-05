@@ -27,31 +27,59 @@ async function main() {
     },
   });
 
-  await Promise.all(
-    getAssignments().map((assn, i) => {
-      let data = {
-        assigneeId: i % 3 == 0 ? sjs.id : i % 3 == 1 ? bbq.id : null,
-        ...assn,
-      };
-      return prisma.assignment.create({ data });
-    })
-  );
+  const vaccineLayer = await prisma.layer.upsert({
+    where: {
+      url: "https://field-mapping-layer-bucket.s3.us-west-1.amazonaws.com/cl8p6l7rt00023o0z8h8mevx6.shp",
+    },
+    update: {},
+    create: {
+      name: "Vaccine Access Points",
+      url: "https://field-mapping-layer-bucket.s3.us-west-1.amazonaws.com/cl8p6l7rt00023o0z8h8mevx6.shp",
+      dispatcher: {
+        connect: { id: sjs.id },
+      },
+    },
+  });
 
-  console.log({ sjs, bbq });
+  const artLayer = await prisma.layer.upsert({
+    where: {
+      url: "https://field-mapping-layer-bucket.s3.us-west-1.amazonaws.com/cl8nb0wr00001is0zhs333duj.geojson",
+    },
+    update: {},
+    create: {
+      name: "Pubic Art Points",
+      labelField: "title",
+      url: "https://field-mapping-layer-bucket.s3.us-west-1.amazonaws.com/cl8nb0wr00001is0zhs333duj.geojson",
+      dispatcher: {
+        connect: { id: sjs.id },
+      },
+    },
+  });
+
+  const assnArr = await getAssignments();
+  for (const [i, assn] of assnArr.entries()) {
+    let data = {
+      assignee: { connect: { id: i % 2 == 0 ? sjs.id : bbq.id } },
+      ...assn,
+    };
+    await prisma.assignment.create({ data });
+  }
+
+  console.log({ sjs, bbq, vaccineLayer, artLayer });
 }
 
-function getAssignments() {
-  const artArr = [...Array(65).keys()].map((i) => ({
-    layer: "PublicArtPoints",
+async function getAssignments() {
+  const artArr = [...Array(30).keys()].map((i) => ({
+    layer: { connect: { id: 2 } },
     recordId: i + 1,
     surveyId: "36dbb092-5ad3-420f-80de-50dfd0015448",
   }));
-  const vaccArr = [...Array(108).keys()].map((i) => ({
-    layer: "VaccineAccessPoints",
+  const vaccineArr = [...Array(50).keys()].map((i) => ({
+    layer: { connect: { id: 5 } },
     recordId: i + 1,
     surveyId: "b2c4c00d-2640-46ae-bd02-58cf2cbe79c1",
   }));
-  const assnArr = artArr.concat(vaccArr);
+  const assnArr = artArr.concat(vaccineArr);
   return assnArr;
 }
 

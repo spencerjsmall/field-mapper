@@ -51,12 +51,10 @@ async function getGeomFromId(layer: string, recordId: number) {
   return result;
 }
 
-export async function getAllAssignedPoints(
-  layer: string
-) {
+export async function getAllAssignedPoints(layer: string) {
   const assnArr = await prisma.assignment.findMany({
     where: {
-      layer: layer,      
+      layer: layer,
     },
     select: {
       assigneeId: true,
@@ -65,9 +63,9 @@ export async function getAllAssignedPoints(
       completed: true,
       assignee: {
         select: {
-          email: true
-        }
-      }
+          email: true,
+        },
+      },
     },
   });
 
@@ -141,12 +139,18 @@ export async function getAssignedPoints(
 
 export async function getUserLayers(userId: number) {
   const assnArr = await prisma.assignment.groupBy({
-    by: ["layer"],
+    by: ["layerId"],
     where: {
       assigneeId: userId,
     },
   });
-  const layerArr = assnArr.map((assn) => assn.layer);
+  const layerArr = prisma.layer.findMany({
+    where: {
+      id: {
+        in: assnArr.map((assn) => assn.layerId),
+      },
+    },
+  });
   return layerArr;
 }
 

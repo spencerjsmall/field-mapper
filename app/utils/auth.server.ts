@@ -74,7 +74,7 @@ export async function requireUserSession(
   const userId = session.get("userId");
   if (!userId || typeof userId !== "number") {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-    throw redirect(`/login?${searchParams}`);
+    throw redirect(`/auth/login?${searchParams}`);
   }
   return session;
 }
@@ -87,7 +87,7 @@ export async function requireUserId(
   const userId = session.get("userId");
   if (!userId || typeof userId !== "number") {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-    throw redirect(`/login?${searchParams}`);
+    throw redirect(`/auth/login?${searchParams}`);
   }
   return userId;
 }
@@ -100,7 +100,7 @@ export async function requireMapIds(
   const taskId = session.get("taskId");
   if (!taskId || typeof taskId !== "string") {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-    throw redirect(`/login?${searchParams}`);
+    throw redirect(`/auth/login?${searchParams}`);
   }
   return session;
 }
@@ -156,7 +156,7 @@ export async function getUser(request: Request) {
 
 export async function logout(request: Request) {
   const session = await getUserSession(request);
-  return redirect("/login", {
+  return redirect("/auth/login", {
     headers: {
       "Set-Cookie": await destroySession(session),
     },
