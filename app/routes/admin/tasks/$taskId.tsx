@@ -9,7 +9,7 @@ import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
 import { ShapefileLoader } from "@loaders.gl/shapefile";
 import { load, selectLoader } from "@loaders.gl/core";
 
-import Map, { Source, Layer, useMap, Popup } from "react-map-gl";
+import Map, { Source, Layer } from "react-map-gl";
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../../styles/mapbox.css";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
@@ -136,7 +136,7 @@ export default function AdminTaskMap() {
   };
 
   const getQueried = (end: Array<Number>) => {
-    const topLeft = [Math.min(start[0], end[0]), Math.min(start[1], end[1])]
+    const topLeft = [Math.min(start[0], end[0]), Math.min(start[1], end[1])];
     const botRight = [Math.max(start[0], end[0]), Math.max(start[1], end[1])];
     const queried = mapRef.current.queryRenderedFeatures([topLeft, botRight], {
       layers: ["todo"],
@@ -188,16 +188,12 @@ export default function AdminTaskMap() {
         onZoom={(e) => {
           e.target.stop();
         }}
-        onBoxZoomStart={(e) => {
-          setStart([e.originalEvent.layerX, e.originalEvent.layerY]);
-          console.log("start x", e.originalEvent.layerX);
-          console.log("start Y", e.originalEvent.layerY);
-        }}
-        onBoxZoomEnd={(e) => {
-          getQueried([e.originalEvent.layerX, e.originalEvent.layerY]);
-          console.log("end x", e.originalEvent.layerX);
-          console.log("end Y", e.originalEvent.layerY);
-        }}
+        onBoxZoomStart={(e) =>
+          setStart([e.originalEvent.layerX, e.originalEvent.layerY])
+        }
+        onBoxZoomEnd={(e) =>
+          getQueried([e.originalEvent.layerX, e.originalEvent.layerY])
+        }
       >
         {basemap == "custom" ? (
           <>
