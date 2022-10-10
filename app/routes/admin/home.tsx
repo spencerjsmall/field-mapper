@@ -1,5 +1,10 @@
 import { prisma } from "~/utils/db.server";
-import { LoaderFunction, ActionFunction, redirect } from "@remix-run/node";
+import {
+  LoaderFunction,
+  json,
+  ActionFunction,
+  redirect,
+} from "@remix-run/node";
 import { useLoaderData, Link, useSubmit } from "@remix-run/react";
 import { LayerUploader } from "~/components/layer-uploader";
 import {
@@ -20,6 +25,11 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
+  // const res = await fetch(
+  //   "https://rec4gis.sfgov.org/recgs/rest/workspaces/sfgis_in/layers"
+  // );
+  // console.log(res);
+
   const userId = await requireUserId(request);
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   const userLayers = await prisma.layer.findMany({
@@ -39,7 +49,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full">
+    <div className="flex flex-col bg-[#2A2D5C] items-center justify-center h-full w-full">
       <h1 className="text-white text-5xl mb-3">Welcome, {user.firstName}!</h1>
       <h1 className="text-gray-500 text-3xl mb-14">
         Select a layer to make assignments
@@ -52,7 +62,7 @@ export default function HomePage() {
               <li key={i}>
                 <button
                   onClick={() => setTask(layer.name)}
-                  className="btn no-underline btn-lg text-white btn-ghost"
+                  className="btn no-underline font-mono btn-lg text-white btn-ghost"
                 >
                   {layer.name}
                 </button>

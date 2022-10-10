@@ -28,7 +28,9 @@ export function links() {
 
 export const loader = async ({ request, params }: LoaderArgs) => {
   const taskId = params.taskId;
-  const layer = await prisma.layer.findUniqueOrThrow({ where: { name: taskId } });
+  const layer = await prisma.layer.findUniqueOrThrow({
+    where: { name: taskId },
+  });
   const loader = await selectLoader(layer.url, [
     KMLLoader,
     GeoJSONLoader,
@@ -80,7 +82,7 @@ const todoLayer = {
   type: "circle",
   paint: {
     "circle-radius": 10,
-    "circle-color": "#0000FF",
+    "circle-color": "#2A2D5C",
   },
 };
 
@@ -102,7 +104,7 @@ const highlightLayer = {
 
 export default function AdminTaskMap() {
   const { points, assignments, selectIds } = useLoaderData();
-  console.log(points);
+  //console.log(points);
   const mapRef = useRef();
   const submit = useSubmit();
 
@@ -134,14 +136,20 @@ export default function AdminTaskMap() {
   };
 
   const getQueried = (end: Array<Number>) => {
-    const queried = mapRef.current.queryRenderedFeatures([start, end], {
+    const topLeft = [Math.min(start[0], end[0]), Math.min(start[1], end[1])]
+    const botRight = [Math.max(start[0], end[0]), Math.max(start[1], end[1])];
+    const queried = mapRef.current.queryRenderedFeatures([topLeft, botRight], {
       layers: ["todo"],
     });
     const ids = queried.map((record) => record.id);
-    setFilterIds(ids);
+    //take symetrical difference of existing and new selections
+    let difference = filterIds
+      .filter((i) => !ids.includes(i))
+      .concat(ids.filter((i) => !filterIds.includes(i)));
+    setFilterIds(difference);
     submit(
       {
-        ids: JSON.stringify(ids),
+        ids: JSON.stringify(difference),
       },
       { method: "post" }
     );
@@ -158,7 +166,7 @@ export default function AdminTaskMap() {
   );
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-row h-full">
       <Map
         initialViewState={{
           longitude: -122.44,
@@ -177,12 +185,19 @@ export default function AdminTaskMap() {
         onClick={onFeatureClick}
         ref={mapRef}
         className="basis-2/3 relative"
-        onBoxZoomStart={(e) =>
-          setStart([e.originalEvent.layerX, e.originalEvent.layerY])
-        }
-        onBoxZoomEnd={(e) =>
-          getQueried([e.originalEvent.layerX, e.originalEvent.layerY])
-        }
+        onZoom={(e) => {
+          e.target.stop();
+        }}
+        onBoxZoomStart={(e) => {
+          setStart([e.originalEvent.layerX, e.originalEvent.layerY]);
+          console.log("start x", e.originalEvent.layerX);
+          console.log("start Y", e.originalEvent.layerY);
+        }}
+        onBoxZoomEnd={(e) => {
+          getQueried([e.originalEvent.layerX, e.originalEvent.layerY]);
+          console.log("end x", e.originalEvent.layerX);
+          console.log("end Y", e.originalEvent.layerY);
+        }}
       >
         {basemap == "custom" ? (
           <>
@@ -216,29 +231,45 @@ export default function AdminTaskMap() {
             </Source>
           </>
         )}
-        <ul className="menu menu-horizontal bg-base-100 w-auto absolute top-1 left-1 text-xs p-1 rounded-box">
+        <ul className="menu menu-horizontal bg-black w-auto absolute top-3 left-1 text-xs p-1 rounded-box">
           <li>
             <div
               onClick={() => setBasemap("streets-v11")}
-              className={clsx("p2", { active: basemap == "streets-v11" })}
+              className={clsx("p2 font-mono", {
+                active: basemap == "streets-v11",
+              })}
             >
               Traffic
             </div>
           </li>
           <li>
             <div
-              onClick={() => setBasemap("dark-v10")}
-              className={clsx("p2", { active: basemap == "dark-v10" })}
+              onClick={() => setBasemap("outdoors-v11")}
+              className={clsx("p2 font-mono", {
+                active: basemap == "outdoors-v11",
+              })}
             >
-              Dark
+              Topo
             </div>
           </li>
           <li>
             <div
-              onClick={() => setBasemap("satellite-v9")} //FIX CUSTOM
-              className={clsx("p2", { active: basemap == "satellite-v9" })}
+              onClick={() => setBasemap("satellite-v9")}
+              className={clsx("p2 font-mono", {
+                active: basemap == "satellite-v9",
+              })}
             >
-              Custom
+              Satellite
+            </div>
+          </li>
+          <li>
+            <div
+              onClick={() => setBasemap("dark-v10")}
+              className={clsx("p2 font-mono", {
+                active: basemap == "dark-v10",
+              })}
+            >
+              Dark
             </div>
           </li>
         </ul>
@@ -250,8 +281,8 @@ export default function AdminTaskMap() {
           {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
         </button>
       </Map>
-      <div className="basis-1/3 max-h-full overflow-y-scroll bg-black">
-        <Outlet context={{assignments, points}} />
+      <div className="basis-1/3 drop-shadow-lg min-h-full border-l border-white max-h-full overflow-y-scroll bg-[#2A2D5C]">
+        <Outlet context={{ assignments, points }} />
       </div>
     </div>
   );

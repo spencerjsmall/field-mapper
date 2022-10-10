@@ -1,7 +1,8 @@
 import { LoaderFunction, redirect } from "@remix-run/node";
-import { requireUserId } from "~/utils/auth.server";
+import { requireSession } from "~/utils/auth.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  await requireUserId(request);
-  return redirect("/home"); //or /admin/home if admin
+  const session = await requireSession(request);
+  const role = session.get("role");
+  return role === "ADMIN" ? redirect("/admin/home") : redirect("/home");
 };

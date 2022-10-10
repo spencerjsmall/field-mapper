@@ -280,29 +280,45 @@ export default function TaskMap() {
         {mapDirections != null && <DirectionsControl />}
       </Map>
 
-      <ul className="menu menu-horizontal bg-base-100 w-auto absolute top-1 left-1 text-xs p-1 rounded-box">
+      <ul className="menu menu-horizontal bg-white w-auto absolute top-3 left-1 text-xs p-1 rounded-box">
         <li>
           <div
             onClick={() => setBasemap("streets-v11")}
-            className={clsx("p2", { active: basemap == "streets-v11" })}
+            className={clsx("p2 font-mono", {
+              active: basemap == "streets-v11",
+            })}
           >
             Traffic
           </div>
         </li>
         <li>
           <div
-            onClick={() => setBasemap("dark-v10")}
-            className={clsx("p2", { active: basemap == "dark-v10" })}
+            onClick={() => setBasemap("outdoors-v11")}
+            className={clsx("p2 font-mono", {
+              active: basemap == "outdoors-v11",
+            })}
           >
-            Dark
+            Topo
           </div>
         </li>
         <li>
           <div
-            onClick={() => setBasemap("satellite-v9")} //FIX CUSTOM
-            className={clsx("p2", { active: basemap == "satellite-v9" })}
+            onClick={() => setBasemap("satellite-v9")}
+            className={clsx("p2 font-mono", {
+              active: basemap == "satellite-v9",
+            })}
           >
-            Custom
+            Satellite
+          </div>
+        </li>
+        <li>
+          <div
+            onClick={() => setBasemap("dark-v10")}
+            className={clsx("p2 font-mono", {
+              active: basemap == "dark-v10",
+            })}
+          >
+            Dark
           </div>
         </li>
       </ul>

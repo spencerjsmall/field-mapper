@@ -103,88 +103,107 @@ export default function TaskSidebar() {
   });
 
   return (
-    <div className="bg-black h-full p-4">
-      <ul className="justify-center items-center w-full flex flex-col space-y-2">
-        {selected.length > 1 && (
-          <li key={0} className='w-full'>
-            <div
-              tabIndex={0}
-              className="collapse collapse-arrow w-full border w-full border-base-300 bg-blue-200 rounded-box"
-            >
-              <input type="checkbox" />
-              <div className="collapse-title text-center text-black text-xl font-medium">
-                Update {selected.length} records
+    <div className="h-full p-4">
+      {selected && selected.length > 0 ? (
+        <ul className="justify-center items-center w-full flex flex-col space-y-2">
+          {selected.length > 1 && (
+            <li key={0} className="w-full">
+              <div
+                tabIndex={0}
+                className="collapse collapse-arrow w-full border w-full border-base-300 bg-white rounded-box"
+              >
+                <input type="checkbox" />
+                <div className="collapse-title text-center font-mono text-black text-xl font-medium">
+                  Update {selected.length} records
+                </div>
+                <div className="collapse-content text-black w-full">
+                  <form method="post" className="flex flex-col items-center">
+                    <h3>Assignee:</h3>
+                    <label>
+                      <input
+                        className="bg-black text-white"
+                        type="text"
+                        name="assigneeEmail"
+                      />
+                    </label>
+                    <h3>Survey ID:</h3>
+                    <label>
+                      <input
+                        className="bg-black text-white"
+                        type="text"
+                        name="surveyId"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      name="actionId"
+                      value="upsert"
+                      className="rounded-xl mt-2 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
+                    >
+                      Assign
+                    </button>
+                  </form>
+                </div>
               </div>
-              <div className="collapse-content text-black w-full">
-                <form method="post" className="flex flex-col items-center">
-                  <h2>Assignee:</h2>
-                  <label>
-                    <input type="text" name="assigneeEmail" />
-                  </label>
-                  <h2>Survey ID:</h2>
-                  <label>
-                    <input type="text" name="surveyId" />
-                  </label>
-                  <button
-                    type="submit"
-                    name="actionId"
-                    value="upsert"
-                    className="rounded-xl mt-2 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
+            </li>
+          )}
+          {selected.map((obj) => (
+            <li key={obj.recordId} className="w-full">
+              <div
+                tabIndex={obj.recordId}
+                className="collapse collapse-arrow border border-base-300 bg-black rounded-box w-full"
+              >
+                <input type="checkbox" />
+                <div className="collapse-title font-mono text-center text-xl text-white font-medium w-full">
+                  {layer.labelField
+                    ? `${
+                        points.features[obj.recordId].properties[
+                          layer.labelField
+                        ]
+                      }`
+                    : `Record #${obj.recordId}`}
+                </div>
+                <div className="collapse-content w-full">
+                  <form
+                    method="post"
+                    className="flex flex-col w-full items-center"
                   >
-                    Assign
-                  </button>
-                </form>
+                    <input type="hidden" name="recordId" value={obj.recordId} />
+                    <h3>Assignee:</h3>
+                    <label>
+                      <input
+                        type="text"
+                        defaultValue={obj.assignee?.email}
+                        name="assigneeEmail"
+                      />
+                    </label>
+                    <h3>Survey ID:</h3>
+                    <label>
+                      <input
+                        type="text"
+                        defaultValue={obj.surveyId}
+                        name="surveyId"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      name="actionId"
+                      value={obj.surveyId ? "update" : "create"}
+                      className="rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
+                    >
+                      {obj.surveyId ? "Update" : "Assign"}
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
-          </li>
-        )}
-        {selected.map((obj) => (
-          <li key={obj.recordId} className='w-full'>
-            <div
-              tabIndex={obj.recordId}
-              className="collapse collapse-arrow border border-base-300 bg-base-100 rounded-box w-full"
-            >
-              <input type="checkbox" />
-              <div className="collapse-title text-center text-xl font-medium w-full">
-                {layer.labelField
-                  ? `${
-                      points.features[obj.recordId].properties[layer.labelField]
-                    }`
-                  : `Record #${obj.recordId}`}
-              </div>
-              <div className="collapse-content w-full">
-                <form method="post" className="flex flex-col w-full items-center">
-                  <input type="hidden" name="recordId" value={obj.recordId} />
-                  <h2>Assignee:</h2>
-                  <label>
-                    <input
-                      type="text"
-                      defaultValue={obj.assignee?.email}
-                      name="assigneeEmail"
-                    />
-                  </label>
-                  <h2>Survey ID:</h2>
-                  <label>
-                    <input
-                      type="text"
-                      defaultValue={obj.surveyId}
-                      name="surveyId"
-                    />
-                  </label>
-                  <button
-                    type="submit"
-                    name="actionId"
-                    value={obj.surveyId ? "update" : "create"}
-                    className="rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
-                  >
-                    {obj.surveyId ? "Update" : "Assign"}
-                  </button>
-                </form>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="flex flex-col w-full">
+          <h2 className="text-white text-2xl">No selected records</h2>
+        </div>
+      )}
     </div>
   );
 }

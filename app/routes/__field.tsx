@@ -12,6 +12,7 @@ import { AiOutlineHome } from "react-icons/ai";
 import { CgNotes } from "react-icons/cg";
 import { IoIosArrowDropleftCircle, IoIosContact } from "react-icons/io";
 import { requireUserSession } from "~/utils/auth.server";
+import { prisma } from "@prisma/client";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const session = await requireUserSession(request);
@@ -28,23 +29,23 @@ export default function FieldLayout() {
 
   return (
     <div className="h-screen w-screen flex flex-col">
-      <div className="flex flex-row basis-1/12 bg-blue items-center sticky top-0 z-50 justify-between bg-black text-white text-2xl py-4 px-6">
+      <div className="flex flex-row basis-1/12 bg-[#41437E] items-center sticky top-0 z-50 justify-between text-white text-2xl py-4 px-6">
         {pathname != "/" && (
           <div onClick={() => navigate(-1)}>
             <IoIosArrowDropleftCircle />
           </div>
         )}
         {pathname && (
-          <span className="uppercase text-xl pl-10">
+          <h3 className="uppercase pl-10">
             {pathname == "/home"
               ? "home"
               : taskId && assignmentId == undefined
               ? taskId.split(/(?=[A-Z])/).join(" ")
               : "survey"}
-          </span>
+          </h3>
         )}
 
-        <div className="btn btn-sm btn-ghost">
+        <div className="btn btn-sm font-mono btn-ghost">
           <form action="/auth/logout" method="post">
             <button type="submit">Sign Out</button>
           </form>
@@ -54,7 +55,7 @@ export default function FieldLayout() {
       <div className="w-full basis-10/12 z-0">
         <Outlet context={userId} />
       </div>
-      <div className="btm-nav btm-nav-md w-full basis-1/12 bg-black z-50">
+      <div className="btm-nav btm-nav-lg w-full basis-1/12 bg-[#41437E] z-50">
         <Link
           to="/home"
           className={clsx({
@@ -70,8 +71,8 @@ export default function FieldLayout() {
           to={`/tasks/${taskId}`}
           className={clsx({
             "text-white bg-blue": true, //always applies
-            active: pathname == `/tasks/${taskId}`,
-            disabled: taskId == null,
+            active: pathname.match(/\//g).length == 2,
+            disabled: taskId == undefined,
           })}
         >
           <button className="flex flex-row items-center text-2xl">
@@ -82,7 +83,7 @@ export default function FieldLayout() {
           to={`/tasks/${taskId}/${assignmentId}`}
           className={clsx({
             "text-white bg-blue": true, //always applies
-            //active: pathname == `/tasks/${taskId}/${recordId}/${surveyId}`,
+            active: pathname.match(/\//g).length == 3,
             disabled: taskId == undefined || assignmentId == undefined,
           })}
         >

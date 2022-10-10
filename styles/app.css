@@ -2,16 +2,16 @@
 
 @layer base {
   h1 {
-    @apply text-2xl;
+    @apply text-3xl;
+    @apply font-mono;
   }
   h2 {
-    @apply text-xl;
+    @apply text-2xl;
+    @apply font-mono;
   }
   h3 {
-    @apply text-lg;
-  }
-  a {
-    @apply text-blue-600 underline;
+    @apply text-xl;
+    @apply font-mono;
   }
 }
 

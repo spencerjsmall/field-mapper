@@ -25,6 +25,7 @@ export const action: ActionFunction = async ({ request }) => {
   const action = form.get("_action");
   const email = form.get("email");
   const password = form.get("password");
+  const role = form.get("role");
   let firstName = form.get("firstName");
   let lastName = form.get("lastName");
 
@@ -75,7 +76,7 @@ export const action: ActionFunction = async ({ request }) => {
     case "register": {
       firstName = firstName as string;
       lastName = lastName as string;
-      return await register({ email, password, firstName, lastName });
+      return await register({ email, password, firstName, lastName, role });
     }
     default:
       return json({ error: `Invalid Form Data` }, { status: 400 });
@@ -139,9 +140,7 @@ export default function Login() {
         {action === "login" ? "Sign Up" : "Sign In"}
       </button>
 
-      <h2 className="text-5xl font-extrabold text-blue-600">
-        Field Mapping
-      </h2>
+      <h2 className="text-5xl font-extrabold text-blue-600">Field Mapping</h2>
       <p className="font-semibold text-slate-300">
         {action === "login"
           ? "Log In to Start Mapping"
@@ -185,6 +184,35 @@ export default function Login() {
               value={formData.lastName}
               error={errors?.lastName}
             />
+            <span className="text-blue-600 font-semibold">Sign up as a...</span>
+            <div className="form-control">
+              <label className="label cursor-pointer">
+                <span className="label-text text-black font-semibold">
+                  Surveyor
+                </span>
+                <input
+                  type="radio"
+                  name="role"
+                  value="USER"
+                  className="radio checked:bg-blue-500"
+                  checked
+                />
+              </label>
+            </div>
+            <div className="form-control">
+              <label className="label cursor-pointer">
+                <span className="label-text text-black font-semibold">
+                  Dispatcher
+                </span>
+                <input
+                  type="radio"
+                  name="role"
+                  value="ADMIN"
+                  className="radio checked:bg-blue-500"
+                  checked
+                />
+              </label>
+            </div>
           </>
         )}
 

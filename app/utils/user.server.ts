@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import type { RegisterForm } from "./types.server";
 import { prisma } from "./db.server";
+import { Role } from "@prisma/client";
 
 export const createUser = async (user: RegisterForm) => {
   const passwordHash = await bcrypt.hash(user.password, 10);
@@ -9,13 +10,14 @@ export const createUser = async (user: RegisterForm) => {
       email: user.email,
       password: passwordHash,
       firstName: user.firstName,
-      lastName: user.lastName,      
+      lastName: user.lastName,
+      role: user.role == 'ADMIN' ? Role.ADMIN : Role.USER,
     },
   });
-  return { id: newUser.id, email: user.email };
+  return newUser;
 };
 
-export const getUserById = async (userId: string) => {
+export const getUserById = async (userId: number) => {
   return await prisma.user.findUnique({
     where: {
       id: userId,
@@ -23,19 +25,6 @@ export const getUserById = async (userId: string) => {
   });
 };
 
-// export const updateUser = async (userId: string, profile: Partial<Profile>) => {
-//   await prisma.user.update({
-//     where: {
-//       id: userId,
-//     },
-//     data: {
-//       profile: {
-//         update: profile,
-//       },
-//     },
-//   });
-// };
-
-export const deleteUser = async (id: string) => {
+export const deleteUser = async (id: number) => {
   await prisma.user.delete({ where: { id } });
 };

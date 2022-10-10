@@ -3,6 +3,7 @@ import type { RegisterForm, LoginForm } from "./types.server";
 import { prisma } from "./db.server";
 import { createUser } from "./user.server";
 import bcrypt from "bcryptjs";
+import type { User } from "@prisma/client";
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -41,7 +42,7 @@ export async function register(user: RegisterForm) {
       { status: 400 }
     );
   }
-  return createUserSession(newUser.id, "/");
+  return createUserSession(newUser, "/");
 }
 
 // Validate the user on email & password
@@ -53,12 +54,13 @@ export async function login({ email, password }: LoginForm) {
   if (!user || !(await bcrypt.compare(password, user.password)))
     return json({ error: `Incorrect login` }, { status: 400 });
 
-  return createUserSession(user.id, "/");
+  return createUserSession(user, "/");
 }
 
-export async function createUserSession(userId: number, redirectTo: string) {
+export async function createUserSession(user: User, redirectTo: string) {
   const session = await getSession();
-  session.set("userId", userId);
+  session.set("userId", user.id);
+  session.set("role", user.role);
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await commitSession(session),
@@ -66,7 +68,7 @@ export async function createUserSession(userId: number, redirectTo: string) {
   });
 }
 
-export async function requireUserSession(
+export async function requireSession(
   request: Request,
   redirectTo: string = new URL(request.url).pathname
 ) {
@@ -75,6 +77,32 @@ export async function requireUserSession(
   if (!userId || typeof userId !== "number") {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
     throw redirect(`/auth/login?${searchParams}`);
+  }
+  return session;
+}
+
+export async function requireUserSession(
+  request: Request,
+  redirectTo: string = new URL(request.url).pathname
+) {
+  const session = await requireSession(request);
+  const role = session.get("role");
+  if (role === "ADMIN") {
+    const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
+    throw redirect(`/admin/home?${searchParams}`);
+  }
+  return session;
+}
+
+export async function requireAdminSession(
+  request: Request,
+  redirectTo: string = new URL(request.url).pathname
+) {
+  const session = await requireSession(request);
+  const role = session.get("role");
+  if (!role || role !== "ADMIN") {
+    const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
+    throw redirect(`/home?${searchParams}`);
   }
   return session;
 }
@@ -90,40 +118,6 @@ export async function requireUserId(
     throw redirect(`/auth/login?${searchParams}`);
   }
   return userId;
-}
-
-export async function requireMapIds(
-  request: Request,
-  redirectTo: string = new URL(request.url).pathname
-) {
-  const session = await getUserSession(request);
-  const taskId = session.get("taskId");
-  if (!taskId || typeof taskId !== "string") {
-    const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-    throw redirect(`/auth/login?${searchParams}`);
-  }
-  return session;
-}
-
-export async function requireSurveyIds(
-  request: Request,
-  redirectTo: string = new URL(request.url).pathname
-) {
-  const session = await getUserSession(request);
-  const taskId = session.get("taskId");
-  const recordId = session.get("recordId");
-  const surveyId = session.get("surveyId");
-  if (
-    !surveyId ||
-    !taskId ||
-    !recordId ||
-    typeof taskId !== "string" ||    
-    typeof surveyId !== "string"
-  ) {
-    const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
-    throw redirect(`/map?${searchParams}`);
-  }
-  return session;
 }
 
 export async function getUserSession(request: Request) {
@@ -146,7 +140,7 @@ export async function getUser(request: Request) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true },
+      select: { id: true, email: true, role: true },
     });
     return user;
   } catch {

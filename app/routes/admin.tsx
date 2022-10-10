@@ -5,11 +5,11 @@ import {
   useLocation,
   useNavigate,
 } from "@remix-run/react";
-import { requireUserSession } from "~/utils/auth.server";
+import { requireAdminSession } from "~/utils/auth.server";
 import { IoIosArrowDropleftCircle } from "react-icons/io";
 
-export const loader: LoaderFunction = async ({ request, params }) => {
-  const session = await requireUserSession(request); //requireAdminSession
+export const loader: LoaderFunction = async ({ request }) => {
+  const session = await requireAdminSession(request);
   const userId = session.get("userId");
   const taskId = session.get("task");
   return { userId, taskId };
@@ -21,7 +21,7 @@ export default function AdminLayout() {
 
   return (
     <div className="h-screen w-screen flex flex-col">
-      <div className="flex flex-row basis-1/12 bg-blue items-center sticky top-0 z-50 justify-between bg-black text-white text-2xl py-4 px-6">
+      <div className="flex flex-row bg-[#41437E] items-center sticky top-0 z-50 justify-between drop-shadow-xl border-b border-white text-white text-2xl py-4 px-6">
         <Link
           className={pathname == "/admin/home" ? "text-gray-700" : "text-white"}
           to="/admin/home"
@@ -30,21 +30,21 @@ export default function AdminLayout() {
         </Link>
 
         {pathname && (
-          <span className="uppercase text-xl pl-10">
+          <span className="uppercase font-mono text-xl pl-10">
             {pathname == "/admin/home"
               ? "home"
               : taskId.split(/(?=[A-Z])/).join(" ")}
           </span>
         )}
 
-        <div className="btn btn-sm btn-ghost">
+        <div className="btn btn-sm font-mono btn-ghost">
           <form action="/auth/logout" method="post">
             <button type="submit">Sign Out</button>
           </form>
         </div>
       </div>
 
-      <div className="w-full max-h-full basis-11/12 z-0">
+      <div className="w-full max-h-full h-full overflow-y-hidden z-0">
         <Outlet context={userId} />
       </div>
     </div>

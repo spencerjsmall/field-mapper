@@ -23,7 +23,7 @@ export const LayerUploader = () => {
   // 2
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     preventDefaults(e);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {    
       handleFileUpload(e.dataTransfer.files[0]);
       e.dataTransfer.clearData();
     }
@@ -32,7 +32,9 @@ export const LayerUploader = () => {
   // 3
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.currentTarget.files && event.currentTarget.files[0]) {
-      handleFileUpload(event.currentTarget.files[0]);
+      for (const file of event.currentTarget.files) {
+        handleFileUpload(file);
+      }
     }
   };
 
@@ -50,7 +52,20 @@ export const LayerUploader = () => {
       method: "POST",
       body: inputFormData,
     });
-    const layerUrl = await response.json();    
+    
+    const layerUrl = await response.json();
+    const extension = layerUrl.split(".").pop();
+
+    if (
+      extension == "dbf" ||
+      extension == "shx" ||
+      extension == "prj" ||
+      extension == "cpg"
+    ) {
+      console.log("PASS");
+      return null;
+    }
+
     setFormData((form) => ({
       ...form,
       layerUrl: layerUrl,
@@ -84,6 +99,7 @@ export const LayerUploader = () => {
             onChange={handleChange}
             ref={fileInputRef}
             className="hidden"
+            multiple
           />
         </div>
         <input
@@ -94,7 +110,7 @@ export const LayerUploader = () => {
           readOnly
         />
         <div className="flex flex-col ml-4">
-          <label className="text-white font-semibold">Layer Name</label>
+          <label className="text-white font-mono uppercase">Layer Name</label>
           <input
             type="text"
             name="name"
@@ -102,7 +118,7 @@ export const LayerUploader = () => {
             onChange={(e) => handleInputChange(e, "name")}
             required
           />
-          <label className="text-white font-semibold">Label Field</label>
+          <label className="text-white font-mono uppercase">Label Field</label>
           <input
             type="text"
             name="field"
@@ -113,7 +129,7 @@ export const LayerUploader = () => {
       </div>
       <button
         type="submit"
-        className="rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
+        className="rounded-xl font-mono mt-6 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-yellow-500 hover:-translate-y-1"
       >
         Upload layer
       </button>

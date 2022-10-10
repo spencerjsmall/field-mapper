@@ -8,11 +8,12 @@ export const action: ActionFunction = async ({ request }) => {
   const { layerUrl, name, field } = Object.fromEntries(
     await request.formData()
   );
+
   await prisma.layer.create({
     data: {
       url: layerUrl,
-      name: name,
-      labelField: field,
+      name: String(name),
+      labelField: String(field).toLowerCase().split(" ").join("_"),
       dispatcher: { connect: { id: userId } },
     },
   });
