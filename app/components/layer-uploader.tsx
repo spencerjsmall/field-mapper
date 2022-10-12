@@ -8,7 +8,7 @@ import "@loaders.gl/polyfills";
 import { KMLLoader } from "@loaders.gl/kml";
 import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
 import { ShapefileLoader } from "@loaders.gl/shapefile";
-import { load, loadInBatches, selectLoader } from "@loaders.gl/core";
+import { load, selectLoader } from "@loaders.gl/core";
 
 export const LayerUploader = () => {
   const [draggingOver, setDraggingOver] = useState(false);
@@ -28,7 +28,7 @@ export const LayerUploader = () => {
   };
 
   // 2
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     preventDefaults(e);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files[0]);
@@ -36,10 +36,10 @@ export const LayerUploader = () => {
   };
 
   // 3
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.currentTarget.files) {
       if (event.currentTarget.files.length > 1) {
-        handleShpUpload(event.currentTarget.files);
+        handleShpUpload(Array.from(event.currentTarget.files));
       } else if (event.currentTarget.files[0]) {
         handleFileUpload(event.currentTarget.files[0]);
       }
@@ -55,7 +55,7 @@ export const LayerUploader = () => {
 
   const handleFileUpload = async (file: File) => {
     const loader = await selectLoader(file, [KMLLoader, GeoJSONLoader]);
-    const data = await load(file, loader);    
+    const data = await load(file, loader);
     const features = data.features.map((f) => ({ geojson: f }));
     setFormData((form) => ({
       ...form,
@@ -63,26 +63,28 @@ export const LayerUploader = () => {
     }));
   };
 
-  const handleShpUpload = async (files: FileList) => {
-    const batchIterators = await loadInBatches(
-      Array.from(files),
-      ShapefileLoader
-    );
-    for await (const batchIterator of batchIterators) {
-      for await (const batch of batchIterator) {        
-        switch (batch.batchType) {
-          case "metadata":
-            console.log(batch.metadata);
-            break;
-          default:            
-            const features = batch.data.map((f) => ({ geojson: f }));
-            setFormData((form) => ({
-              ...form,
-              features: JSON.stringify(features),
-            }));
-        }
+  const handleShpUpload = async (files: File[]) => {
+    let shpUrl = "";
+    for (const file of files) {
+      let inputFormData = new FormData();
+      inputFormData.append("layer", file);
+      const response = await fetch("/layer/layer-upload", {
+        method: "POST",
+        body: inputFormData,
+      });
+
+      const layerUrl = await response.json();
+      const extension = layerUrl.split(".").pop();
+      if (extension == "shp") {
+        shpUrl = layerUrl;
       }
     }
+    const data = await load(shpUrl, ShapefileLoader);
+    const features = data.data.map((f) => ({ geojson: f }));
+    setFormData((form) => ({
+      ...form,
+      features: JSON.stringify(features),
+    }));
   };
 
   // 4
@@ -100,7 +102,7 @@ export const LayerUploader = () => {
           onDragStart={preventDefaults}
           onDragEnd={preventDefaults}
           onDragOver={preventDefaults}
-          onDrop={handleDrop}
+          onDrop={handleFileDrop}
           onClick={() => fileInputRef.current?.click()}
         >
           <p className="font-extrabold text-4xl text-gray-200 cursor-pointer select-none transition duration-300 ease-in-out group-hover:opacity-0 pointer-events-none z-10">
@@ -113,7 +115,7 @@ export const LayerUploader = () => {
 
           <input
             type="file"
-            onChange={handleChange}
+            onChange={handleFileChange}
             ref={fileInputRef}
             className="hidden"
             multiple
