@@ -19,10 +19,10 @@ export async function action({ request, params }) {
   const pathname = params["*"];
   const ids = pathname.split("/").map((i) => parseInt(i));
 
-  const { recordId, assigneeEmail, surveyId, actionId } = Object.fromEntries(
+  const { featureId, assigneeEmail, surveyId, actionId } = Object.fromEntries(
     await request.formData()
   );
-  const recId = parseInt(recordId);
+  const featId = parseInt(featureId);
   const assignee = await prisma.user.findUnique({
     where: { email: assigneeEmail },
   });
@@ -39,7 +39,7 @@ export async function action({ request, params }) {
       return await prisma.assignment.create({
         data: {
           layer: { connect: { id: layer.id } },
-          recordId: recId,
+          point: { connect: { id: featId } },
           surveyId: surveyId,
           assignee: { connect: { id: assignee.id } },
         },
@@ -47,7 +47,7 @@ export async function action({ request, params }) {
     }
     case "update": {
       let assignment = await prisma.assignment.findFirstOrThrow({
-        where: { layerId: layer.id, recordId: recId },
+        where: { layerId: layer.id, pointId: featId },
       });
       return await prisma.assignment.update({
         where: {
@@ -63,7 +63,7 @@ export async function action({ request, params }) {
       const resultArr = [];
       for (const id of ids) {
         let assignment = await prisma.assignment.findFirst({
-          where: { layerId: layer.id, recordId: id },
+          where: { layerId: layer.id, pointId: id },
         });
         const result = await prisma.assignment.upsert({
           where: { id: assignment?.id ? assignment.id : -1 },
@@ -73,7 +73,7 @@ export async function action({ request, params }) {
           },
           create: {
             layer: { connect: { id: layer.id } },
-            recordId: id,
+            point: { connect: { id: id } },
             surveyId: surveyId,
             assignee: { connect: { id: assignee.id } },
           },
@@ -89,18 +89,8 @@ export async function action({ request, params }) {
 
 export default function TaskSidebar() {
   const { ids, layer } = useLoaderData();
-  const { assignments, points } = useOutletContext();
-  const selected = ids.map((id) => {
-    let assn = assignments.find((a) => a.recordId === id);
-    if (!assn) {
-      return {
-        recordId: id,
-        surveyId: null,
-        assignee: null,
-      };
-    }
-    return assn;
-  });
+  const { features } = useOutletContext();
+  const selected = features.filter((f) => ids.includes(f.id));  
 
   return (
     <div className="h-full p-4">
@@ -147,33 +137,30 @@ export default function TaskSidebar() {
               </div>
             </li>
           )}
-          {selected.map((obj) => (
-            <li key={obj.recordId} className="w-full">
+          {selected.map((feature) => (
+            <li key={feature.id} className="w-full">
               <div
-                tabIndex={obj.recordId}
+                tabIndex={feature.id}
                 className="collapse collapse-arrow border border-base-300 bg-black rounded-box w-full"
               >
                 <input type="checkbox" />
                 <div className="collapse-title font-mono text-center text-xl text-white font-medium w-full">
-                  {layer.labelField
-                    ? `${
-                        points.features[obj.recordId].properties[
-                          layer.labelField
-                        ]
-                      }`
-                    : `Record #${obj.recordId}`}
+                  {layer.labelField &&
+                  feature.feature.properties[layer.labelField] !== undefined
+                    ? `${feature.feature.properties[layer.labelField]}`
+                    : `Record #${feature.id}`}
                 </div>
                 <div className="collapse-content w-full">
                   <form
                     method="post"
                     className="flex flex-col w-full items-center"
                   >
-                    <input type="hidden" name="recordId" value={obj.recordId} />
+                    <input type="hidden" name="featureId" value={feature.id} />
                     <h3>Assignee:</h3>
                     <label>
                       <input
                         type="text"
-                        defaultValue={obj.assignee?.email}
+                        defaultValue={feature.assignment?.assignee.email}
                         name="assigneeEmail"
                       />
                     </label>
@@ -181,17 +168,17 @@ export default function TaskSidebar() {
                     <label>
                       <input
                         type="text"
-                        defaultValue={obj.surveyId}
+                        defaultValue={feature.assignment?.surveyId}
                         name="surveyId"
                       />
                     </label>
                     <button
                       type="submit"
                       name="actionId"
-                      value={obj.surveyId ? "update" : "create"}
+                      value={feature.assignment?.surveyId ? "update" : "create"}
                       className="rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
                     >
-                      {obj.surveyId ? "Update" : "Assign"}
+                      {feature.assignment?.surveyId ? "Update" : "Assign"}
                     </button>
                   </form>
                 </div>

@@ -17,7 +17,8 @@ model User {
   email       String       @unique
   assignments Assignment[]
   layers Layer[]
-  role Role @default(USER)
+  points Point[]
+  role Role @default(USER)  
 }
 
 enum Role {
@@ -34,7 +35,8 @@ model Assignment {
   assigneeId Int?
   layerId Int
   layer      Layer @relation(fields: [layerId], references: [id])
-  recordId   Int
+  pointId Int @unique
+  point      Point @relation(fields: [pointId], references: [id])
   surveyId   String
   assignee   User?    @relation(fields: [assigneeId], references: [id])
 }
@@ -44,8 +46,22 @@ model Layer {
   createdAt  DateTime @default(now())
   name String @unique
   labelField String?
-  url String @unique
+  //url String @unique
   assignments Assignment[]
   dispatcherId Int
   dispatcher User    @relation(fields: [dispatcherId], references: [id])
+  points Point[]
+  defaultSurveyId String?
+}
+
+model Point {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  layerId Int
+  layer      Layer @relation(fields: [layerId], references: [id])
+  creatorId Int? 
+  creator   User?    @relation(fields: [creatorId], references: [id])  
+  feature Json
+  assignmentId Int? @unique
+  assignment Assignment?
 }

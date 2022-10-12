@@ -1,13 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { prisma } from "~/utils/db.server";
 import { LoaderArgs, redirect } from "@remix-run/node";
-import { useLoaderData, Outlet, useFetcher, useSubmit } from "@remix-run/react";
-
-import "@loaders.gl/polyfills";
-import { KMLLoader } from "@loaders.gl/kml";
-import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
-import { ShapefileLoader } from "@loaders.gl/shapefile";
-import { load, selectLoader } from "@loaders.gl/core";
+import { useLoaderData, Outlet, useSubmit } from "@remix-run/react";
 
 import Map, { Source, Layer } from "react-map-gl";
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
@@ -31,42 +25,19 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   const layer = await prisma.layer.findUniqueOrThrow({
     where: { name: taskId },
   });
-  const loader = await selectLoader(layer.url, [
-    KMLLoader,
-    GeoJSONLoader,
-    ShapefileLoader,
-  ]);
-  const data = await load(layer.url, loader);
-  const points =
-    loader == ShapefileLoader
-      ? {
-          type: "FeatureCollection",
-          features: data.data,
-        }
-      : data;
-  const pointKeys = [];
-  for (let key of points.features.keys()) {
-    pointKeys.push(key);
-    points.features[key]["id"] = key;
-  }
-  const assignments = await prisma.assignment.findMany({
-    where: {
-      recordId: { in: pointKeys },
-      layerId: layer.id,
-    },
-    select: {
-      surveyId: true,
-      recordId: true,
-      assignee: {
-        select: {
-          email: true,
+  const features = await prisma.point.findMany({
+    where: { layerId: layer.id },
+    include: {
+      assignment: {
+        include: {
+          assignee: true,
         },
       },
     },
   });
   const pathname = params["*"];
   const selectIds = pathname ? pathname.split("/").map((i) => parseInt(i)) : [];
-  return { points, assignments, selectIds };
+  return { features, selectIds };
 };
 
 export async function action({ request, params }) {
@@ -89,7 +60,7 @@ const todoLayer = {
 const assignedLayer = {
   type: "circle",
   paint: {
-    "circle-radius": 5,
+    "circle-radius": 10,
     "circle-color": "#00FF00",
   },
 };
@@ -103,8 +74,7 @@ const highlightLayer = {
 };
 
 export default function AdminTaskMap() {
-  const { points, assignments, selectIds } = useLoaderData();
-  //console.log(points);
+  const { features, selectIds } = useLoaderData();  
   const mapRef = useRef();
   const submit = useSubmit();
 
@@ -112,6 +82,36 @@ export default function AdminTaskMap() {
   const [addPoint, setAddPoint] = useState(false);
   const [start, setStart] = useState<Number[]>();
   const [filterIds, setFilterIds] = useState<Number[]>(selectIds);
+
+  const selectCollection = useMemo(
+    () => ({
+      type: "FeatureCollection",
+      features: features
+        .filter((f) => filterIds.includes(f.id))
+        .map((f) => ({ id: f.id, ...f.feature })),
+    }),
+    [filterIds]
+  );  
+
+  const todoCollection = useMemo(
+    () => ({
+      type: "FeatureCollection",
+      features: features
+        .filter((f) => !f.assignment)
+        .map((f) => ({ id: f.id, ...f.feature })),
+    }),
+    [features]
+  );
+
+  const assignedCollection = useMemo(
+    () => ({
+      type: "FeatureCollection",
+      features: features
+        .filter((f) => f.assignment)
+        .map((f) => ({ id: f.id, ...f.feature })),
+    }),
+    [features]
+  );
 
   const onFeatureClick = (e) => {
     console.log(e.lngLat);
@@ -139,7 +139,7 @@ export default function AdminTaskMap() {
     const topLeft = [Math.min(start[0], end[0]), Math.min(start[1], end[1])];
     const botRight = [Math.max(start[0], end[0]), Math.max(start[1], end[1])];
     const queried = mapRef.current.queryRenderedFeatures([topLeft, botRight], {
-      layers: ["todo"],
+      layers: ["todo", "assigned"],
     });
     const ids = queried.map((record) => record.id);
     //take symetrical difference of existing and new selections
@@ -154,16 +154,6 @@ export default function AdminTaskMap() {
       { method: "post" }
     );
   };
-
-  const filter = useMemo(
-    () => ["in", ["id"], ["literal", filterIds]],
-    [filterIds]
-  );
-
-  const assigned = useMemo(
-    () => ["in", ["id"], ["literal", assignments.map((a) => a.recordId)]],
-    [assignments]
-  );
 
   return (
     <div className="flex flex-row h-full">
@@ -181,7 +171,7 @@ export default function AdminTaskMap() {
         mapboxAccessToken={
           "pk.eyJ1Ijoic3BlbmNlcmpzbWFsbCIsImEiOiJjbDdmNGY5d2YwNnJuM3hsZ2IyN2thc2QyIn0.hLfNqU8faCraSSKrXbtnHQ"
         }
-        interactiveLayerIds={["todo"]}
+        interactiveLayerIds={["todo", "assigned"]}
         onClick={onFeatureClick}
         ref={mapRef}
         className="basis-2/3 relative"
@@ -207,23 +197,26 @@ export default function AdminTaskMap() {
             >
               <Layer type="raster" />
             </Source>
-            <Source id="todo" type="geojson" data={points}>
+            <Source id="pg1" type="geojson" data={todoCollection}>
               <Layer id="todo" {...todoLayer} />
             </Source>
-            <Source id="todo" type="geojson" data={points}>
-              <Layer id="highlight" {...highlightLayer} />
+            <Source id="pg1" type="geojson" data={assignedCollection}>
+              <Layer id="assigned" {...assignedLayer} />
+            </Source>
+            <Source id="pg1" type="geojson" data={selectCollection}>
+              <Layer id="highlighted" {...highlightLayer} />
             </Source>
           </>
         ) : (
           <>
-            <Source id="pg1" type="geojson" data={points}>
+            <Source id="todo" type="geojson" data={todoCollection}>
               <Layer id="todo" {...todoLayer} />
             </Source>
-            <Source id="pg1" type="geojson" data={points}>
-              <Layer id="assigned" {...assignedLayer} filter={assigned} />
+            <Source id="assigned" type="geojson" data={assignedCollection}>
+              <Layer id="assigned" {...assignedLayer} />
             </Source>
-            <Source id="pg1" type="geojson" data={points}>
-              <Layer id="highlighted" {...highlightLayer} filter={filter} />
+            <Source id="highlighted" type="geojson" data={selectCollection}>
+              <Layer id="highlighted" {...highlightLayer} />
             </Source>
           </>
         )}
@@ -278,7 +271,7 @@ export default function AdminTaskMap() {
         </button>
       </Map>
       <div className="basis-1/3 drop-shadow-lg min-h-full border-l border-white max-h-full overflow-y-scroll bg-[#2A2D5C]">
-        <Outlet context={{ assignments, points }} />
+        <Outlet context={{ features }} />
       </div>
     </div>
   );

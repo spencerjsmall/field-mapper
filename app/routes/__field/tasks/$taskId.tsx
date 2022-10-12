@@ -2,12 +2,6 @@ import { useState, useCallback, useMemo } from "react";
 import type { LoaderArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 
-import "@loaders.gl/polyfills";
-import { KMLLoader } from "@loaders.gl/kml";
-import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
-import { ShapefileLoader } from "@loaders.gl/shapefile";
-import { load, selectLoader } from "@loaders.gl/core";
-
 import Map, {
   Source,
   Layer,
@@ -66,30 +60,16 @@ export const loader = async ({ request, params }: LoaderArgs) => {
       layerId: layer.id,
       assigneeId: userId,
     },
+    include: {
+      point: true,
+    },
   });
-  const loader = await selectLoader(layer.url, [
-    KMLLoader,
-    GeoJSONLoader,
-    ShapefileLoader,
-  ]);
-  const data = await load(layer.url, loader);
-  const points =
-    loader == ShapefileLoader
-      ? {
-          type: "FeatureCollection",
-          features: data.data,
-        }
-      : data;
-  const pointKeys = [];
-  for (let key of points.features.keys()) {
-    pointKeys.push(key);
-    points.features[key]["id"] = key;
-  }
-  return { assignments, points };
+
+  return { assignments };
 };
 
 export default function TaskMap() {
-  const { assignments, points } = useLoaderData();
+  const { assignments } = useLoaderData();  
 
   const [showPopup, setShowPopup] = useState(false);
   const [showMark, setShowMark] = useState(false);
@@ -99,6 +79,38 @@ export default function TaskMap() {
   const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
   const [completed, setCompleted] = useState<Boolean>();
   const [assignment, setAssignment] = useState();
+
+  const completedAssignments = {
+    type: "FeatureCollection",
+    features: assignments
+      .filter((a) => a.completed)
+      .map((a) => ({
+        id: a.point.id,
+        geometry: a.point.feature.geometry,
+        properties: {
+          ...a.point.feature.properties,
+          surveyId: a.surveyId,
+          assignmentId: a.id,
+          completed: true,
+        },
+      })),
+  };
+
+  const todoAssignments = {
+    type: "FeatureCollection",
+    features: assignments
+      .filter((a) => !a.completed)
+      .map((a) => ({
+        id: a.point.id,
+        geometry: a.point.feature.geometry,
+        properties: {
+          ...a.point.feature.properties,
+          surveyId: a.surveyId,
+          assignmentId: a.id,
+          completed: false,
+        },
+      })),
+  };
 
   const geolocateRef = useCallback((ref) => {
     if (ref !== null) {
@@ -113,11 +125,9 @@ export default function TaskMap() {
     console.log(e.features);
     setDCoords(e.lngLat);
     if (e.features.length > 0) {
-      let id = e.features[0].id;
       setShowPopup(true);
-      let assn = assignments.find((a) => a.recordId == id);
-      setAssignment(assn);
-      setCompleted(assn.completed);
+      setAssignment(e.features[0].properties.assignmentId);
+      setCompleted(e.features[0].properties.completed);
     } else if (addPoint) {
       setShowMark(true);
     } else {
@@ -165,30 +175,6 @@ export default function TaskMap() {
     });
   };
 
-  const completedFilter = useMemo(
-    () => [
-      "in",
-      ["id"],
-      [
-        "literal",
-        assignments.filter((a) => a.completed).map((a) => a.recordId),
-      ],
-    ],
-    [assignments]
-  );
-
-  const todoFilter = useMemo(
-    () => [
-      "in",
-      ["id"],
-      [
-        "literal",
-        assignments.filter((a) => !a.completed).map((a) => a.recordId),
-      ],
-    ],
-    [assignments]
-  );
-
   return (
     <div className="h-full relative">
       <Map
@@ -221,20 +207,20 @@ export default function TaskMap() {
             >
               <Layer type="raster" />
             </Source>
-            <Source id="todo" type="geojson" data={points}>
+            <Source id="todo" type="geojson" data={todoAssignments}>
               <Layer id="todo" {...todoStyle} />
             </Source>
-            <Source id="done" type="geojson" data={points}>
+            <Source id="done" type="geojson" data={completedAssignments}>
               <Layer id="done" {...completedStyle} />
             </Source>
           </>
         ) : (
           <>
-            <Source id="todo" type="geojson" data={points}>
-              <Layer id="todo" {...todoStyle} filter={todoFilter} />
+            <Source id="todo" type="geojson" data={todoAssignments}>
+              <Layer id="todo" {...todoStyle} />
             </Source>
-            <Source id="done" type="geojson" data={points}>
-              <Layer id="done" {...completedStyle} filter={completedFilter} />
+            <Source id="done" type="geojson" data={completedAssignments}>
+              <Layer id="done" {...completedStyle} />
             </Source>
           </>
         )}
@@ -254,7 +240,7 @@ export default function TaskMap() {
                 Get Directions
               </button>
               {!completed && assignment && (
-                <Link to={`${assignment.id}`}>
+                <Link to={`${assignment}`}>
                   <button className="btn btn-xs btn-outline btn-secondary">
                     Complete Survey
                   </button>
