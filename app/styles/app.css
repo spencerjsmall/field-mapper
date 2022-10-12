@@ -3287,8 +3287,8 @@ body[dir="rtl"] .checkbox:checked,
   left: 0.25rem;
 }
 
-.top-14 {
-  top: 3.5rem;
+.top-2 {
+  top: 0.5rem;
 }
 
 .right-2\.5 {
@@ -3297,10 +3297,6 @@ body[dir="rtl"] .checkbox:checked,
 
 .right-2 {
   right: 0.5rem;
-}
-
-.top-2 {
-  top: 0.5rem;
 }
 
 .z-10 {

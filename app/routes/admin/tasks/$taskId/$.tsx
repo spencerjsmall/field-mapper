@@ -12,10 +12,6 @@ export const loader = async ({ params }: LoaderArgs) => {
 };
 
 export async function action({ request, params }) {
-  const taskId = params.taskId;
-  const layer = await prisma.layer.findUniqueOrThrow({
-    where: { name: taskId },
-  });
   const pathname = params["*"];
   const ids = pathname.split("/").map((i) => parseInt(i));
 
@@ -38,8 +34,7 @@ export async function action({ request, params }) {
     case "create": {
       return await prisma.assignment.create({
         data: {
-          layer: { connect: { id: layer.id } },
-          point: { connect: { id: featId } },
+          feature: { connect: { id: featId } },
           surveyId: surveyId,
           assignee: { connect: { id: assignee.id } },
         },
@@ -47,7 +42,7 @@ export async function action({ request, params }) {
     }
     case "update": {
       let assignment = await prisma.assignment.findFirstOrThrow({
-        where: { layerId: layer.id, pointId: featId },
+        where: { featureId: featId },
       });
       return await prisma.assignment.update({
         where: {
@@ -63,7 +58,7 @@ export async function action({ request, params }) {
       const resultArr = [];
       for (const id of ids) {
         let assignment = await prisma.assignment.findFirst({
-          where: { layerId: layer.id, pointId: id },
+          where: { featureId: id },
         });
         const result = await prisma.assignment.upsert({
           where: { id: assignment?.id ? assignment.id : -1 },
@@ -72,8 +67,7 @@ export async function action({ request, params }) {
             assignee: { connect: { id: assignee.id } },
           },
           create: {
-            layer: { connect: { id: layer.id } },
-            point: { connect: { id: id } },
+            feature: { connect: { id: id } },
             surveyId: surveyId,
             assignee: { connect: { id: assignee.id } },
           },
@@ -90,7 +84,7 @@ export async function action({ request, params }) {
 export default function TaskSidebar() {
   const { ids, layer } = useLoaderData();
   const { features } = useOutletContext();
-  const selected = features.filter((f) => ids.includes(f.id));  
+  const selected = features.filter((f) => ids.includes(f.id));
 
   return (
     <div className="h-full p-4">
@@ -146,8 +140,8 @@ export default function TaskSidebar() {
                 <input type="checkbox" />
                 <div className="collapse-title font-mono text-center text-xl text-white font-medium w-full">
                   {layer.labelField &&
-                  feature.feature.properties[layer.labelField] !== undefined
-                    ? `${feature.feature.properties[layer.labelField]}`
+                  feature.geojson.properties[layer.labelField] !== undefined
+                    ? `${feature.geojson.properties[layer.labelField]}`
                     : `Record #${feature.id}`}
                 </div>
                 <div className="collapse-content w-full">

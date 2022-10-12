@@ -5,17 +5,22 @@ import { prisma } from "~/utils/db.server";
 export const action: ActionFunction = async ({ request }) => {
   const session = await getUserSession(request);
   const userId = session.get("userId");
-  const { features, name, field } = Object.fromEntries(await request.formData());
+  const { features, name, field, surveyId } = Object.fromEntries(
+    await request.formData()
+  );
+  
   await prisma.layer.create({
     data: {
       name: String(name),
-      labelField: String(field).toLowerCase().split(" ").join("_"),
+      labelField:
+        field === "" ? null : String(field).toLowerCase().split(" ").join("_"),
       dispatcher: { connect: { id: userId } },
-      points: {
+      features: {
         createMany: {
           data: JSON.parse(features),
         },
       },
+      defaultSurveyId: surveyId === "" ? null : String(surveyId),
     },
   });
 

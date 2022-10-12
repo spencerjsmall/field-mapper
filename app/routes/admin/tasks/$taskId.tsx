@@ -25,7 +25,7 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   const layer = await prisma.layer.findUniqueOrThrow({
     where: { name: taskId },
   });
-  const features = await prisma.point.findMany({
+  const features = await prisma.feature.findMany({
     where: { layerId: layer.id },
     include: {
       assignment: {
@@ -74,7 +74,7 @@ const highlightLayer = {
 };
 
 export default function AdminTaskMap() {
-  const { features, selectIds } = useLoaderData();  
+  const { features, selectIds } = useLoaderData();
   const mapRef = useRef();
   const submit = useSubmit();
 
@@ -88,17 +88,17 @@ export default function AdminTaskMap() {
       type: "FeatureCollection",
       features: features
         .filter((f) => filterIds.includes(f.id))
-        .map((f) => ({ id: f.id, ...f.feature })),
+        .map((f) => ({ id: f.id, ...f.geojson })),
     }),
     [filterIds]
-  );  
+  );
 
   const todoCollection = useMemo(
     () => ({
       type: "FeatureCollection",
       features: features
         .filter((f) => !f.assignment)
-        .map((f) => ({ id: f.id, ...f.feature })),
+        .map((f) => ({ id: f.id, ...f.geojson })),
     }),
     [features]
   );
@@ -108,7 +108,7 @@ export default function AdminTaskMap() {
       type: "FeatureCollection",
       features: features
         .filter((f) => f.assignment)
-        .map((f) => ({ id: f.id, ...f.feature })),
+        .map((f) => ({ id: f.id, ...f.geojson })),
     }),
     [features]
   );

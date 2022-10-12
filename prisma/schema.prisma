@@ -15,53 +15,49 @@ model User {
   firstName   String
   lastName    String
   email       String       @unique
+  role        Role         @default(USER)
   assignments Assignment[]
-  layers Layer[]
-  points Point[]
-  role Role @default(USER)  
+  features    Feature[]
+  layers      Layer[]
+}
+
+model Assignment {
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  completed   Boolean   @default(false)
+  completedAt DateTime? @updatedAt
+  results     Json?
+  assigneeId  Int?
+  featureId   Int       @unique
+  surveyId    String
+  assignee    User?     @relation(fields: [assigneeId], references: [id])
+  feature     Feature   @relation(fields: [featureId], references: [id])
+}
+
+model Layer {
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime  @default(now())
+  name            String    @unique
+  labelField      String?
+  dispatcherId    Int
+  defaultSurveyId String?
+  dispatcher      User      @relation(fields: [dispatcherId], references: [id])
+  features        Feature[]
+}
+
+model Feature {
+  id           Int         @id @default(autoincrement())
+  createdAt    DateTime    @default(now())
+  layerId      Int
+  creatorId    Int?
+  geojson      Json
+  assignmentId Int?        @unique
+  creator      User?       @relation(fields: [creatorId], references: [id])
+  layer        Layer       @relation(fields: [layerId], references: [id])
+  assignment   Assignment?
 }
 
 enum Role {
   USER
   ADMIN
-}
-
-model Assignment {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  completed  Boolean  @default(false)
-  completedAt DateTime?     @updatedAt
-  results Json?
-  assigneeId Int?
-  layerId Int
-  layer      Layer @relation(fields: [layerId], references: [id])
-  pointId Int @unique
-  point      Point @relation(fields: [pointId], references: [id])
-  surveyId   String
-  assignee   User?    @relation(fields: [assigneeId], references: [id])
-}
-
-model Layer {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  name String @unique
-  labelField String?
-  //url String @unique
-  assignments Assignment[]
-  dispatcherId Int
-  dispatcher User    @relation(fields: [dispatcherId], references: [id])
-  points Point[]
-  defaultSurveyId String?
-}
-
-model Point {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  layerId Int
-  layer      Layer @relation(fields: [layerId], references: [id])
-  creatorId Int? 
-  creator   User?    @relation(fields: [creatorId], references: [id])  
-  feature Json
-  assignmentId Int? @unique
-  assignment Assignment?
 }

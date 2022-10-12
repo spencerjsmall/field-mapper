@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import type { LoaderArgs } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import { useLoaderData, Link, useOutletContext } from "@remix-run/react";
 
 import Map, {
   Source,
@@ -55,24 +55,28 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   const layer = await prisma.layer.findUniqueOrThrow({
     where: { name: taskId },
   });
-  const assignments = await prisma.assignment.findMany({
+  const assignments = await prisma.feature.findMany({
     where: {
       layerId: layer.id,
-      assigneeId: userId,
+      assignment: {
+        is: {
+          assigneeId: userId,
+        },
+      },
     },
     include: {
-      point: true,
+      assignment: true,
     },
   });
 
-  return { assignments };
+  return { assignments, layer };
 };
 
 export default function TaskMap() {
-  const { assignments } = useLoaderData();  
+  const { assignments, layer } = useLoaderData();
+  const userId = useOutletContext();
 
   const [showPopup, setShowPopup] = useState(false);
-  const [showMark, setShowMark] = useState(false);
   const [addPoint, setAddPoint] = useState(false);
   const [basemap, setBasemap] = useState("streets-v11");
   const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
@@ -83,14 +87,14 @@ export default function TaskMap() {
   const completedAssignments = {
     type: "FeatureCollection",
     features: assignments
-      .filter((a) => a.completed)
-      .map((a) => ({
-        id: a.point.id,
-        geometry: a.point.feature.geometry,
+      .filter((f) => f.assignment.completed)
+      .map((f) => ({
+        id: f.id,
+        geometry: f.geojson.geometry,
         properties: {
-          ...a.point.feature.properties,
-          surveyId: a.surveyId,
-          assignmentId: a.id,
+          ...f.geojson.properties,
+          surveyId: f.assignment.surveyId,
+          assignmentId: f.assignment.id,
           completed: true,
         },
       })),
@@ -99,14 +103,14 @@ export default function TaskMap() {
   const todoAssignments = {
     type: "FeatureCollection",
     features: assignments
-      .filter((a) => !a.completed)
-      .map((a) => ({
-        id: a.point.id,
-        geometry: a.point.feature.geometry,
+      .filter((f) => !f.assignment.completed)
+      .map((f) => ({
+        id: f.id,
+        geometry: f.geojson.geometry,
         properties: {
-          ...a.point.feature.properties,
-          surveyId: a.surveyId,
-          assignmentId: a.id,
+          ...f.geojson.properties,
+          surveyId: f.assignment.surveyId,
+          assignmentId: f.assignment.id,
           completed: false,
         },
       })),
@@ -128,11 +132,7 @@ export default function TaskMap() {
       setShowPopup(true);
       setAssignment(e.features[0].properties.assignmentId);
       setCompleted(e.features[0].properties.completed);
-    } else if (addPoint) {
-      setShowMark(true);
-    } else {
-      setAddPoint(false);
-    }
+    } else setAddPoint(true);
   };
 
   const mapDirections = new MapboxDirections({
@@ -163,10 +163,39 @@ export default function TaskMap() {
     mapDirections.setDestination([dCoords.lng, dCoords.lat]);
   };
 
-  // const addPoint = (e) => {
-  //   //setShowMark(false);
-
-  // };
+  const createPoint = async () => {
+    let feature: prisma.FeatureCreateInput;
+    if (layer.defaultSurveyId !== null) {
+      feature = {
+        layer: { connect: { id: layer.id } },
+        creator: { connect: { id: userId } },
+        geojson: {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: dCoords },
+          properties: {},
+        },
+        assignment: {
+          create: {
+            data: {
+              assignee: { connect: { id: userId } },
+              surveyId: layer.defaultSurveyId,
+            },
+          },
+        },
+      };
+    } else {
+      feature = {
+        layer: { connect: { id: layer.id } },
+        creator: { connect: { id: userId } },
+        geojson: {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: dCoords },
+          properties: {},
+        },
+      };
+    }
+    await prisma.feature.create({ data: feature });
+  };
 
   const setCurrentLocation = (e) => {
     setCCoords({
@@ -250,19 +279,24 @@ export default function TaskMap() {
           </Popup>
         )}
 
-        {showMark && addPoint && (
+        {addPoint && (
           <Popup
             longitude={dCoords.lng}
             latitude={dCoords.lat}
             anchor="bottom"
-            onClose={() => setShowMark(false)}
+            onClose={() => setAddPoint(false)}
           >
-            <button className="btn btn-xs btn-outline btn-primary">
+            <button
+              onClick={createPoint}
+              className="btn btn-xs btn-outline btn-primary"
+            >
               Add Point
             </button>
           </Popup>
         )}
+
         <GeolocateControl onGeolocate={setCurrentLocation} ref={geolocateRef} />
+
         {mapDirections != null && <DirectionsControl />}
       </Map>
 
@@ -308,13 +342,6 @@ export default function TaskMap() {
           </div>
         </li>
       </ul>
-
-      <button
-        onClick={() => setAddPoint(!addPoint)}
-        className="btn btn-sm absolute top-14 right-2.5 btn-square bg-white text-black"
-      >
-        {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
-      </button>
     </div>
   );
 }

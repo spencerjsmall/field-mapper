@@ -16,6 +16,7 @@ export const LayerUploader = () => {
     features: "",
     name: "",
     field: "",
+    surveyId: "",
   });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef(null);
@@ -55,7 +56,7 @@ export const LayerUploader = () => {
   const handleFileUpload = async (file: File) => {
     const loader = await selectLoader(file, [KMLLoader, GeoJSONLoader]);
     const data = await load(file, loader);    
-    const features = data.features.map((f) => ({ feature: f }));
+    const features = data.features.map((f) => ({ geojson: f }));
     setFormData((form) => ({
       ...form,
       features: JSON.stringify(features),
@@ -74,7 +75,7 @@ export const LayerUploader = () => {
             console.log(batch.metadata);
             break;
           default:            
-            const features = batch.data.map((f) => ({ feature: f }));
+            const features = batch.data.map((f) => ({ geojson: f }));
             setFormData((form) => ({
               ...form,
               features: JSON.stringify(features),
@@ -140,6 +141,13 @@ export const LayerUploader = () => {
             name="field"
             value={formData.field}
             onChange={(e) => handleInputChange(e, "field")}
+          />
+          <label className="text-white font-mono uppercase">SurveyId</label>
+          <input
+            type="text"
+            name="field"
+            value={formData.surveyId}
+            onChange={(e) => handleInputChange(e, "surveyId")}
           />
         </div>
       </div>
