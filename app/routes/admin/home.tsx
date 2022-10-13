@@ -1,11 +1,10 @@
 import { prisma } from "~/utils/db.server";
 import {
-  LoaderFunction,
-  json,
+  LoaderFunction,  
   ActionFunction,
   redirect,
 } from "@remix-run/node";
-import { useLoaderData, Link, useSubmit } from "@remix-run/react";
+import { useLoaderData, useSubmit } from "@remix-run/react";
 import { LayerUploader } from "~/components/layer-uploader";
 import {
   requireUserId,

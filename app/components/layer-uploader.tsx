@@ -57,6 +57,7 @@ export const LayerUploader = () => {
     const loader = await selectLoader(file, [KMLLoader, GeoJSONLoader]);
     const data = await load(file, loader);
     const features = data.features.map((f) => ({ geojson: f }));
+    console.log("upload features", features);
     setFormData((form) => ({
       ...form,
       features: JSON.stringify(features),
@@ -81,6 +82,7 @@ export const LayerUploader = () => {
     }
     const data = await load(shpUrl, ShapefileLoader);
     const features = data.data.map((f) => ({ geojson: f }));
+    console.log("upload features", features);
     setFormData((form) => ({
       ...form,
       features: JSON.stringify(features),
@@ -147,7 +149,7 @@ export const LayerUploader = () => {
           <label className="text-white font-mono uppercase">SurveyId</label>
           <input
             type="text"
-            name="field"
+            name="surveyId"
             value={formData.surveyId}
             onChange={(e) => handleInputChange(e, "surveyId")}
           />

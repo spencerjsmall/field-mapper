@@ -30,8 +30,8 @@ model Assignment {
   assigneeId  Int?
   featureId   Int       @unique
   surveyId    String
-  assignee    User?     @relation(fields: [assigneeId], references: [id])
-  feature     Feature   @relation(fields: [featureId], references: [id])
+  assignee    User?     @relation(fields: [assigneeId], references: [id], onDelete: Cascade)
+  feature     Feature   @relation(fields: [featureId], references: [id], onDelete: Cascade)
 }
 
 model Layer {
@@ -53,7 +53,7 @@ model Feature {
   geojson      Json
   assignmentId Int?        @unique
   creator      User?       @relation(fields: [creatorId], references: [id])
-  layer        Layer       @relation(fields: [layerId], references: [id])
+  layer        Layer       @relation(fields: [layerId], references: [id], onDelete: Cascade)
   assignment   Assignment?
 }
 

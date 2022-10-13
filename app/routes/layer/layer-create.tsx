@@ -8,7 +8,9 @@ export const action: ActionFunction = async ({ request }) => {
   const { features, name, field, surveyId } = Object.fromEntries(
     await request.formData()
   );
-  
+
+  console.log("features", features);
+
   await prisma.layer.create({
     data: {
       name: String(name),
@@ -17,7 +19,7 @@ export const action: ActionFunction = async ({ request }) => {
       dispatcher: { connect: { id: userId } },
       features: {
         createMany: {
-          data: JSON.parse(features),
+          data: JSON.parse(String(features)),
         },
       },
       defaultSurveyId: surveyId === "" ? null : String(surveyId),

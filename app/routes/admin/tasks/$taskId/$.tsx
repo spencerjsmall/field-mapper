@@ -83,6 +83,7 @@ export async function action({ request, params }) {
 
 export default function TaskSidebar() {
   const { ids, layer } = useLoaderData();
+  console.log('layer', layer)
   const { features } = useOutletContext();
   const selected = features.filter((f) => ids.includes(f.id));
 
@@ -162,7 +163,13 @@ export default function TaskSidebar() {
                     <label>
                       <input
                         type="text"
-                        defaultValue={feature.assignment?.surveyId}
+                        defaultValue={
+                          feature.assignment
+                            ? feature.assignment.surveyId
+                            : layer.defaultSurveyId
+                            ? layer.defaultSurveyId
+                            : null
+                        }
                         name="surveyId"
                       />
                     </label>
