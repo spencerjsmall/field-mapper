@@ -1,6 +1,7 @@
 import { prisma } from "~/utils/db.server";
 import { useLoaderData, useOutletContext } from "@remix-run/react";
 import { json } from "@remix-run/node";
+import JSONPretty from "react-json-pretty";
 
 export const loader = async ({ params }: LoaderArgs) => {
   const pathname = params["*"];
@@ -82,8 +83,7 @@ export async function action({ request, params }) {
 }
 
 export default function TaskSidebar() {
-  const { ids, layer } = useLoaderData();
-  console.log('layer', layer)
+  const { ids, layer } = useLoaderData();  
   const { features } = useOutletContext();
   const selected = features.filter((f) => ids.includes(f.id));
 
@@ -98,7 +98,7 @@ export default function TaskSidebar() {
                 className="collapse collapse-arrow w-full border w-full border-base-300 bg-white rounded-box"
               >
                 <input type="checkbox" />
-                <div className="collapse-title text-center font-mono text-black text-xl font-medium">
+                <div className="collapse-title text-center font-sans text-black text-xl font-medium">
                   Update {selected.length} records
                 </div>
                 <div className="collapse-content text-black w-full">
@@ -117,6 +117,11 @@ export default function TaskSidebar() {
                         className="bg-black text-white"
                         type="text"
                         name="surveyId"
+                        defaultValue={
+                          layer.defaultSurveyId
+                            ? layer.defaultSurveyId
+                            : undefined
+                        }
                       />
                     </label>
                     <button
@@ -139,7 +144,7 @@ export default function TaskSidebar() {
                 className="collapse collapse-arrow border border-base-300 bg-black rounded-box w-full"
               >
                 <input type="checkbox" />
-                <div className="collapse-title font-mono text-center text-xl text-white font-medium w-full">
+                <div className="collapse-title font-sans text-center text-xl text-white font-medium w-full">
                   {layer.labelField &&
                   feature.geojson.properties[layer.labelField] !== undefined
                     ? `${feature.geojson.properties[layer.labelField]}`
@@ -168,7 +173,7 @@ export default function TaskSidebar() {
                             ? feature.assignment.surveyId
                             : layer.defaultSurveyId
                             ? layer.defaultSurveyId
-                            : null
+                            : undefined
                         }
                         name="surveyId"
                       />
@@ -182,6 +187,14 @@ export default function TaskSidebar() {
                       {feature.assignment?.surveyId ? "Update" : "Assign"}
                     </button>
                   </form>
+
+                  <h3 className="text-white my-2">Details:</h3>
+                  <div className="overflow-x-scroll">
+                    <JSONPretty
+                      style={{ fontSize: "0.9em" }}
+                      data={feature.geojson.properties}
+                    ></JSONPretty>
+                  </div>
                 </div>
               </div>
             </li>

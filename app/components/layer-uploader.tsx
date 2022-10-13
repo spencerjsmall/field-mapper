@@ -56,8 +56,7 @@ export const LayerUploader = () => {
   const handleFileUpload = async (file: File) => {
     const loader = await selectLoader(file, [KMLLoader, GeoJSONLoader]);
     const data = await load(file, loader);
-    const features = data.features.map((f) => ({ geojson: f }));
-    console.log("upload features", features);
+    const features = data.features.map((f) => ({ geojson: f }));    
     setFormData((form) => ({
       ...form,
       features: JSON.stringify(features),
@@ -80,9 +79,9 @@ export const LayerUploader = () => {
         shpUrl = layerUrl;
       }
     }
+
     const data = await load(shpUrl, ShapefileLoader);
     const features = data.data.map((f) => ({ geojson: f }));
-    console.log("upload features", features);
     setFormData((form) => ({
       ...form,
       features: JSON.stringify(features),
@@ -97,7 +96,7 @@ export const LayerUploader = () => {
           ref={dropRef}
           className={`${
             draggingOver ? "border-4 border-dashed border-yellow-300" : ""
-          } group relative w-24 h-24 flex justify-center items-center bg-gray-400 transition duration-300 ease-in-out hover:bg-gray-500 cursor-pointer`}
+          } group relative w-32 mt-3 h-32 flex justify-center items-center bg-gray-400 transition duration-300 ease-in-out hover:bg-gray-500 cursor-pointer`}
           onDragEnter={() => setDraggingOver(true)}
           onDragLeave={() => setDraggingOver(false)}
           onDrag={preventDefaults}
@@ -131,7 +130,7 @@ export const LayerUploader = () => {
           readOnly
         />
         <div className="flex flex-col ml-4">
-          <label className="text-white font-mono uppercase">Layer Name</label>
+          <label className="text-white font-sans uppercase">Layer Name</label>
           <input
             type="text"
             name="name"
@@ -139,14 +138,14 @@ export const LayerUploader = () => {
             onChange={(e) => handleInputChange(e, "name")}
             required
           />
-          <label className="text-white font-mono uppercase">Label Field</label>
+          <label className="text-white font-sans uppercase">Label Field</label>
           <input
             type="text"
             name="field"
             value={formData.field}
             onChange={(e) => handleInputChange(e, "field")}
           />
-          <label className="text-white font-mono uppercase">SurveyId</label>
+          <label className="text-white font-sans uppercase">SurveyId</label>
           <input
             type="text"
             name="surveyId"
@@ -157,9 +156,9 @@ export const LayerUploader = () => {
       </div>
       <button
         type="submit"
-        className="rounded-xl font-mono mt-6 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-yellow-500 hover:-translate-y-1"
+        className="rounded-xl font-sans mt-6 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-yellow-500 hover:-translate-y-1"
       >
-        Upload layer
+        Create Layer
       </button>
     </Form>
   );

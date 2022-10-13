@@ -12,18 +12,21 @@ const s3 = new S3({
 
 const uploadHandler: UploadHandler = async ({ name, filename, data }) => {
   // 2
-  const stream = Readable.from(data);  
+  const stream = Readable.from(data);
 
   if (name !== "layer") {
     stream.resume();
     return;
   }
 
+  const date = new Date();
+  const ms = date.getTime();
+
   // 3
   const { Location } = await s3
     .upload({
       Bucket: process.env.FM_BUCKET_NAME || "",
-      Key: filename,
+      Key: `${Math.trunc(ms / 10000)}.${filename}`,
       Body: stream,
     })
     .promise();

@@ -4,11 +4,12 @@ import { LoaderArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Outlet, useSubmit } from "@remix-run/react";
 
 import Map, { Source, Layer } from "react-map-gl";
+import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
+import clsx from "clsx";
+
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../../styles/mapbox.css";
-import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
-
-import clsx from "clsx";
+import { assignedStyle, highlightedStyle, todoStyle } from "~/styles/features";
 
 export function links() {
   return [
@@ -48,30 +49,6 @@ export async function action({ request, params }) {
     ids == "" ? "" : JSON.parse(ids).reduce((a, b) => a + "/" + b, "");
   return redirect(`admin/tasks/${taskId}${path}`);
 }
-
-const todoLayer = {
-  type: "circle",
-  paint: {
-    "circle-radius": 10,
-    "circle-color": "#2A2D5C",
-  },
-};
-
-const assignedLayer = {
-  type: "circle",
-  paint: {
-    "circle-radius": 10,
-    "circle-color": "#00FF00",
-  },
-};
-
-const highlightLayer = {
-  type: "circle",
-  paint: {
-    "circle-radius": 10,
-    "circle-color": "#FF0000",
-  },
-};
 
 export default function AdminTaskMap() {
   const { features, selectIds } = useLoaderData();
@@ -198,25 +175,25 @@ export default function AdminTaskMap() {
               <Layer type="raster" />
             </Source>
             <Source id="pg1" type="geojson" data={todoCollection}>
-              <Layer id="todo" {...todoLayer} />
+              <Layer id="todo" {...todoStyle} />
             </Source>
             <Source id="pg1" type="geojson" data={assignedCollection}>
-              <Layer id="assigned" {...assignedLayer} />
+              <Layer id="assigned" {...assignedStyle} />
             </Source>
             <Source id="pg1" type="geojson" data={selectCollection}>
-              <Layer id="highlighted" {...highlightLayer} />
+              <Layer id="highlighted" {...highlightedStyle} />
             </Source>
           </>
         ) : (
           <>
             <Source id="todo" type="geojson" data={todoCollection}>
-              <Layer id="todo" {...todoLayer} />
+              <Layer id="todo" {...todoStyle} />
             </Source>
             <Source id="assigned" type="geojson" data={assignedCollection}>
-              <Layer id="assigned" {...assignedLayer} />
+              <Layer id="assigned" {...assignedStyle} />
             </Source>
             <Source id="highlighted" type="geojson" data={selectCollection}>
-              <Layer id="highlighted" {...highlightLayer} />
+              <Layer id="highlighted" {...highlightedStyle} />
             </Source>
           </>
         )}
@@ -224,7 +201,7 @@ export default function AdminTaskMap() {
           <li>
             <div
               onClick={() => setBasemap("streets-v11")}
-              className={clsx("p2 font-mono", {
+              className={clsx("p2 font-sans", {
                 active: basemap == "streets-v11",
               })}
             >
@@ -234,7 +211,7 @@ export default function AdminTaskMap() {
           <li>
             <div
               onClick={() => setBasemap("outdoors-v11")}
-              className={clsx("p2 font-mono", {
+              className={clsx("p2 font-sans", {
                 active: basemap == "outdoors-v11",
               })}
             >
@@ -244,7 +221,7 @@ export default function AdminTaskMap() {
           <li>
             <div
               onClick={() => setBasemap("satellite-v9")}
-              className={clsx("p2 font-mono", {
+              className={clsx("p2 font-sans", {
                 active: basemap == "satellite-v9",
               })}
             >
@@ -254,7 +231,7 @@ export default function AdminTaskMap() {
           <li>
             <div
               onClick={() => setBasemap("dark-v10")}
-              className={clsx("p2 font-mono", {
+              className={clsx("p2 font-sans", {
                 active: basemap == "dark-v10",
               })}
             >

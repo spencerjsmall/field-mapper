@@ -14,10 +14,12 @@ import Map, {
   Popup,
   GeolocateControl,
 } from "react-map-gl";
+import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
+
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 import m_styles from "../../../styles/mapbox.css";
-import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
+import { assignedStyle, todoStyle } from "~/styles/features";
 
 import { requireUserId } from "~/utils/auth.server";
 import clsx from "clsx";
@@ -36,22 +38,6 @@ export function links() {
     },
   ];
 }
-
-const todoStyle = {
-  type: "circle",
-  paint: {
-    "circle-radius": 10,
-    "circle-color": "#0000FF",
-  },
-};
-
-const completedStyle = {
-  type: "circle",
-  paint: {
-    "circle-radius": 10,
-    "circle-color": "#FF0000",
-  },
-};
 
 export const loader = async ({ request, params }: LoaderArgs) => {
   const userId = await requireUserId(request);
@@ -231,7 +217,10 @@ export default function TaskMap() {
           latitude: 37.75,
           zoom: 12,
         }}
-        onMove={(e) => setShowPopup(false)}
+        onMove={(e) => {
+          setShowPopup(false);
+          setAddPoint(false);
+        }}
         mapStyle={
           basemap == "custom"
             ? "mapbox://styles/mapbox/satellite-v9"
@@ -259,7 +248,7 @@ export default function TaskMap() {
               <Layer id="todo" {...todoStyle} />
             </Source>
             <Source id="done" type="geojson" data={completedAssignments}>
-              <Layer id="done" {...completedStyle} />
+              <Layer id="done" {...assignedStyle} />
             </Source>
           </>
         ) : (
@@ -268,7 +257,7 @@ export default function TaskMap() {
               <Layer id="todo" {...todoStyle} />
             </Source>
             <Source id="done" type="geojson" data={completedAssignments}>
-              <Layer id="done" {...completedStyle} />
+              <Layer id="done" {...assignedStyle} />
             </Source>
           </>
         )}
@@ -323,7 +312,7 @@ export default function TaskMap() {
         <li>
           <div
             onClick={() => setBasemap("streets-v11")}
-            className={clsx("p2 font-mono", {
+            className={clsx("p2 font-sans", {
               active: basemap == "streets-v11",
             })}
           >
@@ -333,7 +322,7 @@ export default function TaskMap() {
         <li>
           <div
             onClick={() => setBasemap("outdoors-v11")}
-            className={clsx("p2 font-mono", {
+            className={clsx("p2 font-sans", {
               active: basemap == "outdoors-v11",
             })}
           >
@@ -343,7 +332,7 @@ export default function TaskMap() {
         <li>
           <div
             onClick={() => setBasemap("satellite-v9")}
-            className={clsx("p2 font-mono", {
+            className={clsx("p2 font-sans", {
               active: basemap == "satellite-v9",
             })}
           >
@@ -353,7 +342,7 @@ export default function TaskMap() {
         <li>
           <div
             onClick={() => setBasemap("dark-v10")}
-            className={clsx("p2 font-mono", {
+            className={clsx("p2 font-sans", {
               active: basemap == "dark-v10",
             })}
           >

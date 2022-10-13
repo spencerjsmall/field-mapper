@@ -3,7 +3,6 @@ import {
   Outlet,
   useLoaderData,
   useLocation,
-  useNavigate,
 } from "@remix-run/react";
 import { requireAdminSession } from "~/utils/auth.server";
 import { IoIosArrowDropleftCircle } from "react-icons/io";
@@ -30,14 +29,14 @@ export default function AdminLayout() {
         </Link>
 
         {pathname && (
-          <span className="uppercase font-mono text-xl pl-10">
+          <span className="uppercase font-sans text-xl pl-10">
             {pathname == "/admin/home"
               ? "home"
               : taskId.split(/(?=[A-Z])/).join(" ")}
           </span>
         )}
 
-        <div className="btn btn-sm font-mono btn-ghost">
+        <div className="btn btn-sm font-sans btn-ghost">
           <form action="/auth/logout" method="post">
             <button type="submit">Sign Out</button>
           </form>

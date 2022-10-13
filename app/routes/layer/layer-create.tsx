@@ -1,6 +1,8 @@
-import { ActionFunction, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
+import type { ActionFunction } from "@remix-run/node";
 import { getUserSession, commitSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
+import type { Prisma } from "@prisma/client";
 
 export const action: ActionFunction = async ({ request }) => {
   const session = await getUserSession(request);
@@ -9,22 +11,43 @@ export const action: ActionFunction = async ({ request }) => {
     await request.formData()
   );
 
-  console.log("features", features);
+  const parsedFeatures = JSON.parse(String(features), (key, value) =>
+    typeof value == "string" &&
+    value.length == 254 &&
+    [...new Set(Array.from(value))].length == 1
+      ? ""
+      : value
+  );
 
-  await prisma.layer.create({
-    data: {
+  let layer: Prisma.LayerCreateInput;
+  if (features == "") {
+    layer = {
       name: String(name),
       labelField:
-        field === "" ? null : String(field).toLowerCase().split(" ").join("_"),
+        field === ""
+          ? undefined
+          : String(field).toLowerCase().split(" ").join("_"),
+      dispatcher: { connect: { id: userId } },
+      defaultSurveyId: surveyId === "" ? undefined : String(surveyId),
+    };
+  } else {
+    layer = {
+      name: String(name),
+      labelField:
+        field === ""
+          ? undefined
+          : String(field).toLowerCase().split(" ").join("_"),
       dispatcher: { connect: { id: userId } },
       features: {
         createMany: {
-          data: JSON.parse(String(features)),
+          data: parsedFeatures,
         },
       },
-      defaultSurveyId: surveyId === "" ? null : String(surveyId),
-    },
-  });
+      defaultSurveyId: surveyId === "" ? undefined : String(surveyId),
+    };
+  }
+
+  await prisma.layer.create({ data: layer });
 
   session.set("task", name);
   return redirect(`/admin/tasks/${name}`, {

@@ -45,7 +45,7 @@ export default function FieldLayout() {
           </h3>
         )}
 
-        <div className="btn btn-sm font-mono btn-ghost">
+        <div className="btn btn-sm font-sans btn-ghost">
           <form action="/auth/logout" method="post">
             <button type="submit">Sign Out</button>
           </form>
