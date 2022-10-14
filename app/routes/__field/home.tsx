@@ -12,6 +12,7 @@ export const action: ActionFunction = async ({ request }) => {
   const session = await getUserSession(request);
   const { taskId } = Object.fromEntries(await request.formData());
   session.set("task", taskId);
+  session.unset("viewState");
   return redirect(`/tasks/${taskId}`, {
     headers: {
       "Set-Cookie": await commitSession(session),

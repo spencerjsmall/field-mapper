@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import type { LoaderArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -22,7 +23,11 @@ import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css
 import m_styles from "../../../styles/mapbox.css";
 import { assignedStyle, todoStyle } from "~/styles/features";
 
-import { requireUserId } from "~/utils/auth.server";
+import {
+  getUserSession,
+  commitSession,
+  requireUserSession,
+} from "~/utils/auth.server";
 import clsx from "clsx";
 import { prisma } from "~/utils/db.server";
 
@@ -41,7 +46,9 @@ export function links() {
 }
 
 export const loader = async ({ request, params }: LoaderArgs) => {
-  const userId = await requireUserId(request);
+  const session = await requireUserSession(request);
+  const userId = session.get("userId");
+  const savedState = session.get("viewState");
   const taskId = params.taskId;
   const layer = await prisma.layer.findUniqueOrThrow({
     where: { name: taskId },
@@ -60,20 +67,44 @@ export const loader = async ({ request, params }: LoaderArgs) => {
     },
   });
 
-  return { assignments, layer };
+  return { assignments, layer, savedState };
+};
+
+export const action: ActionFunction = async ({ request, params }) => {
+  const session = await getUserSession(request);
+  const taskId = params.taskId;
+  const { assignmentId, viewState } = Object.fromEntries(
+    await request.formData()
+  );
+  session.set("viewState", viewState);
+  return redirect(`/tasks/${taskId}/${assignmentId}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  });
 };
 
 export default function TaskMap() {
-  const { assignments, layer } = useLoaderData();
+  const { assignments, layer, savedState } = useLoaderData();
   const userId = useOutletContext();
-  const submit = useSubmit();
   const fetcher = useFetcher();
+  const submit = useSubmit();
 
   const [showPopup, setShowPopup] = useState(false);
   const [addPoint, setAddPoint] = useState(false);
   const [basemap, setBasemap] = useState("streets-v11");
   const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
   const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
+  const [preventZoom, setPreventZoom] = useState(true);
+  const [viewState, setViewState] = useState(
+    savedState
+      ? JSON.parse(savedState)
+      : {
+          longitude: -122.44,
+          latitude: 37.75,
+          zoom: 12,
+        }
+  );
   const [completed, setCompleted] = useState<Boolean>();
   const [assignment, setAssignment] = useState();
 
@@ -112,7 +143,7 @@ export default function TaskMap() {
   const geolocateRef = useCallback((ref) => {
     if (ref !== null) {
       setTimeout(() => {
-        // Activate as soon as the control is loaded
+        // Activate as soon as the control is loaded      
         ref.trigger();
       }, 1000);
     }
@@ -149,7 +180,7 @@ export default function TaskMap() {
       try {
         mapDirections.mapState();
       } catch (e) {
-        console.error("errorrr", e);
+        console.error("error", e);
       }
     });
     mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
@@ -168,6 +199,16 @@ export default function TaskMap() {
     );
   };
 
+  const getSurvey = () => {
+    submit(
+      {
+        assignmentId: String(assignment),
+        viewState: JSON.stringify(viewState),
+      },
+      { method: "post" }
+    );
+  };
+
   const setCurrentLocation = (e) => {
     setCCoords({
       lng: e.coords.longitude,
@@ -178,14 +219,17 @@ export default function TaskMap() {
   return (
     <div className="h-full relative">
       <Map
-        initialViewState={{
-          longitude: -122.44,
-          latitude: 37.75,
-          zoom: 12,
-        }}
+        initialViewState={viewState}
         onMove={(e) => {
           setShowPopup(false);
           setAddPoint(false);
+          setViewState(e.viewState);
+        }}
+        onZoom={(e) => {
+          if (preventZoom) {
+            e.target.stop();
+            setPreventZoom(false);
+          }
         }}
         mapStyle={
           basemap == "custom"
@@ -243,11 +287,12 @@ export default function TaskMap() {
                 Get Directions
               </button>
               {!completed && assignment && (
-                <Link to={`${assignment}`}>
-                  <button className="btn btn-xs btn-outline btn-secondary">
-                    Complete Survey
-                  </button>
-                </Link>
+                <button
+                  onClick={getSurvey}
+                  className="btn btn-xs btn-outline btn-secondary"
+                >
+                  Complete Survey
+                </button>
               )}
             </div>
           </Popup>
