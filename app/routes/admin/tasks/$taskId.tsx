@@ -1,9 +1,15 @@
 import { useState, useMemo, useRef } from "react";
 import { prisma } from "~/utils/db.server";
 import { LoaderArgs, redirect } from "@remix-run/node";
-import { useLoaderData, Outlet, useSubmit } from "@remix-run/react";
+import {
+  useLoaderData,
+  Outlet,
+  useSubmit,
+  useOutletContext,
+  useFetcher,
+} from "@remix-run/react";
 
-import Map, { Source, Layer } from "react-map-gl";
+import Map, { Source, Layer, Popup } from "react-map-gl";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import clsx from "clsx";
 
@@ -38,7 +44,7 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   });
   const pathname = params["*"];
   const selectIds = pathname ? pathname.split("/").map((i) => parseInt(i)) : [];
-  return { features, selectIds };
+  return { features, selectIds, layer };
 };
 
 export async function action({ request, params }) {
@@ -51,13 +57,16 @@ export async function action({ request, params }) {
 }
 
 export default function AdminTaskMap() {
-  const { features, selectIds } = useLoaderData();
+  const { features, selectIds, layer } = useLoaderData();
+  const userId = useOutletContext();
   const mapRef = useRef();
   const submit = useSubmit();
+  const fetcher = useFetcher();
 
   const [basemap, setBasemap] = useState("streets-v11");
   const [addPoint, setAddPoint] = useState(false);
   const [start, setStart] = useState<Number[]>();
+  const [clickCoords, setClickCoords] = useState({ lng: 0, lat: 0 });
   const [filterIds, setFilterIds] = useState<Number[]>(selectIds);
 
   const selectCollection = useMemo(
@@ -109,7 +118,21 @@ export default function AdminTaskMap() {
         },
         { method: "post" }
       );
+      setClickCoords(e.lngLat);
+      setAddPoint(true);
     }
+  };
+
+  const createPoint = () => {
+    setAddPoint(false);
+    fetcher.submit(
+      {
+        layerId: String(layer.id),
+        coordinates: JSON.stringify(clickCoords),
+        userId: String(userId),
+      },
+      { method: "post", action: "/layer/feature-create" }
+    );
   };
 
   const getQueried = (end: Array<Number>) => {
@@ -150,6 +173,7 @@ export default function AdminTaskMap() {
         }
         interactiveLayerIds={["todo", "assigned"]}
         onClick={onFeatureClick}
+        onMove={() => setAddPoint(false)}
         ref={mapRef}
         className="basis-2/3 relative"
         onZoom={(e) => {
@@ -197,6 +221,23 @@ export default function AdminTaskMap() {
             </Source>
           </>
         )}
+
+        {addPoint && (
+          <Popup
+            longitude={clickCoords.lng}
+            latitude={clickCoords.lat}
+            anchor="bottom"
+            onClose={() => setAddPoint(false)}
+          >
+            <button
+              onClick={createPoint}
+              className="btn btn-xs btn-outline btn-primary"
+            >
+              Add Point
+            </button>
+          </Popup>
+        )}
+
         <ul className="menu menu-horizontal bg-black w-auto absolute top-3 left-1 text-xs p-1 rounded-box">
           <li>
             <div
