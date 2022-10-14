@@ -1,18 +1,18 @@
 import { prisma } from "~/utils/db.server";
-import type { LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { useLoaderData, useSubmit, Form, Link } from "@remix-run/react";
+import { useLoaderData, useSubmit } from "@remix-run/react";
 import {
   getUserSession,
   commitSession,
   requireUserId,
 } from "~/utils/auth.server";
-import { getUserLayers } from "~/utils/geo.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const session = await getUserSession(request);
   const { taskId } = Object.fromEntries(await request.formData());
   session.set("task", taskId);
+  session.unset("viewState");
   return redirect(`/tasks/${taskId}`, {
     headers: {
       "Set-Cookie": await commitSession(session),
@@ -23,7 +23,19 @@ export const action: ActionFunction = async ({ request }) => {
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
-  const userLayers = await getUserLayers(userId);
+  const userLayers = await prisma.layer.findMany({
+    where: {
+      features: {
+        some: {
+          assignment: {
+            is: {
+              assigneeId: userId,
+            },
+          },
+        },
+      },
+    },
+  });
   return { user, userLayers };
 };
 

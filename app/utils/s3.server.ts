@@ -2,7 +2,6 @@ import { Readable } from "stream";
 import type { UploadHandler } from "@remix-run/node";
 import { unstable_parseMultipartFormData } from "@remix-run/node";
 import S3 from "aws-sdk/clients/s3";
-import cuid from "cuid";
 
 // 1
 const s3 = new S3({
@@ -20,11 +19,14 @@ const uploadHandler: UploadHandler = async ({ name, filename, data }) => {
     return;
   }
 
+  const date = new Date();
+  const ms = date.getTime();
+
   // 3
   const { Location } = await s3
     .upload({
       Bucket: process.env.FM_BUCKET_NAME || "",
-      Key: `${cuid()}.${filename.split(".").slice(-1)}`,
+      Key: `${Math.trunc(ms / 10000)}.${filename}`,
       Body: stream,
     })
     .promise();

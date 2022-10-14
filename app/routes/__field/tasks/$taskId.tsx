@@ -1,12 +1,12 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 import type { LoaderArgs } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-
-import "@loaders.gl/polyfills";
-import { KMLLoader } from "@loaders.gl/kml";
-import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
-import { ShapefileLoader } from "@loaders.gl/shapefile";
-import { load, selectLoader } from "@loaders.gl/core";
+import { redirect } from "@remix-run/node";
+import {
+  useLoaderData,  
+  useOutletContext,
+  useSubmit,
+  useFetcher,
+} from "@remix-run/react";
 
 import Map, {
   Source,
@@ -15,13 +15,18 @@ import Map, {
   Popup,
   GeolocateControl,
 } from "react-map-gl";
+import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
+
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 import m_styles from "../../../styles/mapbox.css";
-import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
-import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
+import { assignedStyle, todoStyle } from "~/styles/features";
 
-import { requireUserId } from "~/utils/auth.server";
+import {
+  getUserSession,
+  commitSession,
+  requireUserSession,
+} from "~/utils/auth.server";
 import clsx from "clsx";
 import { prisma } from "~/utils/db.server";
 
@@ -39,71 +44,105 @@ export function links() {
   ];
 }
 
-const todoStyle = {
-  type: "circle",
-  paint: {
-    "circle-radius": 10,
-    "circle-color": "#0000FF",
-  },
-};
-
-const completedStyle = {
-  type: "circle",
-  paint: {
-    "circle-radius": 10,
-    "circle-color": "#FF0000",
-  },
-};
-
 export const loader = async ({ request, params }: LoaderArgs) => {
-  const userId = await requireUserId(request);
+  const session = await requireUserSession(request);
+  const userId = session.get("userId");
+  const savedState = session.get("viewState");
   const taskId = params.taskId;
   const layer = await prisma.layer.findUniqueOrThrow({
     where: { name: taskId },
   });
-  const assignments = await prisma.assignment.findMany({
+  const assignments = await prisma.feature.findMany({
     where: {
       layerId: layer.id,
-      assigneeId: userId,
+      assignment: {
+        is: {
+          assigneeId: userId,
+        },
+      },
+    },
+    include: {
+      assignment: true,
     },
   });
-  const loader = await selectLoader(layer.url, [
-    KMLLoader,
-    GeoJSONLoader,
-    ShapefileLoader,
-  ]);
-  const data = await load(layer.url, loader);
-  const points =
-    loader == ShapefileLoader
-      ? {
-          type: "FeatureCollection",
-          features: data.data,
-        }
-      : data;
-  const pointKeys = [];
-  for (let key of points.features.keys()) {
-    pointKeys.push(key);
-    points.features[key]["id"] = key;
-  }
-  return { assignments, points };
+
+  return { assignments, layer, savedState };
+};
+
+export const action: ActionFunction = async ({ request, params }) => {
+  const session = await getUserSession(request);
+  const taskId = params.taskId;
+  const { assignmentId, viewState } = Object.fromEntries(
+    await request.formData()
+  );
+  session.set("viewState", viewState);
+  return redirect(`/tasks/${taskId}/${assignmentId}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  });
 };
 
 export default function TaskMap() {
-  const { assignments, points } = useLoaderData();
+  const { assignments, layer, savedState } = useLoaderData();
+  const userId = useOutletContext();
+  const fetcher = useFetcher();
+  const submit = useSubmit();
 
   const [showPopup, setShowPopup] = useState(false);
-  const [showMark, setShowMark] = useState(false);
   const [addPoint, setAddPoint] = useState(false);
   const [basemap, setBasemap] = useState("streets-v11");
   const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
   const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
+  const [preventZoom, setPreventZoom] = useState(true);
+  const [viewState, setViewState] = useState(
+    savedState
+      ? JSON.parse(savedState)
+      : {
+          longitude: -122.44,
+          latitude: 37.75,
+          zoom: 12,
+        }
+  );
   const [completed, setCompleted] = useState<Boolean>();
   const [assignment, setAssignment] = useState();
+
+  const completedAssignments = {
+    type: "FeatureCollection",
+    features: assignments
+      .filter((f) => f.assignment.completed)
+      .map((f) => ({
+        id: f.id,
+        geometry: f.geojson.geometry,
+        properties: {
+          ...f.geojson.properties,
+          surveyId: f.assignment.surveyId,
+          assignmentId: f.assignment.id,
+          completed: true,
+        },
+      })),
+  };
+
+  const todoAssignments = {
+    type: "FeatureCollection",
+    features: assignments
+      .filter((f) => !f.assignment.completed)
+      .map((f) => ({
+        id: f.id,
+        geometry: f.geojson.geometry,
+        properties: {
+          ...f.geojson.properties,
+          surveyId: f.assignment.surveyId,
+          assignmentId: f.assignment.id,
+          completed: false,
+        },
+      })),
+  };
 
   const geolocateRef = useCallback((ref) => {
     if (ref !== null) {
       setTimeout(() => {
-        // Activate as soon as the control is loaded
+        // Activate as soon as the control is loaded      
         ref.trigger();
       }, 1000);
     }
@@ -113,16 +152,10 @@ export default function TaskMap() {
     console.log(e.features);
     setDCoords(e.lngLat);
     if (e.features.length > 0) {
-      let id = e.features[0].id;
       setShowPopup(true);
-      let assn = assignments.find((a) => a.recordId == id);
-      setAssignment(assn);
-      setCompleted(assn.completed);
-    } else if (addPoint) {
-      setShowMark(true);
-    } else {
-      setAddPoint(false);
-    }
+      setAssignment(e.features[0].properties.assignmentId);
+      setCompleted(e.features[0].properties.completed);
+    } else setAddPoint(true);
   };
 
   const mapDirections = new MapboxDirections({
@@ -146,17 +179,34 @@ export default function TaskMap() {
       try {
         mapDirections.mapState();
       } catch (e) {
-        console.error("errorrr", e);
+        console.error("error", e);
       }
     });
     mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
     mapDirections.setDestination([dCoords.lng, dCoords.lat]);
   };
 
-  // const addPoint = (e) => {
-  //   //setShowMark(false);
+  const createPoint = () => {
+    setAddPoint(false);
+    fetcher.submit(
+      {
+        layerId: String(layer.id),
+        coordinates: JSON.stringify(dCoords),
+        userId: String(userId),
+      },
+      { method: "post", action: "/layer/feature-create" }
+    );
+  };
 
-  // };
+  const getSurvey = () => {
+    submit(
+      {
+        assignmentId: String(assignment),
+        viewState: JSON.stringify(viewState),
+      },
+      { method: "post" }
+    );
+  };
 
   const setCurrentLocation = (e) => {
     setCCoords({
@@ -165,39 +215,21 @@ export default function TaskMap() {
     });
   };
 
-  const completedFilter = useMemo(
-    () => [
-      "in",
-      ["id"],
-      [
-        "literal",
-        assignments.filter((a) => a.completed).map((a) => a.recordId),
-      ],
-    ],
-    [assignments]
-  );
-
-  const todoFilter = useMemo(
-    () => [
-      "in",
-      ["id"],
-      [
-        "literal",
-        assignments.filter((a) => !a.completed).map((a) => a.recordId),
-      ],
-    ],
-    [assignments]
-  );
-
   return (
     <div className="h-full relative">
       <Map
-        initialViewState={{
-          longitude: -122.44,
-          latitude: 37.75,
-          zoom: 12,
+        initialViewState={viewState}
+        onMove={(e) => {
+          setShowPopup(false);
+          setAddPoint(false);
+          setViewState(e.viewState);
         }}
-        onMove={(e) => setShowPopup(false)}
+        onZoom={(e) => {
+          if (preventZoom) {
+            e.target.stop();
+            setPreventZoom(false);
+          }
+        }}
         mapStyle={
           basemap == "custom"
             ? "mapbox://styles/mapbox/satellite-v9"
@@ -221,20 +253,20 @@ export default function TaskMap() {
             >
               <Layer type="raster" />
             </Source>
-            <Source id="todo" type="geojson" data={points}>
+            <Source id="todo" type="geojson" data={todoAssignments}>
               <Layer id="todo" {...todoStyle} />
             </Source>
-            <Source id="done" type="geojson" data={points}>
-              <Layer id="done" {...completedStyle} />
+            <Source id="done" type="geojson" data={completedAssignments}>
+              <Layer id="done" {...assignedStyle} />
             </Source>
           </>
         ) : (
           <>
-            <Source id="todo" type="geojson" data={points}>
-              <Layer id="todo" {...todoStyle} filter={todoFilter} />
+            <Source id="todo" type="geojson" data={todoAssignments}>
+              <Layer id="todo" {...todoStyle} />
             </Source>
-            <Source id="done" type="geojson" data={points}>
-              <Layer id="done" {...completedStyle} filter={completedFilter} />
+            <Source id="done" type="geojson" data={completedAssignments}>
+              <Layer id="done" {...assignedStyle} />
             </Source>
           </>
         )}
@@ -254,29 +286,35 @@ export default function TaskMap() {
                 Get Directions
               </button>
               {!completed && assignment && (
-                <Link to={`${assignment.id}`}>
-                  <button className="btn btn-xs btn-outline btn-secondary">
-                    Complete Survey
-                  </button>
-                </Link>
+                <button
+                  onClick={getSurvey}
+                  className="btn btn-xs btn-outline btn-secondary"
+                >
+                  Complete Survey
+                </button>
               )}
             </div>
           </Popup>
         )}
 
-        {showMark && addPoint && (
+        {addPoint && (
           <Popup
             longitude={dCoords.lng}
             latitude={dCoords.lat}
             anchor="bottom"
-            onClose={() => setShowMark(false)}
+            onClose={() => setAddPoint(false)}
           >
-            <button className="btn btn-xs btn-outline btn-primary">
+            <button
+              onClick={createPoint}
+              className="btn btn-xs btn-outline btn-primary"
+            >
               Add Point
             </button>
           </Popup>
         )}
+
         <GeolocateControl onGeolocate={setCurrentLocation} ref={geolocateRef} />
+
         {mapDirections != null && <DirectionsControl />}
       </Map>
 
@@ -284,7 +322,7 @@ export default function TaskMap() {
         <li>
           <div
             onClick={() => setBasemap("streets-v11")}
-            className={clsx("p2 font-mono", {
+            className={clsx("p2 font-sans", {
               active: basemap == "streets-v11",
             })}
           >
@@ -294,7 +332,7 @@ export default function TaskMap() {
         <li>
           <div
             onClick={() => setBasemap("outdoors-v11")}
-            className={clsx("p2 font-mono", {
+            className={clsx("p2 font-sans", {
               active: basemap == "outdoors-v11",
             })}
           >
@@ -304,7 +342,7 @@ export default function TaskMap() {
         <li>
           <div
             onClick={() => setBasemap("satellite-v9")}
-            className={clsx("p2 font-mono", {
+            className={clsx("p2 font-sans", {
               active: basemap == "satellite-v9",
             })}
           >
@@ -314,7 +352,7 @@ export default function TaskMap() {
         <li>
           <div
             onClick={() => setBasemap("dark-v10")}
-            className={clsx("p2 font-mono", {
+            className={clsx("p2 font-sans", {
               active: basemap == "dark-v10",
             })}
           >
@@ -322,13 +360,6 @@ export default function TaskMap() {
           </div>
         </li>
       </ul>
-
-      <button
-        onClick={() => setAddPoint(!addPoint)}
-        className="btn btn-sm absolute top-14 right-2.5 btn-square bg-white text-black"
-      >
-        {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
-      </button>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { prisma } from "~/utils/db.server";
 import { useLoaderData, useOutletContext } from "@remix-run/react";
 import { json } from "@remix-run/node";
+import JSONPretty from "react-json-pretty";
 
 export const loader = async ({ params }: LoaderArgs) => {
   const pathname = params["*"];
@@ -12,17 +13,13 @@ export const loader = async ({ params }: LoaderArgs) => {
 };
 
 export async function action({ request, params }) {
-  const taskId = params.taskId;
-  const layer = await prisma.layer.findUniqueOrThrow({
-    where: { name: taskId },
-  });
   const pathname = params["*"];
   const ids = pathname.split("/").map((i) => parseInt(i));
 
-  const { recordId, assigneeEmail, surveyId, actionId } = Object.fromEntries(
+  const { featureId, assigneeEmail, surveyId, actionId } = Object.fromEntries(
     await request.formData()
   );
-  const recId = parseInt(recordId);
+  const featId = parseInt(featureId);
   const assignee = await prisma.user.findUnique({
     where: { email: assigneeEmail },
   });
@@ -38,8 +35,7 @@ export async function action({ request, params }) {
     case "create": {
       return await prisma.assignment.create({
         data: {
-          layer: { connect: { id: layer.id } },
-          recordId: recId,
+          feature: { connect: { id: featId } },
           surveyId: surveyId,
           assignee: { connect: { id: assignee.id } },
         },
@@ -47,7 +43,7 @@ export async function action({ request, params }) {
     }
     case "update": {
       let assignment = await prisma.assignment.findFirstOrThrow({
-        where: { layerId: layer.id, recordId: recId },
+        where: { featureId: featId },
       });
       return await prisma.assignment.update({
         where: {
@@ -63,7 +59,7 @@ export async function action({ request, params }) {
       const resultArr = [];
       for (const id of ids) {
         let assignment = await prisma.assignment.findFirst({
-          where: { layerId: layer.id, recordId: id },
+          where: { featureId: id },
         });
         const result = await prisma.assignment.upsert({
           where: { id: assignment?.id ? assignment.id : -1 },
@@ -72,8 +68,7 @@ export async function action({ request, params }) {
             assignee: { connect: { id: assignee.id } },
           },
           create: {
-            layer: { connect: { id: layer.id } },
-            recordId: id,
+            feature: { connect: { id: id } },
             surveyId: surveyId,
             assignee: { connect: { id: assignee.id } },
           },
@@ -88,19 +83,9 @@ export async function action({ request, params }) {
 }
 
 export default function TaskSidebar() {
-  const { ids, layer } = useLoaderData();
-  const { assignments, points } = useOutletContext();
-  const selected = ids.map((id) => {
-    let assn = assignments.find((a) => a.recordId === id);
-    if (!assn) {
-      return {
-        recordId: id,
-        surveyId: null,
-        assignee: null,
-      };
-    }
-    return assn;
-  });
+  const { ids, layer } = useLoaderData();  
+  const { features } = useOutletContext();
+  const selected = features.filter((f) => ids.includes(f.id));
 
   return (
     <div className="h-full p-4">
@@ -113,7 +98,7 @@ export default function TaskSidebar() {
                 className="collapse collapse-arrow w-full border w-full border-base-300 bg-white rounded-box"
               >
                 <input type="checkbox" />
-                <div className="collapse-title text-center font-mono text-black text-xl font-medium">
+                <div className="collapse-title text-center font-sans text-black text-xl font-medium">
                   Update {selected.length} records
                 </div>
                 <div className="collapse-content text-black w-full">
@@ -132,6 +117,11 @@ export default function TaskSidebar() {
                         className="bg-black text-white"
                         type="text"
                         name="surveyId"
+                        defaultValue={
+                          layer.defaultSurveyId
+                            ? layer.defaultSurveyId
+                            : undefined
+                        }
                       />
                     </label>
                     <button
@@ -147,33 +137,30 @@ export default function TaskSidebar() {
               </div>
             </li>
           )}
-          {selected.map((obj) => (
-            <li key={obj.recordId} className="w-full">
+          {selected.map((feature) => (
+            <li key={feature.id} className="w-full">
               <div
-                tabIndex={obj.recordId}
+                tabIndex={feature.id}
                 className="collapse collapse-arrow border border-base-300 bg-black rounded-box w-full"
               >
                 <input type="checkbox" />
-                <div className="collapse-title font-mono text-center text-xl text-white font-medium w-full">
-                  {layer.labelField
-                    ? `${
-                        points.features[obj.recordId].properties[
-                          layer.labelField
-                        ]
-                      }`
-                    : `Record #${obj.recordId}`}
+                <div className="collapse-title font-sans text-center text-xl text-white font-medium w-full">
+                  {layer.labelField &&
+                  feature.geojson.properties[layer.labelField] !== undefined
+                    ? `${feature.geojson.properties[layer.labelField]}`
+                    : `Record #${feature.id}`}
                 </div>
                 <div className="collapse-content w-full">
                   <form
                     method="post"
                     className="flex flex-col w-full items-center"
                   >
-                    <input type="hidden" name="recordId" value={obj.recordId} />
+                    <input type="hidden" name="featureId" value={feature.id} />
                     <h3>Assignee:</h3>
                     <label>
                       <input
                         type="text"
-                        defaultValue={obj.assignee?.email}
+                        defaultValue={feature.assignment?.assignee.email}
                         name="assigneeEmail"
                       />
                     </label>
@@ -181,19 +168,33 @@ export default function TaskSidebar() {
                     <label>
                       <input
                         type="text"
-                        defaultValue={obj.surveyId}
+                        defaultValue={
+                          feature.assignment
+                            ? feature.assignment.surveyId
+                            : layer.defaultSurveyId
+                            ? layer.defaultSurveyId
+                            : undefined
+                        }
                         name="surveyId"
                       />
                     </label>
                     <button
                       type="submit"
                       name="actionId"
-                      value={obj.surveyId ? "update" : "create"}
+                      value={feature.assignment?.surveyId ? "update" : "create"}
                       className="rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
                     >
-                      {obj.surveyId ? "Update" : "Assign"}
+                      {feature.assignment?.surveyId ? "Update" : "Assign"}
                     </button>
                   </form>
+
+                  <h3 className="text-white my-2">Details:</h3>
+                  <div className="overflow-x-scroll">
+                    <JSONPretty
+                      style={{ fontSize: "0.9em" }}
+                      data={feature.geojson.properties}
+                    ></JSONPretty>
+                  </div>
                 </div>
               </div>
             </li>

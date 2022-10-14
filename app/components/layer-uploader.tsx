@@ -4,12 +4,19 @@ import React, { useRef, useState } from "react";
 import { Form } from "@remix-run/react";
 import { AiOutlinePlus, AiOutlineCheck } from "react-icons/ai";
 
+import "@loaders.gl/polyfills";
+import { KMLLoader } from "@loaders.gl/kml";
+import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
+import { ShapefileLoader } from "@loaders.gl/shapefile";
+import { load, selectLoader } from "@loaders.gl/core";
+
 export const LayerUploader = () => {
   const [draggingOver, setDraggingOver] = useState(false);
   const [formData, setFormData] = useState({
-    layerUrl: "",
+    features: "",
     name: "",
     field: "",
+    surveyId: "",
   });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef(null);
@@ -21,19 +28,20 @@ export const LayerUploader = () => {
   };
 
   // 2
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     preventDefaults(e);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileUpload(e.dataTransfer.files[0]);
-      e.dataTransfer.clearData();
     }
   };
 
   // 3
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.currentTarget.files && event.currentTarget.files[0]) {
-      for (const file of event.currentTarget.files) {
-        handleFileUpload(file);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.currentTarget.files) {
+      if (event.currentTarget.files.length > 1) {
+        handleShpUpload(Array.from(event.currentTarget.files));
+      } else if (event.currentTarget.files[0]) {
+        handleFileUpload(event.currentTarget.files[0]);
       }
     }
   };
@@ -46,29 +54,37 @@ export const LayerUploader = () => {
   };
 
   const handleFileUpload = async (file: File) => {
-    let inputFormData = new FormData();
-    inputFormData.append("layer", file);
-    const response = await fetch("/layer/layer-upload", {
-      method: "POST",
-      body: inputFormData,
-    });
-    
-    const layerUrl = await response.json();
-    const extension = layerUrl.split(".").pop();
-
-    if (
-      extension == "dbf" ||
-      extension == "shx" ||
-      extension == "prj" ||
-      extension == "cpg"
-    ) {
-      console.log("PASS");
-      return null;
-    }
-
+    const loader = await selectLoader(file, [KMLLoader, GeoJSONLoader]);
+    const data = await load(file, loader);
+    const features = data.features.map((f) => ({ geojson: f }));    
     setFormData((form) => ({
       ...form,
-      layerUrl: layerUrl,
+      features: JSON.stringify(features),
+    }));
+  };
+
+  const handleShpUpload = async (files: File[]) => {
+    let shpUrl = "";
+    for (const file of files) {
+      let inputFormData = new FormData();
+      inputFormData.append("layer", file);
+      const response = await fetch("/layer/layer-upload", {
+        method: "POST",
+        body: inputFormData,
+      });
+
+      const layerUrl = await response.json();
+      const extension = layerUrl.split(".").pop();
+      if (extension == "shp") {
+        shpUrl = layerUrl;
+      }
+    }
+
+    const data = await load(shpUrl, ShapefileLoader);
+    const features = data.data.map((f) => ({ geojson: f }));
+    setFormData((form) => ({
+      ...form,
+      features: JSON.stringify(features),
     }));
   };
 
@@ -80,23 +96,27 @@ export const LayerUploader = () => {
           ref={dropRef}
           className={`${
             draggingOver ? "border-4 border-dashed border-yellow-300" : ""
-          } group relative w-24 h-24 flex justify-center items-center bg-gray-400 transition duration-300 ease-in-out hover:bg-gray-500 cursor-pointer`}
+          } group relative w-32 mt-3 h-32 flex justify-center items-center bg-gray-400 transition duration-300 ease-in-out hover:bg-gray-500 cursor-pointer`}
           onDragEnter={() => setDraggingOver(true)}
           onDragLeave={() => setDraggingOver(false)}
           onDrag={preventDefaults}
           onDragStart={preventDefaults}
           onDragEnd={preventDefaults}
           onDragOver={preventDefaults}
-          onDrop={handleDrop}
+          onDrop={handleFileDrop}
           onClick={() => fileInputRef.current?.click()}
         >
           <p className="font-extrabold text-4xl text-gray-200 cursor-pointer select-none transition duration-300 ease-in-out group-hover:opacity-0 pointer-events-none z-10">
-            {formData.layerUrl ? <AiOutlineCheck /> : <AiOutlinePlus />}
+            {formData.features.length > 0 ? (
+              <AiOutlineCheck />
+            ) : (
+              <AiOutlinePlus />
+            )}
           </p>
 
           <input
             type="file"
-            onChange={handleChange}
+            onChange={handleFileChange}
             ref={fileInputRef}
             className="hidden"
             multiple
@@ -104,13 +124,13 @@ export const LayerUploader = () => {
         </div>
         <input
           type="text"
-          name="layerUrl"
-          value={formData.layerUrl}
+          name="features"
+          value={formData.features}
           className="hidden"
           readOnly
         />
         <div className="flex flex-col ml-4">
-          <label className="text-white font-mono uppercase">Layer Name</label>
+          <label className="text-white font-sans uppercase">Layer Name</label>
           <input
             type="text"
             name="name"
@@ -118,20 +138,27 @@ export const LayerUploader = () => {
             onChange={(e) => handleInputChange(e, "name")}
             required
           />
-          <label className="text-white font-mono uppercase">Label Field</label>
+          <label className="text-white font-sans uppercase">Label Field</label>
           <input
             type="text"
             name="field"
             value={formData.field}
             onChange={(e) => handleInputChange(e, "field")}
           />
+          <label className="text-white font-sans uppercase">SurveyId</label>
+          <input
+            type="text"
+            name="surveyId"
+            value={formData.surveyId}
+            onChange={(e) => handleInputChange(e, "surveyId")}
+          />
         </div>
       </div>
       <button
         type="submit"
-        className="rounded-xl font-mono mt-6 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-yellow-500 hover:-translate-y-1"
+        className="rounded-xl font-sans mt-6 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-yellow-500 hover:-translate-y-1"
       >
-        Upload layer
+        Create Layer
       </button>
     </Form>
   );
