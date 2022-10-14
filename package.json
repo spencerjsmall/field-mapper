@@ -44,7 +44,6 @@
     "@remix-run/dev": "1.7.2",
     "@remix-run/eslint-config": "1.7.2",
     "@types/bcryptjs": "^2.4.2",
-    "@types/leaflet": "^1.7.11",
     "@types/node": "^18.7.18",
     "@types/react": "^17.0.47",
     "@types/react-dom": "^17.0.17",

@@ -1,5 +1,5 @@
 import { prisma } from "~/utils/db.server";
-import type { LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { useLoaderData, useSubmit } from "@remix-run/react";
 import {
