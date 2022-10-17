@@ -11,11 +11,11 @@ import {
 
 import Map, { Source, Layer, Popup } from "react-map-gl";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
-import clsx from "clsx";
 
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../../styles/mapbox.css";
 import { assignedStyle, highlightedStyle, todoStyle } from "~/styles/features";
+import { BasemapSelector } from "~/components/basemap-selector";
 
 export function links() {
   return [
@@ -186,41 +186,28 @@ export default function AdminTaskMap() {
           getQueried([e.originalEvent.layerX, e.originalEvent.layerY])
         }
       >
-        {basemap == "custom" ? (
-          <>
-            <Source
-              id="tiles"
-              type="raster"
-              tiles={[
-                "https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png",
-              ]}
-              tileSize={256}
-            >
-              <Layer type="raster" />
-            </Source>
-            <Source id="pg1" type="geojson" data={todoCollection}>
-              <Layer id="todo" {...todoStyle} />
-            </Source>
-            <Source id="pg1" type="geojson" data={assignedCollection}>
-              <Layer id="assigned" {...assignedStyle} />
-            </Source>
-            <Source id="pg1" type="geojson" data={selectCollection}>
-              <Layer id="highlighted" {...highlightedStyle} />
-            </Source>
-          </>
-        ) : (
-          <>
-            <Source id="todo" type="geojson" data={todoCollection}>
-              <Layer id="todo" {...todoStyle} />
-            </Source>
-            <Source id="assigned" type="geojson" data={assignedCollection}>
-              <Layer id="assigned" {...assignedStyle} />
-            </Source>
-            <Source id="highlighted" type="geojson" data={selectCollection}>
-              <Layer id="highlighted" {...highlightedStyle} />
-            </Source>
-          </>
+        {basemap == "custom" && (
+          <Source
+            id="tiles"
+            type="raster"
+            tiles={[
+              "https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png",
+            ]}
+            tileSize={256}
+          >
+            <Layer type="raster" />
+          </Source>
         )}
+
+        <Source id="todo" type="geojson" data={todoCollection}>
+          <Layer id="todo" {...todoStyle} />
+        </Source>
+        <Source id="assigned" type="geojson" data={assignedCollection}>
+          <Layer id="assigned" {...assignedStyle} />
+        </Source>
+        <Source id="highlighted" type="geojson" data={selectCollection}>
+          <Layer id="highlighted" {...highlightedStyle} />
+        </Source>
 
         {addPoint && (
           <Popup
@@ -237,50 +224,9 @@ export default function AdminTaskMap() {
             </button>
           </Popup>
         )}
-
-        <ul className="menu menu-horizontal bg-black w-auto absolute top-3 left-1 text-xs p-1 rounded-box">
-          <li>
-            <div
-              onClick={() => setBasemap("streets-v11")}
-              className={clsx("p2 font-sans", {
-                active: basemap == "streets-v11",
-              })}
-            >
-              Traffic
-            </div>
-          </li>
-          <li>
-            <div
-              onClick={() => setBasemap("outdoors-v11")}
-              className={clsx("p2 font-sans", {
-                active: basemap == "outdoors-v11",
-              })}
-            >
-              Topo
-            </div>
-          </li>
-          <li>
-            <div
-              onClick={() => setBasemap("satellite-v9")}
-              className={clsx("p2 font-sans", {
-                active: basemap == "satellite-v9",
-              })}
-            >
-              Satellite
-            </div>
-          </li>
-          <li>
-            <div
-              onClick={() => setBasemap("dark-v10")}
-              className={clsx("p2 font-sans", {
-                active: basemap == "dark-v10",
-              })}
-            >
-              Dark
-            </div>
-          </li>
-        </ul>
-
+        <div className="absolute top-3 left-1">
+          <BasemapSelector basemap={basemap} setBasemap={setBasemap} />
+        </div>
         <button
           onClick={() => setAddPoint(!addPoint)}
           className="btn btn-sm absolute top-2 right-2.5 btn-square bg-white text-black"

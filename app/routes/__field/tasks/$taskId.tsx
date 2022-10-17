@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import type { LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import {
-  useLoaderData,  
+  useLoaderData,
   useOutletContext,
   useSubmit,
   useFetcher,
@@ -21,13 +21,13 @@ import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 import m_styles from "../../../styles/mapbox.css";
 import { assignedStyle, todoStyle } from "~/styles/features";
+import { BasemapSelector } from "~/components/basemap-selector";
 
 import {
   getUserSession,
   commitSession,
   requireUserSession,
 } from "~/utils/auth.server";
-import clsx from "clsx";
 import { prisma } from "~/utils/db.server";
 
 export function links() {
@@ -142,7 +142,7 @@ export default function TaskMap() {
   const geolocateRef = useCallback((ref) => {
     if (ref !== null) {
       setTimeout(() => {
-        // Activate as soon as the control is loaded      
+        // Activate as soon as the control is loaded
         ref.trigger();
       }, 1000);
     }
@@ -241,35 +241,25 @@ export default function TaskMap() {
         interactiveLayerIds={["todo", "done"]}
         onClick={onFeatureClick}
       >
-        {basemap == "custom" ? (
-          <>
-            <Source
-              id="tiles"
-              type="raster"
-              tiles={[
-                "https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png",
-              ]}
-              tileSize={256}
-            >
-              <Layer type="raster" />
-            </Source>
-            <Source id="todo" type="geojson" data={todoAssignments}>
-              <Layer id="todo" {...todoStyle} />
-            </Source>
-            <Source id="done" type="geojson" data={completedAssignments}>
-              <Layer id="done" {...assignedStyle} />
-            </Source>
-          </>
-        ) : (
-          <>
-            <Source id="todo" type="geojson" data={todoAssignments}>
-              <Layer id="todo" {...todoStyle} />
-            </Source>
-            <Source id="done" type="geojson" data={completedAssignments}>
-              <Layer id="done" {...assignedStyle} />
-            </Source>
-          </>
+        {basemap == "custom" && (
+          <Source
+            id="tiles"
+            type="raster"
+            tiles={[
+              "https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png",
+            ]}
+            tileSize={256}
+          >
+            <Layer type="raster" />
+          </Source>
         )}
+
+        <Source id="todo" type="geojson" data={todoAssignments}>
+          <Layer id="todo" {...todoStyle} />
+        </Source>
+        <Source id="done" type="geojson" data={completedAssignments}>
+          <Layer id="done" {...assignedStyle} />
+        </Source>
 
         {showPopup && (
           <Popup
@@ -318,48 +308,9 @@ export default function TaskMap() {
         {mapDirections != null && <DirectionsControl />}
       </Map>
 
-      <ul className="menu menu-horizontal bg-white w-auto absolute top-3 left-1 text-xs p-1 rounded-box">
-        <li>
-          <div
-            onClick={() => setBasemap("streets-v11")}
-            className={clsx("p2 font-sans", {
-              active: basemap == "streets-v11",
-            })}
-          >
-            Traffic
-          </div>
-        </li>
-        <li>
-          <div
-            onClick={() => setBasemap("outdoors-v11")}
-            className={clsx("p2 font-sans", {
-              active: basemap == "outdoors-v11",
-            })}
-          >
-            Topo
-          </div>
-        </li>
-        <li>
-          <div
-            onClick={() => setBasemap("satellite-v9")}
-            className={clsx("p2 font-sans", {
-              active: basemap == "satellite-v9",
-            })}
-          >
-            Satellite
-          </div>
-        </li>
-        <li>
-          <div
-            onClick={() => setBasemap("dark-v10")}
-            className={clsx("p2 font-sans", {
-              active: basemap == "dark-v10",
-            })}
-          >
-            Dark
-          </div>
-        </li>
-      </ul>
+      <div className="absolute top-3 left-1">
+        <BasemapSelector basemap={basemap} setBasemap={setBasemap} />
+      </div>
     </div>
   );
 }
