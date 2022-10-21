@@ -1,4 +1,5 @@
 import { prisma } from "~/utils/db.server";
+import { Prisma } from "@prisma/client";
 import { LoaderFunction, ActionFunction, redirect } from "@remix-run/node";
 import { useLoaderData, useSubmit } from "@remix-run/react";
 import { LayerUploader } from "~/components/layer-uploader";
@@ -38,32 +39,64 @@ export default function HomePage() {
     submit({ taskId: layerName }, { method: "post" });
   };
 
-  return (
-    <div className="flex flex-col bg-[#2A2D5C] items-center justify-center h-full w-full">
-      <h1 className="text-white text-5xl mb-3">Welcome, {user.firstName}!</h1>
-      <h1 className="text-gray-500 text-3xl mb-14">
-        Select a layer to make assignments
-      </h1>
-      <div className="justify-center space-x-24 w-full items-start flex flex-row">
-        {userLayers && userLayers.length > 0 && (
-          <ul className="justify-center items-center flex flex-col">
-            <h2 className="pb-5 text-red-500 text-2xl">Your Layers</h2>
-            {userLayers.map((layer, i) => (
-              <li key={i}>
-                <button
-                  onClick={() => setTask(layer.name)}
-                  className="btn no-underline font-sans btn-lg text-white btn-ghost"
-                >
-                  {layer.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+  const downloadResults = async (layer) => {
+    const response = await fetch(`/admin/tasks/${layer.id}/parse`, {
+      method: "GET",
+    });
+    const fc = await response.json();
+    console.log("fc", fc);
+    const file = new Blob([JSON.stringify(fc, null, 2)], {
+      type: "application/json",
+    });
 
-        <div className="flex flex-col items-center justify-center">
-          <h2 className="pb-7 text-red-500 text-2xl">Upload a Layer</h2>
-          <LayerUploader />
+    // anchor link
+    const element = document.createElement("a");
+    element.href = URL.createObjectURL(file);
+    element.download = "test" + Date.now() + ".geojson";
+
+    // simulate link click
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  };
+
+  return (
+    <div className="flex flex-col bg-ggp bg-top bg-no-repeat bg-cover bg-fixed items-center justify-center h-full w-full">
+      <div className="flex flex-col group bg-black bg-opacity-70 hover:p-16 hover:transition-all ease-out duration-200 drop-shadow-2xl border border-gray-50 p-14 rounded-xl justify-center h-fit w-fit">
+        <h1 className="text-white text-4xl mb-3 text-start italic">
+          Welcome, {user.firstName}
+        </h1>
+        <h1 className="text-gray-400 text-xl mb-14">
+          Select a layer to make assignments
+        </h1>
+        <div className="justify-center space-x-24 w-full items-start flex flex-row">
+          {userLayers && userLayers.length > 0 && (
+            <ul className="justify-center items-center flex flex-col">
+              <h2 className="pb-5 text-red-500 text-2xl">Your Layers</h2>
+              {userLayers.map((layer, i) => (
+                <li key={i}>
+                  <button
+                    onClick={() => setTask(layer.name)}
+                    className="btn no-underline font-sans btn-lg text-white btn-ghost"
+                  >
+                    {layer.name}
+                  </button>
+                  <button
+                    onClick={() => downloadResults(layer)}
+                    className="btn font-sans btn-xs text-white btn-ghost"
+                    id="downloadBtn"
+                    value="download"
+                  >
+                    Results
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="flex flex-col items-center justify-center">
+            <h2 className="pb-7 text-red-500 text-2xl">Upload a Layer</h2>
+            <LayerUploader />
+          </div>
         </div>
       </div>
     </div>

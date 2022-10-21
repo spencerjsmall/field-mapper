@@ -96,7 +96,7 @@ export const LayerUploader = () => {
           ref={dropRef}
           className={`${
             draggingOver ? "border-4 border-dashed border-yellow-300" : ""
-          } group relative w-32 mt-3 h-32 flex justify-center items-center bg-gray-400 transition duration-300 ease-in-out hover:bg-gray-500 cursor-pointer`}
+          } group relative w-32 mt-3 h-32 flex justify-center items-center bg-black border border-slate-100 transition duration-300 ease-in-out hover:bg-red-500 cursor-pointer`}
           onDragEnter={() => setDraggingOver(true)}
           onDragLeave={() => setDraggingOver(false)}
           onDrag={preventDefaults}
@@ -106,7 +106,7 @@ export const LayerUploader = () => {
           onDrop={handleFileDrop}
           onClick={() => fileInputRef.current?.click()}
         >
-          <p className="font-extrabold text-4xl text-gray-200 cursor-pointer select-none transition duration-300 ease-in-out group-hover:opacity-0 pointer-events-none z-10">
+          <p className="font-extrabold text-4xl text-gray-200 cursor-pointer select-none transition duration-300 ease-in-out pointer-events-none z-10">
             {formData.features.length > 0 ? (
               <AiOutlineCheck />
             ) : (
@@ -130,7 +130,7 @@ export const LayerUploader = () => {
           readOnly
         />
         <div className="flex flex-col ml-4">
-          <label className="text-white font-sans uppercase">Layer Name</label>
+          <label className="text-white font-sans">Layer Name</label>
           <input
             type="text"
             name="name"
@@ -138,14 +138,14 @@ export const LayerUploader = () => {
             onChange={(e) => handleInputChange(e, "name")}
             required
           />
-          <label className="text-white font-sans uppercase">Label Field</label>
+          <label className="text-white font-sans">Label Field (optional) </label>
           <input
             type="text"
             name="field"
             value={formData.field}
             onChange={(e) => handleInputChange(e, "field")}
           />
-          <label className="text-white font-sans uppercase">SurveyId</label>
+          <label className="text-white font-sans">Default Survey (optional)</label>
           <input
             type="text"
             name="surveyId"
@@ -156,7 +156,7 @@ export const LayerUploader = () => {
       </div>
       <button
         type="submit"
-        className="rounded-xl font-sans mt-6 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-yellow-500 hover:-translate-y-1"
+        className="rounded-xl font-sans mt-6 bg-black border border-white px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
       >
         Create Layer
       </button>

@@ -1,8 +1,9 @@
 .mapboxgl-map {
   .mapboxgl-popup.mapboxgl-popup-anchor-bottom {
     .mapboxgl-popup-content {
-      background-color: white !important;
-      border-radius: 8px;
+      background-color: red !important;
+      border-radius: 3px;
+      width: fit-content;
 
       .mapboxgl-popup-close-button {
         visibility: hidden;
@@ -10,7 +11,7 @@
     }
 
     .mapboxgl-popup-tip {
-      border-top-color: white !important;
+      border-top-color: red !important;
     }
   }
 }

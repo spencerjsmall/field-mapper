@@ -140,13 +140,16 @@ export default function Login() {
         {action === "login" ? "Sign Up" : "Sign In"}
       </button>
 
-      <h2 className="text-5xl font-extrabold text-blue-600">Field Mapping</h2>
-      <p className="font-semibold text-slate-300">
+      <h1 className="uppercase text-white">Field Mapper</h1>
+      <p className=" text-gray-500">
         {action === "login"
           ? "Log In to Start Mapping"
           : "Sign Up To Get Started"}
       </p>
-      <form method="POST" className="rounded-2xl bg-gray-200 p-6 w-96">
+      <form
+        method="POST"
+        className="rounded-lg bg-gray-600 p-6 w-3/4 md:w-1/2 lg:w-1/3"
+      >
         <div className="text-xs font-semibold text-center tracking-wide text-red-500 w-full">
           {formError}
         </div>
@@ -184,31 +187,29 @@ export default function Login() {
               value={formData.lastName}
               error={errors?.lastName}
             />
-            <span className="text-blue-600 font-semibold">Sign up as a...</span>
+            <span className="font-space text-white">Sign up as a...</span>
             <div className="form-control">
               <label className="label cursor-pointer">
-                <span className="label-text text-black font-semibold">
-                  Surveyor
-                </span>
+                <span className="label-text font-space text-red">Surveyor</span>
                 <input
                   type="radio"
                   name="role"
                   value="USER"
-                  className="radio checked:bg-blue-500"
+                  className="radio checked:bg-red-500"
                   checked
                 />
               </label>
             </div>
             <div className="form-control">
               <label className="label cursor-pointer">
-                <span className="label-text text-black font-semibold">
+                <span className="label-text font-space text-red">
                   Dispatcher
                 </span>
                 <input
                   type="radio"
                   name="role"
                   value="ADMIN"
-                  className="radio checked:bg-blue-500"
+                  className="radio checked:bg-red-500"
                   checked
                 />
               </label>
@@ -221,7 +222,7 @@ export default function Login() {
             type="submit"
             name="_action"
             value={action}
-            className="rounded-xl mt-2 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
+            className="rounded-lg mt-2 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
           >
             {action === "login" ? "Sign In" : "Sign Up"}
           </button>

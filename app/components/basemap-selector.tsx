@@ -25,9 +25,9 @@ export function BasemapSelector({ basemap, setBasemap }) {
       </li>
       <li>
         <div
-          onClick={() => setBasemap("satellite-v9")}
+          onClick={() => setBasemap("satellite")}
           className={clsx("p2 font-sans", {
-            active: basemap == "satellite-v9",
+            active: basemap == "satellite",
           })}
         >
           Satellite

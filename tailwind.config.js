@@ -2,7 +2,15 @@
 module.exports = {
   content: ["./app/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        space: ["Space Grotesk", "sans-serif"],
+      },
+      backgroundImage: {
+        ggp: "url('/images/ggp-aerial.jpg')",
+        ob: "url('/images/ob-aerial.jpg')",
+      },
+    },
   },
   plugins: [require("daisyui")],
 };

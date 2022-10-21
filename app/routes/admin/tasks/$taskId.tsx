@@ -16,6 +16,7 @@ import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../../styles/mapbox.css";
 import { assignedStyle, highlightedStyle, todoStyle } from "~/styles/features";
 import { BasemapSelector } from "~/components/basemap-selector";
+import crosshairs from "../../../../public/images/crosshairs.svg";
 
 export function links() {
   return [
@@ -63,11 +64,15 @@ export default function AdminTaskMap() {
   const submit = useSubmit();
   const fetcher = useFetcher();
 
-  const [basemap, setBasemap] = useState("streets-v11");
+  const [basemap, setBasemap] = useState("satellite");
   const [addPoint, setAddPoint] = useState(false);
   const [start, setStart] = useState<Number[]>();
-  const [clickCoords, setClickCoords] = useState({ lng: 0, lat: 0 });
   const [filterIds, setFilterIds] = useState<Number[]>(selectIds);
+  const [viewState, setViewState] = useState({
+    longitude: -122.44,
+    latitude: 37.75,
+    zoom: 12,
+  });
 
   const selectCollection = useMemo(
     () => ({
@@ -101,6 +106,7 @@ export default function AdminTaskMap() {
 
   const onFeatureClick = (e) => {
     console.log(e.lngLat);
+    setAddPoint(false);
     if (e.features.length > 0) {
       console.log(e.features);
       setFilterIds([e.features[0].id]);
@@ -110,7 +116,7 @@ export default function AdminTaskMap() {
         },
         { method: "post" }
       );
-    } else {
+    } else if (filterIds.length > 0) {
       setFilterIds([]);
       submit(
         {
@@ -118,17 +124,17 @@ export default function AdminTaskMap() {
         },
         { method: "post" }
       );
-      setClickCoords(e.lngLat);
-      setAddPoint(true);
     }
   };
 
   const createPoint = () => {
-    setAddPoint(false);
     fetcher.submit(
       {
         layerId: String(layer.id),
-        coordinates: JSON.stringify(clickCoords),
+        coordinates: JSON.stringify({
+          lng: viewState.longitude,
+          lat: viewState.latitude,
+        }),
         userId: String(userId),
       },
       { method: "post", action: "/layer/feature-create" }
@@ -164,7 +170,7 @@ export default function AdminTaskMap() {
           zoom: 12,
         }}
         mapStyle={
-          basemap == "custom"
+          basemap == "satellite"
             ? "mapbox://styles/mapbox/satellite-v9"
             : `mapbox://styles/mapbox/${basemap}`
         }
@@ -173,9 +179,9 @@ export default function AdminTaskMap() {
         }
         interactiveLayerIds={["todo", "assigned"]}
         onClick={onFeatureClick}
-        onMove={() => setAddPoint(false)}
         ref={mapRef}
         className="basis-2/3 relative"
+        onMove={(e) => setViewState(e.viewState)}
         onZoom={(e) => {
           e.target.stop();
         }}
@@ -186,7 +192,7 @@ export default function AdminTaskMap() {
           getQueried([e.originalEvent.layerX, e.originalEvent.layerY])
         }
       >
-        {basemap == "custom" && (
+        {basemap == "satellite" && (
           <Source
             id="tiles"
             type="raster"
@@ -195,7 +201,7 @@ export default function AdminTaskMap() {
             ]}
             tileSize={256}
           >
-            <Layer type="raster" />
+            <Layer beforeId="assigned" type="raster" />
           </Source>
         )}
 
@@ -203,40 +209,44 @@ export default function AdminTaskMap() {
           <Layer id="todo" {...todoStyle} />
         </Source>
         <Source id="assigned" type="geojson" data={assignedCollection}>
-          <Layer id="assigned" {...assignedStyle} />
+          <Layer beforeId="highlighted" id="assigned" {...assignedStyle} />
         </Source>
         <Source id="highlighted" type="geojson" data={selectCollection}>
-          <Layer id="highlighted" {...highlightedStyle} />
+          <Layer beforeId="todo" id="highlighted" {...highlightedStyle} />
         </Source>
 
         {addPoint && (
-          <Popup
-            longitude={clickCoords.lng}
-            latitude={clickCoords.lat}
-            anchor="bottom"
-            onClose={() => setAddPoint(false)}
-          >
-            <button
-              onClick={createPoint}
-              className="btn btn-xs btn-outline btn-primary"
-            >
-              Add Point
-            </button>
-          </Popup>
+          <>
+            <div className="absolute top-1/2 left-1/2 transform pointer-events-none -translate-x-1/2 -translate-y-1/2">
+              <img src={crosshairs} className="w-64 h-64" alt="crosshairs" />
+            </div>
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+              <button onClick={createPoint} className="btn w-40">
+                Add Point
+              </button>
+            </div>
+          </>
         )}
+
         <div className="absolute top-3 left-1">
           <BasemapSelector basemap={basemap} setBasemap={setBasemap} />
         </div>
-        <button
-          onClick={() => setAddPoint(!addPoint)}
-          className="btn btn-sm absolute top-2 right-2.5 btn-square bg-white text-black"
-        >
-          {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
-        </button>
+        <div className="absolute top-2 right-2">
+          <div className="tooltip tooltip-left" data-tip="Add Point">
+            <button
+              onClick={() => setAddPoint(!addPoint)}
+              className="btn btn-sm border-0 text-2xl drop-shadow btn-square bg-white text-black"
+            >
+              {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
+            </button>
+          </div>
+        </div>
       </Map>
-      <div className="basis-1/3 drop-shadow-lg min-h-full border-l border-white max-h-full overflow-y-scroll bg-[#2A2D5C]">
-        <Outlet context={{ features }} />
-      </div>
+      {filterIds.length > 0 && (
+        <div className="basis-1/3 drop-shadow-lg min-h-full border-l border-white max-h-full overflow-y-scroll bg-gray-700">
+          <Outlet context={{ features }} />
+        </div>
+      )}
     </div>
   );
 }

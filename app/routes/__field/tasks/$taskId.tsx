@@ -7,6 +7,7 @@ import {
   useSubmit,
   useFetcher,
 } from "@remix-run/react";
+import clsx from "clsx";
 
 import Map, {
   Source,
@@ -22,6 +23,9 @@ import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css
 import m_styles from "../../../styles/mapbox.css";
 import { assignedStyle, todoStyle } from "~/styles/features";
 import { BasemapSelector } from "~/components/basemap-selector";
+import crosshairs from "../../../../public/images/crosshairs.svg";
+import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
+import { FiLayers } from "react-icons/fi";
 
 import {
   getUserSession,
@@ -91,7 +95,7 @@ export default function TaskMap() {
 
   const [showPopup, setShowPopup] = useState(false);
   const [addPoint, setAddPoint] = useState(false);
-  const [basemap, setBasemap] = useState("streets-v11");
+  const [basemap, setBasemap] = useState("satellite");
   const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
   const [cCoords, setCCoords] = useState({ lng: 0, lat: 0 });
   const [preventZoom, setPreventZoom] = useState(true);
@@ -152,10 +156,13 @@ export default function TaskMap() {
     console.log(e.features);
     setDCoords(e.lngLat);
     if (e.features.length > 0) {
+      setAddPoint(false);
       setShowPopup(true);
       setAssignment(e.features[0].properties.assignmentId);
       setCompleted(e.features[0].properties.completed);
-    } else setAddPoint(true);
+    } else if (addPoint) {
+      setAddPoint(false);
+    }
   };
 
   const mapDirections = new MapboxDirections({
@@ -175,6 +182,8 @@ export default function TaskMap() {
   };
 
   const getDirections = () => {
+    mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
+    mapDirections.setDestination([dCoords.lng, dCoords.lat]);
     mapDirections.on("route", () => {
       try {
         mapDirections.mapState();
@@ -182,16 +191,16 @@ export default function TaskMap() {
         console.error("error", e);
       }
     });
-    mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
-    mapDirections.setDestination([dCoords.lng, dCoords.lat]);
   };
 
   const createPoint = () => {
-    setAddPoint(false);
     fetcher.submit(
       {
         layerId: String(layer.id),
-        coordinates: JSON.stringify(dCoords),
+        coordinates: JSON.stringify({
+          lng: viewState.longitude,
+          lat: viewState.latitude,
+        }),
         userId: String(userId),
       },
       { method: "post", action: "/layer/feature-create" }
@@ -221,7 +230,6 @@ export default function TaskMap() {
         initialViewState={viewState}
         onMove={(e) => {
           setShowPopup(false);
-          setAddPoint(false);
           setViewState(e.viewState);
         }}
         onZoom={(e) => {
@@ -231,7 +239,7 @@ export default function TaskMap() {
           }
         }}
         mapStyle={
-          basemap == "custom"
+          basemap == "satellite"
             ? "mapbox://styles/mapbox/satellite-v9"
             : `mapbox://styles/mapbox/${basemap}`
         }
@@ -240,8 +248,8 @@ export default function TaskMap() {
         }
         interactiveLayerIds={["todo", "done"]}
         onClick={onFeatureClick}
-      >
-        {basemap == "custom" && (
+      >   
+        {basemap == "satellite" && (
           <Source
             id="tiles"
             type="raster"
@@ -250,15 +258,14 @@ export default function TaskMap() {
             ]}
             tileSize={256}
           >
-            <Layer type="raster" />
+            <Layer beforeId="todo" type="raster" />
           </Source>
         )}
-
+        <Source id="done" type="geojson" data={completedAssignments}>
+          <Layer beforeId="todo" id="done" {...assignedStyle} />
+        </Source>
         <Source id="todo" type="geojson" data={todoAssignments}>
           <Layer id="todo" {...todoStyle} />
-        </Source>
-        <Source id="done" type="geojson" data={completedAssignments}>
-          <Layer id="done" {...assignedStyle} />
         </Source>
 
         {showPopup && (
@@ -288,19 +295,16 @@ export default function TaskMap() {
         )}
 
         {addPoint && (
-          <Popup
-            longitude={dCoords.lng}
-            latitude={dCoords.lat}
-            anchor="bottom"
-            onClose={() => setAddPoint(false)}
-          >
-            <button
-              onClick={createPoint}
-              className="btn btn-xs btn-outline btn-primary"
-            >
-              Add Point
-            </button>
-          </Popup>
+          <>
+            <div className="absolute top-1/2 left-1/2 transform pointer-events-none -translate-x-1/2 -translate-y-1/2">
+              <img src={crosshairs} className="w-30 h-30" alt="crosshairs" />
+            </div>
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+              <button onClick={createPoint} className="btn w-40">
+                Add Point
+              </button>
+            </div>
+          </>
         )}
 
         <GeolocateControl onGeolocate={setCurrentLocation} ref={geolocateRef} />
@@ -308,8 +312,63 @@ export default function TaskMap() {
         {mapDirections != null && <DirectionsControl />}
       </Map>
 
-      <div className="absolute top-3 left-1">
-        <BasemapSelector basemap={basemap} setBasemap={setBasemap} />
+      <div className="absolute top-1.5 left-1.5 flex flex-col items-center space-y-1">
+        <div className="dropdown dropdown-right py-0 drop-shadow">
+          <label
+            tabIndex={0}
+            className="btn m-1 bg-white text-black text-xl py-0 h-8 w-8 min-h-8 p-1 border-none"
+          >
+            <FiLayers />
+          </label>
+          <ul className="dropdown-content menu p-2 shadow bg-white rounded-box w-52">
+            <li tabIndex={1}>
+              <div
+                onClick={() => setBasemap("satellite")}
+                className={clsx("p2 font-sans", {
+                  active: basemap == "satellite",
+                })}
+              >
+                Satellite
+              </div>
+            </li>
+            <li tabIndex={2}>
+              <div
+                onClick={() => setBasemap("streets-v11")}
+                className={clsx("p2 font-sans", {
+                  active: basemap == "streets-v11",
+                })}
+              >
+                Traffic
+              </div>
+            </li>
+            <li tabIndex={3}>
+              <div
+                onClick={() => setBasemap("outdoors-v11")}
+                className={clsx("p2 font-sans", {
+                  active: basemap == "outdoors-v11",
+                })}
+              >
+                Topo
+              </div>
+            </li>
+            <li tabIndex={4}>
+              <div
+                onClick={() => setBasemap("dark-v10")}
+                className={clsx("p2 font-sans", {
+                  active: basemap == "dark-v10",
+                })}
+              >
+                Dark
+              </div>
+            </li>
+          </ul>
+        </div>
+        <button
+          onClick={() => setAddPoint(!addPoint)}
+          className="btn btn-sm border-0 text-2xl drop-shadow btn-square bg-white text-black"
+        >
+          {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
+        </button>
       </div>
     </div>
   );

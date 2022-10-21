@@ -95,7 +95,7 @@ export default function TaskSidebar() {
             <li key={0} className="w-full">
               <div
                 tabIndex={0}
-                className="collapse collapse-arrow w-full border w-full border-base-300 bg-white rounded-box"
+                className="collapse collapse-arrow border w-full border-base-300 bg-white rounded-box"
               >
                 <input type="checkbox" />
                 <div className="collapse-title text-center font-sans text-black text-xl font-medium">

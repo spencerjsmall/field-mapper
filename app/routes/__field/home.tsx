@@ -48,23 +48,21 @@ export default function HomePage() {
   };
 
   return (
-    <div className="w-full h-full justify-center bg-[#2A2D5C] items-center flex flex-col">
-      <h1 className="text-white mb-3">Welcome, {user.firstName}!</h1>
-      <h3 className="text-gray-500 mb-4">
-        Select a layer to begin field collection
-      </h3>
-      <ul className="justify-center items-center flex flex-col space-y-2">
-        {userLayers.map((layer) => (
-          <li key={layer.id}>
-            <button
-              onClick={() => setTask(layer.name)}
-              className="btn no-underline btn-lg text-white btn-ghost"
-            >
-              {layer.name}
-            </button>
-          </li>
-        ))}
-      </ul>
+    <div className="w-full h-full justify-center bg-ob bg-top bg-no-repeat bg-cover bg-fixed">
+      <div className="flex flex-col group bg-black bg-opacity-70 justify-center h-full w-full">      
+        <ul className="justify-center items-center flex flex-col space-y-2">
+          {userLayers.map((layer) => (
+            <li key={layer.id}>
+              <button
+                onClick={() => setTask(layer.name)}
+                className="btn no-underline btn-lg text-white btn-ghost"
+              >
+                {layer.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
