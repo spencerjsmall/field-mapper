@@ -68,7 +68,7 @@ export const LayerUploader = () => {
     for (const file of files) {
       let inputFormData = new FormData();
       inputFormData.append("layer", file);
-      const response = await fetch("/layer/layer-upload", {
+      const response = await fetch("/actions/layer-upload", {
         method: "POST",
         body: inputFormData,
       });
@@ -90,7 +90,7 @@ export const LayerUploader = () => {
 
   // 4
   return (
-    <Form method="post" action="/layer/layer-create" className="flex flex-col">
+    <Form method="post" action="/actions/layer-create" className="flex flex-col">
       <div className="flex flex-row">
         <div
           ref={dropRef}

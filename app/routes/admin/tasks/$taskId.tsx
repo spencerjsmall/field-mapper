@@ -1,15 +1,13 @@
 import { useState, useMemo, useRef } from "react";
 import { prisma } from "~/utils/db.server";
-import { LoaderArgs, redirect } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import {
   useLoaderData,
-  Outlet,
-  useSubmit,
   useOutletContext,
   useFetcher,
 } from "@remix-run/react";
 
-import Map, { Source, Layer, Popup } from "react-map-gl";
+import Map, { Source, Layer } from "react-map-gl";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
@@ -17,6 +15,7 @@ import m_styles from "../../../styles/mapbox.css";
 import { assignedStyle, highlightedStyle, todoStyle } from "~/styles/features";
 import { BasemapSelector } from "~/components/basemap-selector";
 import crosshairs from "../../../../public/images/crosshairs.svg";
+import { AssignmentSelect } from "~/components/assignment-selector";
 
 export function links() {
   return [
@@ -43,31 +42,19 @@ export const loader = async ({ request, params }: LoaderArgs) => {
       },
     },
   });
-  const pathname = params["*"];
-  const selectIds = pathname ? pathname.split("/").map((i) => parseInt(i)) : [];
-  return { features, selectIds, layer };
+  return { features, layer };
 };
 
-export async function action({ request, params }) {
-  const taskId = params.taskId;
-  const form = await request.formData();
-  const ids = form.get("ids");
-  const path =
-    ids == "" ? "" : JSON.parse(ids).reduce((a, b) => a + "/" + b, "");
-  return redirect(`admin/tasks/${taskId}${path}`);
-}
-
 export default function AdminTaskMap() {
-  const { features, selectIds, layer } = useLoaderData();
+  const { features, layer } = useLoaderData();
   const userId = useOutletContext();
   const mapRef = useRef();
-  const submit = useSubmit();
   const fetcher = useFetcher();
 
   const [basemap, setBasemap] = useState("satellite");
   const [addPoint, setAddPoint] = useState(false);
   const [start, setStart] = useState<Number[]>();
-  const [filterIds, setFilterIds] = useState<Number[]>(selectIds);
+  const [filterIds, setFilterIds] = useState<Number[]>([]);
   const [viewState, setViewState] = useState({
     longitude: -122.44,
     latitude: 37.75,
@@ -110,20 +97,8 @@ export default function AdminTaskMap() {
     if (e.features.length > 0) {
       console.log(e.features);
       setFilterIds([e.features[0].id]);
-      submit(
-        {
-          ids: JSON.stringify([e.features[0].id]),
-        },
-        { method: "post" }
-      );
     } else if (filterIds.length > 0) {
       setFilterIds([]);
-      submit(
-        {
-          ids: "",
-        },
-        { method: "post" }
-      );
     }
   };
 
@@ -137,7 +112,7 @@ export default function AdminTaskMap() {
         }),
         userId: String(userId),
       },
-      { method: "post", action: "/layer/feature-create" }
+      { method: "post", action: "/actions/feature-create" }
     );
   };
 
@@ -153,12 +128,6 @@ export default function AdminTaskMap() {
       .filter((i) => !ids.includes(i))
       .concat(ids.filter((i) => !filterIds.includes(i)));
     setFilterIds(difference);
-    submit(
-      {
-        ids: JSON.stringify(difference),
-      },
-      { method: "post" }
-    );
   };
 
   return (
@@ -206,13 +175,13 @@ export default function AdminTaskMap() {
         )}
 
         <Source id="todo" type="geojson" data={todoCollection}>
-          <Layer id="todo" {...todoStyle} />
+          <Layer beforeId="highlighted" id="todo" {...todoStyle} />
         </Source>
         <Source id="assigned" type="geojson" data={assignedCollection}>
-          <Layer beforeId="highlighted" id="assigned" {...assignedStyle} />
+          <Layer beforeId="todo" id="assigned" {...assignedStyle} />
         </Source>
         <Source id="highlighted" type="geojson" data={selectCollection}>
-          <Layer beforeId="todo" id="highlighted" {...highlightedStyle} />
+          <Layer id="highlighted" {...highlightedStyle} />
         </Source>
 
         {addPoint && (
@@ -244,7 +213,10 @@ export default function AdminTaskMap() {
       </Map>
       {filterIds.length > 0 && (
         <div className="basis-1/3 drop-shadow-lg min-h-full border-l border-white max-h-full overflow-y-scroll bg-gray-700">
-          <Outlet context={{ features }} />
+          <AssignmentSelect
+            layer={layer}
+            features={features.filter((f) => filterIds.includes(f.id))}
+          />
         </div>
       )}
     </div>

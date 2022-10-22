@@ -1,97 +1,15 @@
-import { prisma } from "~/utils/db.server";
-import { useLoaderData, useOutletContext } from "@remix-run/react";
-import { json } from "@remix-run/node";
+import { useFetcher } from "@remix-run/react";
 import JSONPretty from "react-json-pretty";
+import _ from "lodash";
+import clsx from "clsx";
 
-export const loader = async ({ params }: LoaderArgs) => {
-  const pathname = params["*"];
-  const taskId = params.taskId;
-  const layer = await prisma.layer.findUnique({ where: { name: taskId } });
-
-  const ids = pathname.split("/").map((i) => parseInt(i));
-  return { ids, layer };
-};
-
-export async function action({ request, params }) {
-  const pathname = params["*"];
-  const ids = pathname.split("/").map((i) => parseInt(i));
-
-  const { featureId, assigneeEmail, surveyId, actionId } = Object.fromEntries(
-    await request.formData()
-  );
-  const featId = parseInt(featureId);
-  const assignee = await prisma.user.findUnique({
-    where: { email: assigneeEmail },
-  });
-
-  if (assignee == null) {
-    return json(
-      { error: `User with that email does not yet exist` },
-      { status: 400 }
-    );
-  }
-
-  switch (actionId) {
-    case "create": {
-      return await prisma.assignment.create({
-        data: {
-          feature: { connect: { id: featId } },
-          surveyId: surveyId,
-          assignee: { connect: { id: assignee.id } },
-        },
-      });
-    }
-    case "update": {
-      let assignment = await prisma.assignment.findFirstOrThrow({
-        where: { featureId: featId },
-      });
-      return await prisma.assignment.update({
-        where: {
-          id: assignment.id,
-        },
-        data: {
-          surveyId: surveyId,
-          assignee: { connect: { id: assignee.id } },
-        },
-      });
-    }
-    case "upsert": {
-      const resultArr = [];
-      for (const id of ids) {
-        let assignment = await prisma.assignment.findFirst({
-          where: { featureId: id },
-        });
-        const result = await prisma.assignment.upsert({
-          where: { id: assignment?.id ? assignment.id : -1 },
-          update: {
-            surveyId: surveyId,
-            assignee: { connect: { id: assignee.id } },
-          },
-          create: {
-            feature: { connect: { id: id } },
-            surveyId: surveyId,
-            assignee: { connect: { id: assignee.id } },
-          },
-        });
-        resultArr.push(result);
-      }
-      return resultArr;
-    }
-    default:
-      return json({ error: `Invalid Form Data` }, { status: 400 });
-  }
-}
-
-export default function TaskSidebar() {
-  const { ids, layer } = useLoaderData();  
-  const { features } = useOutletContext();
-  const selected = features.filter((f) => ids.includes(f.id));
-
+export function AssignmentSelect({ layer, features }) {
+  const fetcher = useFetcher();
   return (
     <div className="h-full p-4">
-      {selected && selected.length > 0 ? (
+      {features && features.length > 0 ? (
         <ul className="justify-center items-center w-full flex flex-col space-y-2">
-          {selected.length > 1 && (
+          {features.length > 1 && (
             <li key={0} className="w-full">
               <div
                 tabIndex={0}
@@ -99,10 +17,19 @@ export default function TaskSidebar() {
               >
                 <input type="checkbox" />
                 <div className="collapse-title text-center font-sans text-black text-xl font-medium">
-                  Update {selected.length} records
+                  Update {features.length} records
                 </div>
                 <div className="collapse-content text-black w-full">
-                  <form method="post" className="flex flex-col items-center">
+                  <fetcher.Form
+                    method="post"
+                    className="flex flex-col items-center"
+                    action="/actions/assignment-create"
+                  >
+                    <input
+                      type="hidden"
+                      name="featureIds"
+                      value={features.map((f) => f.id)}
+                    />
                     <h3>Assignee:</h3>
                     <label>
                       <input
@@ -128,16 +55,38 @@ export default function TaskSidebar() {
                       type="submit"
                       name="actionId"
                       value="upsert"
-                      className="rounded-xl mt-2 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
+                      className={clsx(
+                        "rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1",
+                        {
+                          "btn-success bg-green-500":
+                            fetcher.type === "done" &&
+                            _.isEmpty(
+                              _.xor(
+                                fetcher.data.ids,
+                                features.map((f) => f.id)
+                              )
+                            ) &&
+                            fetcher.data.ok,
+                        }
+                      )}
                     >
-                      Assign
+                      {fetcher.type === "done" &&
+                      _.isEmpty(
+                        _.xor(
+                          fetcher.data.ids,
+                          features.map((f) => f.id)
+                        )
+                      ) &&
+                      fetcher.data.ok
+                        ? "Assignment Successful"
+                        : "Assign"}
                     </button>
-                  </form>
+                  </fetcher.Form>
                 </div>
               </div>
             </li>
           )}
-          {selected.map((feature) => (
+          {features.map((feature) => (
             <li key={feature.id} className="w-full">
               <div
                 tabIndex={feature.id}
@@ -151,16 +100,31 @@ export default function TaskSidebar() {
                     : `Record #${feature.id}`}
                 </div>
                 <div className="collapse-content w-full">
-                  <form
+                  <fetcher.Form
                     method="post"
                     className="flex flex-col w-full items-center"
+                    action="/actions/assignment-create"
                   >
-                    <input type="hidden" name="featureId" value={feature.id} />
+                    <input
+                      type="hidden"
+                      name="featureIds"
+                      value={[feature.id]}
+                    />
                     <h3>Assignee:</h3>
                     <label>
                       <input
                         type="text"
-                        defaultValue={feature.assignment?.assignee.email}
+                        key={
+                          fetcher.type === "done"
+                            ? "assigneeFetched"
+                            : "assigneeReady"
+                        }
+                        defaultValue={
+                          fetcher.type === "done" &&
+                          fetcher.data.ids.includes(feature.id)
+                            ? fetcher.data.assigneeEmail
+                            : feature.assignment?.assignee.email
+                        }
                         name="assigneeEmail"
                       />
                     </label>
@@ -168,8 +132,16 @@ export default function TaskSidebar() {
                     <label>
                       <input
                         type="text"
+                        key={
+                          fetcher.type === "done"
+                            ? "surveyUpdated"
+                            : "surveyReady"
+                        }
                         defaultValue={
-                          feature.assignment
+                          fetcher.type === "done" &&
+                          fetcher.data.ids.includes(feature.id)
+                            ? fetcher.data.surveyId
+                            : feature.assignment
                             ? feature.assignment.surveyId
                             : layer.defaultSurveyId
                             ? layer.defaultSurveyId
@@ -182,11 +154,23 @@ export default function TaskSidebar() {
                       type="submit"
                       name="actionId"
                       value={feature.assignment?.surveyId ? "update" : "create"}
-                      className="rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1"
+                      className={clsx(
+                        "rounded-xl mt-6 bg-blue-400 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-blue-500 hover:-translate-y-1",
+                        {
+                          "btn-success bg-green-500":
+                            fetcher.type === "done" &&
+                            fetcher.data.ids.includes(feature.id) &&
+                            fetcher.data.ok,
+                        }
+                      )}
                     >
-                      {feature.assignment?.surveyId ? "Update" : "Assign"}
+                      {fetcher.type === "done" &&
+                      fetcher.data.ids.includes(feature.id) &&
+                      fetcher.data.ok
+                        ? "Assignment Succesful"
+                        : "Assign"}
                     </button>
-                  </form>
+                  </fetcher.Form>
 
                   <h3 className="text-white my-2">Details:</h3>
                   <div className="overflow-x-scroll">

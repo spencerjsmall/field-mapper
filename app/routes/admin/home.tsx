@@ -40,7 +40,7 @@ export default function HomePage() {
   };
 
   const downloadResults = async (layer) => {
-    const response = await fetch(`/admin/tasks/${layer.id}/parse`, {
+    const response = await fetch(`/actions/${layer.id}/parse`, {
       method: "GET",
     });
     const fc = await response.json();
