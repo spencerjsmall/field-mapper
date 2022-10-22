@@ -203,7 +203,7 @@ export default function TaskMap() {
         }),
         userId: String(userId),
       },
-      { method: "post", action: "/layer/feature-create" }
+      { method: "post", action: "/actions/feature-create" }
     );
   };
 
