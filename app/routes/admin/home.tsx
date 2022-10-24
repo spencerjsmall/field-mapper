@@ -8,6 +8,8 @@ import {
   getUserSession,
   commitSession,
 } from "~/utils/auth.server";
+import { CSVLink, CSVDownload } from "react-csv";
+import { useRef, useState } from "react";
 
 export const action: ActionFunction = async ({ request }) => {
   const session = await getUserSession(request);
@@ -34,29 +36,43 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function HomePage() {
   const { user, userLayers } = useLoaderData();
   const submit = useSubmit();
+  const [csv, setCSV] = useState([{}]);
 
   const setTask = (layerName: string) => {
     submit({ taskId: layerName }, { method: "post" });
   };
 
-  const downloadResults = async (layer) => {
-    const response = await fetch(`/actions/${layer.id}/parse`, {
-      method: "GET",
-    });
-    const fc = await response.json();
-    console.log("fc", fc);
-    const file = new Blob([JSON.stringify(fc, null, 2)], {
-      type: "application/json",
+  const downloadFile = (data, fileName, fileType) => {
+    const file = new Blob([data], {
+      type: fileType,
     });
 
     // anchor link
     const element = document.createElement("a");
     element.href = URL.createObjectURL(file);
-    element.download = "test" + Date.now() + ".geojson";
+    element.download = fileName;
 
     // simulate link click
     document.body.appendChild(element); // Required for this to work in FireFox
     element.click();
+  };
+
+  const exportToJson = async (layer) => {
+    const response = await fetch(`/actions/${layer.id}/geojson`, {
+      method: "GET",
+    });
+    const fc = await response.json();
+    const fileName = "test" + Date.now() + ".geojson";
+    downloadFile(JSON.stringify(fc, null, 2), fileName, "application/json");
+  };
+
+  const exportToCsv = async (layer) => {
+    const response = await fetch(`/actions/${layer.id}/csv`, {
+      method: "GET",
+    });
+    const data = await response.json();
+    const fileName = "test" + Date.now() + ".csv";
+    setCSV(data);
   };
 
   return (
@@ -81,13 +97,23 @@ export default function HomePage() {
                     {layer.name}
                   </button>
                   <button
-                    onClick={() => downloadResults(layer)}
+                    onClick={() => exportToJson(layer)}
                     className="btn font-sans btn-xs text-white btn-ghost"
-                    id="downloadBtn"
+                    id="jsonDownload"
                     value="download"
                   >
-                    Results
+                    JSON
                   </button>
+                  <CSVLink
+                    data={csv}
+                    //filename=
+                    className="btn font-sans btn-xs text-white btn-ghost"
+                    asyncOnClick={true}
+                    target="_blank"
+                    onClick={() => exportToCsv(layer)}
+                  >
+                    CSV
+                  </CSVLink>
                 </li>
               ))}
             </ul>
