@@ -8,7 +8,7 @@ import {
   getUserSession,
   commitSession,
 } from "~/utils/auth.server";
-import { CSVLink, CSVDownload } from "react-csv";
+import { CSVLink } from "react-csv";
 import { useRef, useState } from "react";
 
 export const action: ActionFunction = async ({ request }) => {
@@ -36,7 +36,8 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function HomePage() {
   const { user, userLayers } = useLoaderData();
   const submit = useSubmit();
-  const [csv, setCSV] = useState([{}]);
+  const [csv, setCSV] = useState({ data: null, fileName: "" });
+  const csvLink = useRef(null);
 
   const setTask = (layerName: string) => {
     submit({ taskId: layerName }, { method: "post" });
@@ -62,7 +63,7 @@ export default function HomePage() {
       method: "GET",
     });
     const fc = await response.json();
-    const fileName = "test" + Date.now() + ".geojson";
+    const fileName = layer.name.replace(/\s/g, "") + Date.now() + ".geojson";
     downloadFile(JSON.stringify(fc, null, 2), fileName, "application/json");
   };
 
@@ -71,8 +72,9 @@ export default function HomePage() {
       method: "GET",
     });
     const data = await response.json();
-    const fileName = "test" + Date.now() + ".csv";
-    setCSV(data);
+    const fileName = layer.name.replace(/\s/g, "") + Date.now() + ".csv";
+    setCSV({ data: data, fileName: fileName });
+    csvLink.current.link.click();
   };
 
   return (
@@ -104,16 +106,22 @@ export default function HomePage() {
                   >
                     JSON
                   </button>
-                  <CSVLink
-                    data={csv}
-                    //filename=
-                    className="btn font-sans btn-xs text-white btn-ghost"
-                    asyncOnClick={true}
-                    target="_blank"
+                  <button
                     onClick={() => exportToCsv(layer)}
+                    className="btn font-sans btn-xs text-white btn-ghost"
+                    id="csvDownload"
+                    value="download"
                   >
                     CSV
-                  </CSVLink>
+                  </button>
+                  {csv.data && (
+                    <CSVLink
+                      ref={csvLink}
+                      data={csv.data}
+                      filename={csv.fileName}
+                      target="_blank"
+                    />
+                  )}
                 </li>
               ))}
             </ul>
