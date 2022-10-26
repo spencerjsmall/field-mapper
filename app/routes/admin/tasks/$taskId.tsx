@@ -1,11 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { prisma } from "~/utils/db.server";
 import type { LoaderArgs } from "@remix-run/node";
-import {
-  useLoaderData,
-  useOutletContext,
-  useFetcher,
-} from "@remix-run/react";
+import { useLoaderData, useOutletContext, useFetcher } from "@remix-run/react";
 
 import Map, { Source, Layer } from "react-map-gl";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
@@ -143,9 +139,7 @@ export default function AdminTaskMap() {
             ? "mapbox://styles/mapbox/satellite-v9"
             : `mapbox://styles/mapbox/${basemap}`
         }
-        mapboxAccessToken={
-          "pk.eyJ1Ijoic3BlbmNlcmpzbWFsbCIsImEiOiJjbDdmNGY5d2YwNnJuM3hsZ2IyN2thc2QyIn0.hLfNqU8faCraSSKrXbtnHQ"
-        }
+        mapboxAccessToken={process.env.MAPBOX_ACCESS_TOKEN}
         interactiveLayerIds={["todo", "assigned"]}
         onClick={onFeatureClick}
         ref={mapRef}

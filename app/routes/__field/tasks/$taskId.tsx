@@ -166,8 +166,7 @@ export default function TaskMap() {
   };
 
   const mapDirections = new MapboxDirections({
-    accessToken:
-      "pk.eyJ1Ijoic3BlbmNlcmpzbWFsbCIsImEiOiJjbDdmNGY5d2YwNnJuM3hsZ2IyN2thc2QyIn0.hLfNqU8faCraSSKrXbtnHQ",
+    accessToken: process.env.MAPBOX_ACCESS_TOKEN,
     placeholderOrigin: "Current Location",
     controls: {
       inputs: false,
@@ -243,12 +242,10 @@ export default function TaskMap() {
             ? "mapbox://styles/mapbox/satellite-v9"
             : `mapbox://styles/mapbox/${basemap}`
         }
-        mapboxAccessToken={
-          "pk.eyJ1Ijoic3BlbmNlcmpzbWFsbCIsImEiOiJjbDdmNGY5d2YwNnJuM3hsZ2IyN2thc2QyIn0.hLfNqU8faCraSSKrXbtnHQ"
-        }
+        mapboxAccessToken={process.env.MAPBOX_ACCESS_TOKEN}
         interactiveLayerIds={["todo", "done"]}
         onClick={onFeatureClick}
-      >   
+      >
         {basemap == "satellite" && (
           <Source
             id="tiles"
