@@ -48,6 +48,20 @@ export function links() {
   ];
 }
 
+export const action: ActionFunction = async ({ request, params }) => {
+  const session = await getUserSession(request);
+  const taskId = params.taskId;
+  const { assignmentId, viewState } = Object.fromEntries(
+    await request.formData()
+  );
+  session.set("viewState", viewState);
+  return redirect(`/tasks/${taskId}/${assignmentId}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  });
+};
+
 export const loader = async ({ request, params }: LoaderArgs) => {
   const session = await requireUserSession(request);
   const userId = session.get("userId");
@@ -69,26 +83,13 @@ export const loader = async ({ request, params }: LoaderArgs) => {
       assignment: true,
     },
   });
+  const token = process.env.MAPBOX_ACCESS_TOKEN;
 
-  return { assignments, layer, savedState };
-};
-
-export const action: ActionFunction = async ({ request, params }) => {
-  const session = await getUserSession(request);
-  const taskId = params.taskId;
-  const { assignmentId, viewState } = Object.fromEntries(
-    await request.formData()
-  );
-  session.set("viewState", viewState);
-  return redirect(`/tasks/${taskId}/${assignmentId}`, {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
+  return { assignments, layer, savedState, token };
 };
 
 export default function TaskMap() {
-  const { assignments, layer, savedState } = useLoaderData();
+  const { assignments, layer, savedState, token } = useLoaderData();
   const userId = useOutletContext();
   const fetcher = useFetcher();
   const submit = useSubmit();
@@ -166,7 +167,7 @@ export default function TaskMap() {
   };
 
   const mapDirections = new MapboxDirections({
-    accessToken: process.env.MAPBOX_ACCESS_TOKEN,
+    accessToken: token,
     placeholderOrigin: "Current Location",
     controls: {
       inputs: false,
@@ -242,7 +243,7 @@ export default function TaskMap() {
             ? "mapbox://styles/mapbox/satellite-v9"
             : `mapbox://styles/mapbox/${basemap}`
         }
-        mapboxAccessToken={process.env.MAPBOX_ACCESS_TOKEN}
+        mapboxAccessToken={token}
         interactiveLayerIds={["todo", "done"]}
         onClick={onFeatureClick}
       >

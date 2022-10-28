@@ -7,10 +7,10 @@ import Map, { Source, Layer } from "react-map-gl";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
-import m_styles from "../../../styles/mapbox.css";
+import m_styles from "../../styles/mapbox.css";
 import { assignedStyle, highlightedStyle, todoStyle } from "~/styles/features";
 import { BasemapSelector } from "~/components/basemap-selector";
-import crosshairs from "../../../../public/images/crosshairs.svg";
+import crosshairs from "../../../public/images/crosshairs.svg";
 import { AssignmentSelect } from "~/components/assignment-selector";
 
 export function links() {
@@ -24,25 +24,25 @@ export function links() {
 }
 
 export const loader = async ({ request, params }: LoaderArgs) => {
-  const taskId = params.taskId;
+  const layerId = params.layerId;
   const layer = await prisma.layer.findUniqueOrThrow({
-    where: { name: taskId },
-  });
-  const features = await prisma.feature.findMany({
-    where: { layerId: layer.id },
+    where: { name: layerId },
     include: {
-      assignment: {
+      features: {
         include: {
-          assignee: true,
+          assignment: {
+            include: { assignee: true },
+          },
         },
       },
     },
   });
-  return { features, layer };
+  const token = process.env.MAPBOX_ACCESS_TOKEN;
+  return { layer, token };
 };
 
 export default function AdminTaskMap() {
-  const { features, layer } = useLoaderData();
+  const { layer, token } = useLoaderData();
   const userId = useOutletContext();
   const mapRef = useRef();
   const fetcher = useFetcher();
@@ -60,7 +60,7 @@ export default function AdminTaskMap() {
   const selectCollection = useMemo(
     () => ({
       type: "FeatureCollection",
-      features: features
+      features: layer.features
         .filter((f) => filterIds.includes(f.id))
         .map((f) => ({ id: f.id, ...f.geojson })),
     }),
@@ -70,21 +70,21 @@ export default function AdminTaskMap() {
   const todoCollection = useMemo(
     () => ({
       type: "FeatureCollection",
-      features: features
+      features: layer.features
         .filter((f) => !f.assignment)
         .map((f) => ({ id: f.id, ...f.geojson })),
     }),
-    [features]
+    [layer.features]
   );
 
   const assignedCollection = useMemo(
     () => ({
       type: "FeatureCollection",
-      features: features
+      features: layer.features
         .filter((f) => f.assignment)
         .map((f) => ({ id: f.id, ...f.geojson })),
     }),
-    [features]
+    [layer.features]
   );
 
   const onFeatureClick = (e) => {
@@ -139,7 +139,7 @@ export default function AdminTaskMap() {
             ? "mapbox://styles/mapbox/satellite-v9"
             : `mapbox://styles/mapbox/${basemap}`
         }
-        mapboxAccessToken={process.env.MAPBOX_ACCESS_TOKEN}
+        mapboxAccessToken={token}
         interactiveLayerIds={["todo", "assigned"]}
         onClick={onFeatureClick}
         ref={mapRef}
@@ -209,7 +209,7 @@ export default function AdminTaskMap() {
         <div className="basis-1/3 drop-shadow-lg min-h-full border-l border-white max-h-full overflow-y-scroll bg-gray-700">
           <AssignmentSelect
             layer={layer}
-            features={features.filter((f) => filterIds.includes(f.id))}
+            features={layer.features.filter((f) => filterIds.includes(f.id))}
           />
         </div>
       )}

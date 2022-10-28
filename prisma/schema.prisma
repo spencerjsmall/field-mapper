@@ -19,6 +19,7 @@ model User {
   assignments Assignment[]
   features    Feature[]
   layers      Layer[]
+  surveys     Survey[]
 }
 
 model Assignment {
@@ -29,18 +30,33 @@ model Assignment {
   results     Json?
   assigneeId  Int?
   featureId   Int       @unique
-  surveyId    String
+  surveyId    Int
   assignee    User?     @relation(fields: [assigneeId], references: [id], onDelete: Cascade)
   feature     Feature   @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  survey      Survey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+}
+
+model Survey {
+  id          Int          @id @default(autoincrement())
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  name        String
+  json        Json
+  creatorId   Int
+  creator     User         @relation(fields: [creatorId], references: [id])
+  assignments Assignment[]
+  layers      Layer[]
 }
 
 model Layer {
   id              Int       @id @default(autoincrement())
   createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   name            String    @unique
   labelField      String?
   dispatcherId    Int
-  defaultSurveyId String?
+  defaultSurveyId Int?
+  defaultSurvey   Survey?   @relation(fields: [defaultSurveyId], references: [id])
   dispatcher      User      @relation(fields: [dispatcherId], references: [id])
   features        Feature[]
 }

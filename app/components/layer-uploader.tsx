@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import { Form } from "@remix-run/react";
-import { AiOutlinePlus, AiOutlineCheck } from "react-icons/ai";
+import { AiOutlineClose } from "react-icons/ai";
 
 import "@loaders.gl/polyfills";
 import { KMLLoader } from "@loaders.gl/kml";
@@ -10,14 +10,14 @@ import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
 import { ShapefileLoader } from "@loaders.gl/shapefile";
 import { load, selectLoader } from "@loaders.gl/core";
 
-export const LayerUploader = () => {
+export const LayerUploader = ({ surveys }) => {
   const [draggingOver, setDraggingOver] = useState(false);
   const [formData, setFormData] = useState({
     features: "",
     name: "",
-    field: "",
-    surveyId: "",
+    fileName: "",
   });
+  const [emptyLayer, setEmptyLayer] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef(null);
 
@@ -56,10 +56,11 @@ export const LayerUploader = () => {
   const handleFileUpload = async (file: File) => {
     const loader = await selectLoader(file, [KMLLoader, GeoJSONLoader]);
     const data = await load(file, loader);
-    const features = data.features.map((f) => ({ geojson: f }));    
+    const features = data.features.map((f) => ({ geojson: f }));
     setFormData((form) => ({
       ...form,
       features: JSON.stringify(features),
+      fileName: file.name,
     }));
   };
 
@@ -90,13 +91,23 @@ export const LayerUploader = () => {
 
   // 4
   return (
-    <Form method="post" action="/actions/layer-create" className="flex flex-col">
-      <div className="flex flex-row">
+    <div className="flex flex-col w-full items-center">
+      <div className="modal-action absolute top-0 right-5">
+        <label htmlFor="my-modal" className="text-xl">
+          <AiOutlineClose />
+        </label>
+      </div>
+      <h1>Create Layer</h1>
+      <Form
+        method="post"
+        action="/actions/layer-create"
+        className="flex flex-col w-full mt-6 space-y-2"
+      >
         <div
           ref={dropRef}
           className={`${
             draggingOver ? "border-4 border-dashed border-yellow-300" : ""
-          } group relative w-32 mt-3 h-32 flex justify-center items-center bg-black border border-slate-100 transition duration-300 ease-in-out hover:bg-red-500 cursor-pointer`}
+          } group relative w-fit px-4 rounded-2xl mx-auto h-12 flex justify-center items-center bg-black border border-slate-100 transition duration-300 ease-in-out hover:bg-red-500 cursor-pointer`}
           onDragEnter={() => setDraggingOver(true)}
           onDragLeave={() => setDraggingOver(false)}
           onDrag={preventDefaults}
@@ -106,12 +117,8 @@ export const LayerUploader = () => {
           onDrop={handleFileDrop}
           onClick={() => fileInputRef.current?.click()}
         >
-          <p className="font-extrabold text-4xl text-gray-200 cursor-pointer select-none transition duration-300 ease-in-out pointer-events-none z-10">
-            {formData.features.length > 0 ? (
-              <AiOutlineCheck />
-            ) : (
-              <AiOutlinePlus />
-            )}
+          <p className=" text-gray-200 cursor-pointer select-none transition duration-300 ease-in-out pointer-events-none z-10">
+            {formData.features.length > 0 ? formData.fileName : "Choose a file"}
           </p>
 
           <input
@@ -122,6 +129,7 @@ export const LayerUploader = () => {
             multiple
           />
         </div>
+
         <input
           type="text"
           name="features"
@@ -129,37 +137,78 @@ export const LayerUploader = () => {
           className="hidden"
           readOnly
         />
-        <div className="flex flex-col ml-4">
-          <label className="text-white font-sans">Layer Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={(e) => handleInputChange(e, "name")}
-            required
-          />
-          <label className="text-white font-sans">Label Field (optional) </label>
-          <input
-            type="text"
-            name="field"
-            value={formData.field}
-            onChange={(e) => handleInputChange(e, "field")}
-          />
-          <label className="text-white font-sans">Default Survey (optional)</label>
-          <input
-            type="text"
-            name="surveyId"
-            value={formData.surveyId}
-            onChange={(e) => handleInputChange(e, "surveyId")}
-          />
-        </div>
-      </div>
-      <button
-        type="submit"
-        className="rounded-xl font-sans mt-6 bg-black border border-white px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
-      >
-        Create Layer
-      </button>
-    </Form>
+
+        {formData.features.length > 0 || emptyLayer ? (
+          <>
+            <label className="text-white font-space">Layer Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={(e) => handleInputChange(e, "name")}
+              className="h-8"
+              required
+            />
+            <div className="flex flex-row justify-between">
+              <div className="flex flex-col justify-start">
+                <label className="text-white font-space">Label Field </label>
+                <select name="surveyId" className="select w-fit">
+                  <option disabled selected key={0}>
+                    Select a field for feature labels
+                  </option>
+                  {formData.features &&
+                    formData.features.length > 0 &&
+                    Object.keys(
+                      JSON.parse(formData.features)[0].geojson.properties
+                    ).map((prop, i) => (
+                      <option value={prop} key={i + 1}>
+                        {prop}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="flex flex-col justify-start">
+                <label className="text-white font-space">Survey </label>
+                <select name="surveyId" className="select w-fit">
+                  <option disabled selected key={0}>
+                    {surveys && surveys.length > 0
+                      ? "Choose a default survey"
+                      : "None"}
+                  </option>
+                  {surveys &&
+                    surveys.length > 0 &&
+                    surveys.map((survey, i) => (
+                      <option value={survey.id} key={i + 1}>
+                        {survey.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-action pt-10 w-full">
+              <label htmlFor="my-modal" className="mx-auto">
+                <button
+                  type="submit"
+                  className="rounded-xl font-space bg-black border border-white px-3 py-2 text-white transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
+                >
+                  Create Layer
+                </button>
+              </label>
+            </div>
+          </>
+        ) : (
+          <p className='mx-auto'>
+            or,{" "}
+            <span
+              onClick={() => setEmptyLayer(true)}
+              className="text-red-500 italic cursor-pointer"
+            >
+              continue with an empty layer
+            </span>
+          </p>
+        )}
+      </Form>
+    </div>
   );
 };

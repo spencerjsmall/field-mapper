@@ -23,34 +23,32 @@ export const action: ActionFunction = async ({ request }) => {
   if (features == "") {
     layer = {
       name: String(name),
-      labelField:
-        field === ""
-          ? undefined
-          : String(field).toLowerCase().split(" ").join("_"),
+      labelField: String(field),
       dispatcher: { connect: { id: userId } },
-      defaultSurveyId: surveyId === "" ? undefined : String(surveyId),
+      defaultSurvey: surveyId
+        ? { connect: { id: parseInt(surveyId) } }
+        : undefined,
     };
   } else {
     layer = {
       name: String(name),
-      labelField:
-        field === ""
-          ? undefined
-          : String(field).toLowerCase().split(" ").join("_"),
+      labelField: String(field),
       dispatcher: { connect: { id: userId } },
       features: {
         createMany: {
           data: parsedFeatures,
         },
       },
-      defaultSurveyId: surveyId === "" ? undefined : String(surveyId),
+      defaultSurvey: surveyId
+        ? { connect: { id: parseInt(surveyId) } }
+        : undefined,
     };
   }
 
   await prisma.layer.create({ data: layer });
 
   session.set("task", name);
-  return redirect(`/admin/tasks/${name}`, {
+  return redirect(`/admin/layers/${name}`, {
     headers: {
       "Set-Cookie": await commitSession(session),
     },
