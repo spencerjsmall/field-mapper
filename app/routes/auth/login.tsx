@@ -194,7 +194,7 @@ export default function Login() {
                 <input
                   type="radio"
                   name="role"
-                  value="USER"
+                  value="SURVEYOR"
                   className="radio checked:bg-red-500"
                   checked
                 />
@@ -203,7 +203,7 @@ export default function Login() {
             <div className="form-control">
               <label className="label cursor-pointer">
                 <span className="label-text font-space text-red">
-                  Dispatcher
+                  Admin
                 </span>
                 <input
                   type="radio"

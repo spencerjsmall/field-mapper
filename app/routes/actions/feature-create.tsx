@@ -3,6 +3,7 @@ import { json } from "@remix-run/node";
 import { prisma } from "~/utils/db.server";
 
 export const action: ActionFunction = async ({ request }) => {
+  console.log("WRONG ONE");
   const { layerId, coordinates, userId } = Object.fromEntries(
     await request.formData()
   );
@@ -22,20 +23,28 @@ export const action: ActionFunction = async ({ request }) => {
       },
     },
     include: {
-      creator: true, // Include all posts in the returned object
-      layer: true,
+      creator: {
+        include: {
+          surveyor: true,
+        },
+      },
+      layer: {
+        include: {
+          defaultSurvey: true,
+        },
+      },
     },
   });
   if (
-    newFeat.layer.defaultSurveyId &&
+    newFeat.layer.defaultSurvey &&
     newFeat.creator &&
-    newFeat.creator.role == "USER"
+    newFeat.creator.surveyor
   ) {
     await prisma.assignment.create({
       data: {
         feature: { connect: { id: newFeat.id } },
         assignee: { connect: { id: newFeat.creator.id } },
-        surveyId: newFeat.layer.defaultSurveyId,
+        survey: { connect: { id: newFeat.layer.defaultSurveyId } },
       },
     });
   }

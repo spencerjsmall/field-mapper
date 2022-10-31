@@ -22,7 +22,7 @@ export const action: ActionFunction = async ({ request }) => {
     data: {
       name: surveyJson.title ? surveyJson.title : "New Survey",
       json: surveyJson,
-      creator: { connect: { id: parseInt(userId) } },
+      admins: { connect: { id: parseInt(userId) } },
     },
   });
   return redirect("/admin/surveys");

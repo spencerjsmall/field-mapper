@@ -10,8 +10,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function AdminLayout() {
-  const { userId, taskId } = useLoaderData();
-  const { pathname } = useLocation();
+  const { userId } = useLoaderData();  
 
   return (
     <div className="h-screen w-screen flex flex-col">

@@ -49,6 +49,7 @@ export async function register(user: RegisterForm) {
 export async function login({ email, password }: LoginForm) {
   const user = await prisma.user.findUnique({
     where: { email },
+    include: { admin: true },
   });
 
   if (!user || !(await bcrypt.compare(password, user.password)))
@@ -60,7 +61,7 @@ export async function login({ email, password }: LoginForm) {
 export async function createUserSession(user: User, redirectTo: string) {
   const session = await getSession();
   session.set("userId", user.id);
-  session.set("role", user.role);
+  session.set("role", user.admin ? "admin" : "field");
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await commitSession(session),
@@ -81,13 +82,13 @@ export async function requireSession(
   return session;
 }
 
-export async function requireUserSession(
+export async function requireFieldSession(
   request: Request,
   redirectTo: string = new URL(request.url).pathname
 ) {
   const session = await requireSession(request);
   const role = session.get("role");
-  if (role === "ADMIN") {
+  if (role === "admin") {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
     throw redirect(`/admin/home?${searchParams}`);
   }
@@ -100,7 +101,7 @@ export async function requireAdminSession(
 ) {
   const session = await requireSession(request);
   const role = session.get("role");
-  if (!role || role !== "ADMIN") {
+  if (!role || role !== "admin") {
     const searchParams = new URLSearchParams([["redirectTo", redirectTo]]);
     throw redirect(`/home?${searchParams}`);
   }
@@ -140,7 +141,7 @@ export async function getUser(request: Request) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, role: true },
+      select: { id: true, email: true },
     });
     return user;
   } catch {

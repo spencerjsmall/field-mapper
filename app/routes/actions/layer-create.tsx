@@ -24,7 +24,7 @@ export const action: ActionFunction = async ({ request }) => {
     layer = {
       name: String(name),
       labelField: String(field),
-      dispatcher: { connect: { id: userId } },
+      admins: { connect: { id: userId } },
       defaultSurvey: surveyId
         ? { connect: { id: parseInt(surveyId) } }
         : undefined,
@@ -33,7 +33,7 @@ export const action: ActionFunction = async ({ request }) => {
     layer = {
       name: String(name),
       labelField: String(field),
-      dispatcher: { connect: { id: userId } },
+      admins: { connect: { id: userId } },
       features: {
         createMany: {
           data: parsedFeatures,
@@ -45,10 +45,10 @@ export const action: ActionFunction = async ({ request }) => {
     };
   }
 
-  await prisma.layer.create({ data: layer });
+  const newLayer = await prisma.layer.create({ data: layer });
 
-  session.set("task", name);
-  return redirect(`/admin/layers/${name}`, {
+  session.set("layer", newLayer.id);
+  return redirect(`/admin/layers`, {
     headers: {
       "Set-Cookie": await commitSession(session),
     },

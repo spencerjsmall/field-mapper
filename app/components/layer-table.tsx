@@ -2,8 +2,10 @@ import { CSVLink } from "react-csv";
 import { useRef, useState } from "react";
 import { BsGlobe } from "react-icons/bs";
 import { Link, useFetcher } from "@remix-run/react";
+import { LayerAdminManager } from "./layer-admin-manager";
+import { AdminAvatars } from "./admin-avatars";
 
-export function LayerTable({ layers, surveys }) {
+export function LayerTable({ layers, surveys, admins }) {
   const [csv, setCSV] = useState({ data: null, fileName: "" });
   const csvLink = useRef(null);
   const fetcher = useFetcher();
@@ -42,7 +44,7 @@ export function LayerTable({ layers, surveys }) {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto px-8">
       <table className="table w-full">
         <thead>
           <tr>
@@ -50,6 +52,7 @@ export function LayerTable({ layers, surveys }) {
             <th>Name</th>
             <th>Created</th>
             <th>Updated</th>
+            <th>Managed By</th>
             <th>Features</th>
             <th>Assignments</th>
             <th>Assigned Survey</th>
@@ -58,11 +61,19 @@ export function LayerTable({ layers, surveys }) {
         </thead>
         <tbody>
           {layers.map((layer, i) => (
-            <tr key={i} className="hover">
+            <tr key={i} className="hover overflow-y-visible">
               <td>
-                <Link className="hover:text-white text-2xl" to={layer.name}>
-                  <BsGlobe />
-                </Link>
+                <div
+                  data-tip="Map Viewer"
+                  className="tooltip tooltip-bottom z-50"
+                >
+                  <Link
+                    className="hover:text-white text-2xl"
+                    to={String(layer.id)}
+                  >
+                    <BsGlobe />
+                  </Link>
+                </div>
               </td>
               <td>{layer.name}</td>
               <td>{new Date(layer.createdAt).toDateString()}</td>
@@ -75,6 +86,9 @@ export function LayerTable({ layers, surveys }) {
                       .split(" ")
                       .slice(0, 5)
                       .join(" ")}
+              </td>
+              <td>
+                <AdminAvatars admins={layer.admins} id={layer.id} />
               </td>
               <td>{layer._count.features}</td>
               <td>
@@ -144,6 +158,19 @@ export function LayerTable({ layers, surveys }) {
                   )}
                 </div>
               </td>
+              <input
+                type="checkbox"
+                id={`add-admins-modal-${layer.id}`}
+                className="modal-toggle"
+              />
+              <label
+                htmlFor={`add-admins-modal-${layer.id}`}
+                className="modal cursor-pointer"
+              >
+                <label className="modal-box relative" for="">
+                  <LayerAdminManager admins={admins} layer={layer} />
+                </label>
+              </label>
             </tr>
           ))}
         </tbody>

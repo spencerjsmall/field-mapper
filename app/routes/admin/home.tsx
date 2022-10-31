@@ -1,5 +1,8 @@
-import { Link } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
+
 export default function HomePage() {
+  const data = useLoaderData();  
+  console.log(data);
   return (
     <div className="flex flex-col items-center justify-center h-full w-full">
       <div
@@ -17,7 +20,7 @@ export default function HomePage() {
             </p>
             <Link to="/admin/layers">
               <button className="btn btn-primary">Manage Layer</button>
-            </Link>
+            </Link>            
           </div>
         </div>
       </div>

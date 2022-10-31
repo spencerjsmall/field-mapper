@@ -26,7 +26,7 @@ export function links() {
 export const loader = async ({ request, params }: LoaderArgs) => {
   const layerId = params.layerId;
   const layer = await prisma.layer.findUniqueOrThrow({
-    where: { name: layerId },
+    where: { id: parseInt(layerId) },
     include: {
       features: {
         include: {

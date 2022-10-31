@@ -17,7 +17,7 @@ export function links() {
 }
 
 export const action: ActionFunction = async ({ request }) => {
-  const { surveyData, surveyId, userId } = Object.fromEntries(
+  const { surveyData, surveyId } = Object.fromEntries(
     await request.formData()
   );
   const surveyJson = JSON.parse(JSON.parse(surveyData));
@@ -28,7 +28,6 @@ export const action: ActionFunction = async ({ request }) => {
     data: {
       name: surveyJson.title,
       json: surveyJson,
-      creator: { connect: { id: parseInt(userId) } },
     },
   });
   return redirect("/admin/surveys");

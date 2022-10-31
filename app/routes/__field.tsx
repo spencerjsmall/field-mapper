@@ -6,10 +6,10 @@ import {
 } from "@remix-run/react";
 import { AiOutlineMenu } from "react-icons/ai";
 import { HiOutlineUserCircle } from "react-icons/hi";
-import { requireUserSession } from "~/utils/auth.server";
+import { requireFieldSession } from "~/utils/auth.server";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const session = await requireUserSession(request);
+  const session = await requireFieldSession(request);
   const userId = session.get("userId");
   const taskId = session.get("task");
   const assignmentId = params.assignmentId;

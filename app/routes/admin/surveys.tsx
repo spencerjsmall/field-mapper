@@ -12,10 +12,19 @@ export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const userSurveys = await prisma.survey.findMany({
     where: {
-      creatorId: userId,
+      admins: {
+        some: {
+          userId: userId,
+        },
+      },
     },
     include: {
       layers: true,
+      admins: {
+        include: {
+          user: true,
+        },
+      },
       assignments: true,
       _count: {
         select: {
@@ -25,11 +34,19 @@ export const loader: LoaderFunction = async ({ request }) => {
     },
   });
 
-  return { userSurveys };
+  const allAdmins = await prisma.admin.findMany({
+    include: { user: true },
+  });
+  const adminData = allAdmins.map((a) => ({
+    key: a.user.id,
+    value: `${a.user.firstName} ${a.user.lastName}`,
+  }));
+
+  return { userSurveys, adminData };
 };
 
 export default function Surveys() {
-  const { userSurveys } = useLoaderData();
+  const { userSurveys, adminData } = useLoaderData();
   return (
     <div className="flex mx-auto flex-col items-center pt-32 w-3/4 h-full">
       <div className="flex w-full justify-between">
@@ -39,7 +56,7 @@ export default function Surveys() {
         </Link>
       </div>
       {userSurveys && userSurveys.length > 0 ? (
-        <SurveyTable surveys={userSurveys} />
+        <SurveyTable surveys={userSurveys} adminData={adminData} />
       ) : (
         <h2>No Surveys</h2>
       )}

@@ -11,8 +11,14 @@ export const createUser = async (user: RegisterForm) => {
       password: passwordHash,
       firstName: user.firstName,
       lastName: user.lastName,
-      role: user.role == 'ADMIN' ? Role.ADMIN : Role.USER,
+      admin: {
+        create: user.role == "ADMIN" ? {} : undefined,
+      },
+      surveyor: {
+        create: user.role == "SURVEYOR" ? {} : undefined,
+      },
     },
+    include: { admin: true },
   });
   return newUser;
 };

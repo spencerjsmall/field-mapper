@@ -27,11 +27,7 @@ import crosshairs from "../../../../public/images/crosshairs.svg";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { FiLayers } from "react-icons/fi";
 
-import {
-  getUserSession,
-  commitSession,
-  requireUserSession,
-} from "~/utils/auth.server";
+import { getUserSession, commitSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
 
 export function links() {
@@ -63,7 +59,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export const loader = async ({ request, params }: LoaderArgs) => {
-  const session = await requireUserSession(request);
+  const session = await getUserSession(request);
   const userId = session.get("userId");
   const savedState = session.get("viewState");
   const taskId = params.taskId;

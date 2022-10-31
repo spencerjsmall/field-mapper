@@ -28,9 +28,18 @@ export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
   const userLayers = await prisma.layer.findMany({
     where: {
-      dispatcherId: userId,
+      admins: {
+        some: {
+          userId: userId,
+        },
+      },
     },
     include: {
+      admins: {
+        include: {
+          user: true,
+        },
+      },
       defaultSurvey: true,
       features: {
         include: {
@@ -45,32 +54,49 @@ export const loader: LoaderFunction = async ({ request }) => {
       createdAt: "desc",
     },
   });
+
   const userSurveys = await prisma.survey.findMany({
     where: {
-      creatorId: userId,
+      admins: {
+        some: {
+          userId: userId,
+        },
+      },
     },
   });
 
-  return { userLayers, userSurveys };
+  const allAdmins = await prisma.admin.findMany({
+    include: { user: true },
+  });
+  const adminData = allAdmins.map((a) => ({
+    key: a.user.id,
+    value: `${a.user.firstName} ${a.user.lastName}`,
+  }));
+
+  return { userLayers, userSurveys, adminData };
 };
 
-export default function Table() {
-  const { userLayers, userSurveys } = useLoaderData();
+export default function Layers() {
+  const { userLayers, userSurveys, adminData } = useLoaderData();
 
   return (
     <div className="flex mx-auto flex-col items-center pt-32 w-3/4 h-full">
       <div className="flex w-full justify-between">
         <h1 className="text-white text-4xl mb-14">Layers</h1>{" "}
-        <label htmlFor="my-modal" className="btn w-36 modal-button">
+        <label htmlFor="new-layer-modal" className="btn w-36 modal-button">
           New Layer
         </label>
       </div>
       {userLayers && userLayers.length > 0 ? (
-        <LayerTable layers={userLayers} surveys={userSurveys} />
+        <LayerTable
+          layers={userLayers}
+          surveys={userSurveys}
+          admins={adminData}
+        />
       ) : (
         <h2>No layers</h2>
       )}
-      <input type="checkbox" id="my-modal" className="modal-toggle" />
+      <input type="checkbox" id="new-layer-modal" className="modal-toggle" />
       <div className="modal">
         <div className="modal-box relative p-8 bg-black">
           <LayerUploader surveys={userSurveys} />
