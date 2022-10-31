@@ -1,0 +1,13 @@
+diff --git a/survey-creator-core.js b/survey-creator-core.js
+index 08db4195bbe2275a2cd3279b5e0d227bf5fe29f5..f29fc2ba1e13d916db92151fb322e55a86e4f0d9 100644
+--- a/survey-creator-core.js
++++ b/survey-creator-core.js
+@@ -2933,7 +2933,7 @@ var SurveySimulatorModel = /** @class */ (function (_super) {
+     return SurveySimulatorModel;
+ }(survey_core__WEBPACK_IMPORTED_MODULE_1__["Base"]));
+ 
+-var DEFAULT_MONITOR_DPI = (!!window ? window.devicePixelRatio : 1) * 96;
++var DEFAULT_MONITOR_DPI = 96;
+ var simulatorDevices = {
+     desktop: {
+         deviceType: "desktop",

@@ -27,11 +27,7 @@ import crosshairs from "../../../../public/images/crosshairs.svg";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { FiLayers } from "react-icons/fi";
 
-import {
-  getUserSession,
-  commitSession,
-  requireUserSession,
-} from "~/utils/auth.server";
+import { getUserSession, commitSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
 
 export function links() {
@@ -48,8 +44,22 @@ export function links() {
   ];
 }
 
+export const action: ActionFunction = async ({ request, params }) => {
+  const session = await getUserSession(request);
+  const taskId = params.taskId;
+  const { assignmentId, viewState } = Object.fromEntries(
+    await request.formData()
+  );
+  session.set("viewState", viewState);
+  return redirect(`/tasks/${taskId}/${assignmentId}`, {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  });
+};
+
 export const loader = async ({ request, params }: LoaderArgs) => {
-  const session = await requireUserSession(request);
+  const session = await getUserSession(request);
   const userId = session.get("userId");
   const savedState = session.get("viewState");
   const taskId = params.taskId;
@@ -69,26 +79,13 @@ export const loader = async ({ request, params }: LoaderArgs) => {
       assignment: true,
     },
   });
+  const token = process.env.MAPBOX_ACCESS_TOKEN;
 
-  return { assignments, layer, savedState };
-};
-
-export const action: ActionFunction = async ({ request, params }) => {
-  const session = await getUserSession(request);
-  const taskId = params.taskId;
-  const { assignmentId, viewState } = Object.fromEntries(
-    await request.formData()
-  );
-  session.set("viewState", viewState);
-  return redirect(`/tasks/${taskId}/${assignmentId}`, {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
+  return { assignments, layer, savedState, token };
 };
 
 export default function TaskMap() {
-  const { assignments, layer, savedState } = useLoaderData();
+  const { assignments, layer, savedState, token } = useLoaderData();
   const userId = useOutletContext();
   const fetcher = useFetcher();
   const submit = useSubmit();
@@ -166,8 +163,7 @@ export default function TaskMap() {
   };
 
   const mapDirections = new MapboxDirections({
-    accessToken:
-      "pk.eyJ1Ijoic3BlbmNlcmpzbWFsbCIsImEiOiJjbDdmNGY5d2YwNnJuM3hsZ2IyN2thc2QyIn0.hLfNqU8faCraSSKrXbtnHQ",
+    accessToken: token,
     placeholderOrigin: "Current Location",
     controls: {
       inputs: false,
@@ -243,12 +239,10 @@ export default function TaskMap() {
             ? "mapbox://styles/mapbox/satellite-v9"
             : `mapbox://styles/mapbox/${basemap}`
         }
-        mapboxAccessToken={
-          "pk.eyJ1Ijoic3BlbmNlcmpzbWFsbCIsImEiOiJjbDdmNGY5d2YwNnJuM3hsZ2IyN2thc2QyIn0.hLfNqU8faCraSSKrXbtnHQ"
-        }
+        mapboxAccessToken={token}
         interactiveLayerIds={["todo", "done"]}
         onClick={onFeatureClick}
-      >   
+      >
         {basemap == "satellite" && (
           <Source
             id="tiles"

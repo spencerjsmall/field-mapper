@@ -10,14 +10,24 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function AdminLayout() {
-  const { userId, taskId } = useLoaderData();
-  const { pathname } = useLocation();
+  const { userId } = useLoaderData();  
 
   return (
     <div className="h-screen w-screen flex flex-col">
       <div className="flex flex-row bg-black items-center sticky top-0 z-50 justify-between drop-shadow-xl border-b border-white text-white text-2xl py-4 px-6">
-        <div className='flex flex-row text-2xl items-center space-x-2'>
-          <AiOutlineMenu />
+        <div className="flex flex-row text-2xl items-center space-x-2">
+          <div className="dropdown">
+            <label tabIndex={0} className="">
+              <AiOutlineMenu />
+            </label>
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu p-2 mt-6 shadow bg-base-100 rounded-box w-52"
+            >
+              <li>Home</li>
+              <li>Settings</li>
+            </ul>
+          </div>
           <h1 className="uppercase">Field Mapper</h1>
         </div>
 
@@ -30,7 +40,7 @@ export default function AdminLayout() {
         </div>
       </div>
 
-      <div className="w-full max-h-full h-full overflow-y-hidden z-0">
+      <div className="w-full max-h-full h-full bg-base-500 overflow-y-hidden z-0">
         <Outlet context={userId} />
       </div>
     </div>
