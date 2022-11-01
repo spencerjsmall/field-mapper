@@ -30,6 +30,9 @@ export const loader: LoaderFunction = async ({ request }) => {
       },
       assignments: true,
     },
+    orderBy: {
+      user: { createdAt: "desc" },
+    },
   });
 
   const allSurveyors = await prisma.surveyor.findMany({

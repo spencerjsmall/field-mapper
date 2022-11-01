@@ -32,6 +32,9 @@ export const loader: LoaderFunction = async ({ request }) => {
         },
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
   const allAdmins = await prisma.admin.findMany({
