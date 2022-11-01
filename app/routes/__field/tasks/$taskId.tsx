@@ -22,7 +22,7 @@ import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 import m_styles from "../../../styles/mapbox.css";
 import { assignedStyle, todoStyle } from "~/styles/features";
-import { BasemapSelector } from "~/components/basemap-selector";
+import { BasemapSelector } from "~/components/selectors/basemap-selector";
 import crosshairs from "../../../../public/images/crosshairs.svg";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { FiLayers } from "react-icons/fi";

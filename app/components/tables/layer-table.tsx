@@ -2,10 +2,10 @@ import { CSVLink } from "react-csv";
 import { useRef, useState } from "react";
 import { BsGlobe } from "react-icons/bs";
 import { Link, useFetcher } from "@remix-run/react";
-import { LayerAdminManager } from "./layer-admin-manager";
-import { AdminAvatars } from "./admin-avatars";
+import { LayerAdminManager } from "../modals/layer-admin-manager";
+import { AdminAvatars } from "../admin-avatars";
 
-export function LayerTable({ layers, surveys, admins }) {
+export function LayerTable({ layers, surveys, adminData }) {
   const [csv, setCSV] = useState({ data: null, fileName: "" });
   const csvLink = useRef(null);
   const fetcher = useFetcher();
@@ -88,7 +88,7 @@ export function LayerTable({ layers, surveys, admins }) {
                       .join(" ")}
               </td>
               <td>
-                <AdminAvatars admins={layer.admins} id={layer.id} />
+                <AdminAvatars admins={layer.admins} id={layer.id} addAdmins />
               </td>
               <td>{layer._count.features}</td>
               <td>
@@ -168,7 +168,7 @@ export function LayerTable({ layers, surveys, admins }) {
                 className="modal cursor-pointer"
               >
                 <label className="modal-box relative" for="">
-                  <LayerAdminManager admins={admins} layer={layer} />
+                  <LayerAdminManager admins={adminData} layer={layer} />
                 </label>
               </label>
             </tr>

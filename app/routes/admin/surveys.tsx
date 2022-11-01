@@ -6,7 +6,7 @@ import {
   getUserSession,
   commitSession,
 } from "~/utils/auth.server";
-import { SurveyTable } from "~/components/survey-table";
+import { SurveyTable } from "~/components/tables/survey-table";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
@@ -38,7 +38,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     include: { user: true },
   });
   const adminData = allAdmins.map((a) => ({
-    key: a.user.id,
+    key: a.id,
     value: `${a.user.firstName} ${a.user.lastName}`,
   }));
 

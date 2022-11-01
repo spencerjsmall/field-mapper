@@ -1,8 +1,6 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 
-export default function HomePage() {
-  const data = useLoaderData();  
-  console.log(data);
+export default function HomePage() {    
   return (
     <div className="flex flex-col items-center justify-center h-full w-full">
       <div

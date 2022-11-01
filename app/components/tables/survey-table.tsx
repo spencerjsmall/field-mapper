@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
-import { AdminAvatars } from "./admin-avatars";
-import { SurveyAdminManager } from "./survey-admin-manager";
+import { AdminAvatars } from "../admin-avatars";
+import { SurveyAdminManager } from "../modals/survey-admin-manager";
 
 export function SurveyTable({ surveys, adminData }) {
   return (
@@ -36,7 +36,7 @@ export function SurveyTable({ surveys, adminData }) {
                       .join(" ")}
               </td>
               <td>
-                <AdminAvatars admins={survey.admins} id={survey.id} />
+                <AdminAvatars admins={survey.admins} id={survey.id} addAdmins />
               </td>
               <td>{survey.layers.map((l) => l.name).join(", ")}</td>
               <td>

@@ -2,7 +2,7 @@ import { useSubmit } from "@remix-run/react";
 import ReactSearchBox from "react-search-box";
 
 export function SurveyAdminManager({ admins, survey }) {
-  const submit = useSubmit();
+  const submit = useSubmit();  
   return (
     <div className="flex flex-col items-center space-y-6">
       <h1>{survey.name} Managers</h1>

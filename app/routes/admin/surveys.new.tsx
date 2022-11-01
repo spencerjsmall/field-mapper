@@ -64,8 +64,7 @@ export default function SurveyCreatorWidget() {
       4
     );
     creatorObj.saveSurveyFunc = (saveNo, callback) => {
-      window.localStorage.setItem("survey-json", creatorObj.text);
-      console.log(creatorObj.text);
+      window.localStorage.setItem("survey-json", creatorObj.text);      
       callback(saveNo, true);
     };
     setCreator(creatorObj);

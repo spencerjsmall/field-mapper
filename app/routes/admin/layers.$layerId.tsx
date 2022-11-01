@@ -9,9 +9,9 @@ import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../styles/mapbox.css";
 import { assignedStyle, highlightedStyle, todoStyle } from "~/styles/features";
-import { BasemapSelector } from "~/components/basemap-selector";
+import { BasemapSelector } from "~/components/selectors/basemap-selector";
 import crosshairs from "../../../public/images/crosshairs.svg";
-import { AssignmentSelect } from "~/components/assignment-selector";
+import { AssignmentSelect } from "~/components/selectors/assignment-selector";
 
 export function links() {
   return [

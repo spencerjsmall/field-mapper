@@ -43,8 +43,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function SurveyCreatorWidget() {
-  const survey = useLoaderData();
-  console.log("survey", survey.json);
+  const survey = useLoaderData();  
   const submit = useSubmit();
   const userId = useOutletContext();
   const [creator, setCreator] = useState<SurveyCreator>();
@@ -82,8 +81,7 @@ export default function SurveyCreatorWidget() {
     );
     creatorObj.JSON = survey.json;
     creatorObj.saveSurveyFunc = (saveNo, callback) => {
-      window.localStorage.setItem("survey-json", creatorObj.text);
-      console.log(creatorObj.text);
+      window.localStorage.setItem("survey-json", creatorObj.text);      
       callback(saveNo, true);
     };
     setCreator(creatorObj);

@@ -2,8 +2,7 @@ import type { ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prisma } from "~/utils/db.server";
 
-export const action: ActionFunction = async ({ request }) => {
-  console.log("WRONG ONE");
+export const action: ActionFunction = async ({ request }) => {  
   const { layerId, coordinates, userId } = Object.fromEntries(
     await request.formData()
   );

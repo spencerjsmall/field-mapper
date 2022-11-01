@@ -1,7 +1,11 @@
 import { redirect, json, createCookieSessionStorage } from "@remix-run/node";
-import type { RegisterForm, LoginForm } from "./types.server";
+import type {
+  AdminRegisterForm,
+  RegisterForm,
+  LoginForm,
+} from "./types.server";
 import { prisma } from "./db.server";
-import { createUser } from "./user.server";
+import { createSurveyor, createUser } from "./user.server";
 import bcrypt from "bcryptjs";
 import type { User } from "@prisma/client";
 
@@ -43,6 +47,28 @@ export async function register(user: RegisterForm) {
     );
   }
   return createUserSession(newUser, "/");
+}
+
+export async function adminRegister(user: AdminRegisterForm) {
+  const exists = await prisma.user.count({ where: { email: user.email } });
+  if (exists) {
+    return json(
+      { error: `User already exists with that email` },
+      { status: 400 }
+    );
+  }
+
+  const newUser = await createSurveyor(user);
+  if (!newUser) {
+    return json(
+      {
+        error: `Something went wrong trying to create a new user.`,
+        fields: { email: user.email, password: user.password },
+      },
+      { status: 400 }
+    );
+  }
+  return redirect("/admin/surveyors");
 }
 
 // Validate the user on email & password

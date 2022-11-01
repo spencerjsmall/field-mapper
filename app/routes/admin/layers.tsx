@@ -1,13 +1,12 @@
 import { prisma } from "~/utils/db.server";
 import { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { LayerUploader } from "~/components/layer-uploader";
-import { LayerTable } from "~/components/layer-table";
+import { LayerUploader } from "~/components/modals/layer-uploader";
+import { LayerTable } from "~/components/tables/layer-table";
 import { requireUserId } from "~/utils/auth.server";
 
 export const action: ActionFunction = async ({ request }) => {
-  const { surveyId, layerId } = Object.fromEntries(await request.formData());
-  console.log("surveyId", surveyId == "None");
+  const { surveyId, layerId } = Object.fromEntries(await request.formData());  
   await prisma.layer.update({
     where: {
       id: parseInt(layerId),
@@ -69,7 +68,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     include: { user: true },
   });
   const adminData = allAdmins.map((a) => ({
-    key: a.user.id,
+    key: a.id,
     value: `${a.user.firstName} ${a.user.lastName}`,
   }));
 
@@ -91,7 +90,7 @@ export default function Layers() {
         <LayerTable
           layers={userLayers}
           surveys={userSurveys}
-          admins={adminData}
+          adminData={adminData}
         />
       ) : (
         <h2>No layers</h2>
