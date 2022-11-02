@@ -5,6 +5,7 @@ import { useLoaderData, useOutletContext, useFetcher } from "@remix-run/react";
 
 import Map, { Source, Layer } from "react-map-gl";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
+import { requireUserId } from "~/utils/auth.server";
 
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../styles/mapbox.css";
@@ -24,6 +25,7 @@ export function links() {
 }
 
 export const loader = async ({ request, params }: LoaderArgs) => {
+  const userId = await requireUserId(request);
   const layerId = params.layerId;
   const layer = await prisma.layer.findUniqueOrThrow({
     where: { id: parseInt(layerId) },
@@ -31,18 +33,39 @@ export const loader = async ({ request, params }: LoaderArgs) => {
       features: {
         include: {
           assignment: {
-            include: { assignee: true },
+            include: { assignee: { include: { user: true } } },
           },
         },
       },
     },
   });
+  const userSurveys = await prisma.survey.findMany({
+    where: {
+      admins: {
+        some: {
+          userId: userId,
+        },
+      },
+    },
+  });
+  const userSurveyors = await prisma.surveyor.findMany({
+    where: {
+      admins: {
+        some: {
+          userId: userId,
+        },
+      },
+    },
+    include: {
+      user: true,
+    },
+  });
   const token = process.env.MAPBOX_ACCESS_TOKEN;
-  return { layer, token };
+  return { layer, userSurveys, userSurveyors, token };
 };
 
 export default function AdminTaskMap() {
-  const { layer, token } = useLoaderData();
+  const { layer, userSurveys, userSurveyors, token } = useLoaderData();
   const userId = useOutletContext();
   const mapRef = useRef();
   const fetcher = useFetcher();
@@ -210,6 +233,8 @@ export default function AdminTaskMap() {
           <AssignmentSelect
             layer={layer}
             features={layer.features.filter((f) => filterIds.includes(f.id))}
+            surveys={userSurveys}
+            surveyors={userSurveyors}
           />
         </div>
       )}

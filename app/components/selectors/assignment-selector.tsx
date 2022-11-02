@@ -3,8 +3,15 @@ import JSONPretty from "react-json-pretty";
 import _ from "lodash";
 import clsx from "clsx";
 
-export function AssignmentSelect({ layer, features }) {
+export function AssignmentSelect({ layer, features, surveys, surveyors }) {
   const fetcher = useFetcher();
+  console.log("data", fetcher.data);
+  console.log("features", features);
+  console.log("surveys", surveys);
+  console.log("surveyors", surveyors);
+  console.log(
+    features.every((f) => f.assignment && f.assignment.surveyId == 3)
+  );
   return (
     <div className="h-full p-4">
       {features && features.length > 0 ? (
@@ -30,27 +37,83 @@ export function AssignmentSelect({ layer, features }) {
                       name="featureIds"
                       value={features.map((f) => f.id)}
                     />
-                    <h3>Assignee:</h3>
-                    <label>
-                      <input
-                        className="bg-black text-white"
-                        type="text"
-                        name="assigneeEmail"
-                      />
-                    </label>
-                    <h3>Survey ID:</h3>
-                    <label>
-                      <input
-                        className="bg-black text-white"
-                        type="text"
-                        name="surveyId"
-                        defaultValue={
-                          layer.defaultSurveyId
-                            ? layer.defaultSurveyId
-                            : undefined
+                    <h3>Assigned to:</h3>
+                    <select
+                      name="assigneeId"
+                      className="select select-sm w-fit bg-gray-200"
+                    >
+                      <option
+                        selected={
+                          !features.every(
+                            (f) =>
+                              f.assignment &&
+                              features[0].assignment &&
+                              f.assignment.assigneeId ==
+                                features[0].assignment.assigneeId
+                          )
                         }
-                      />
-                    </label>
+                        disabled
+                      >
+                        Choose a surveyor
+                      </option>
+                      {surveyors &&
+                        surveyors.length > 0 &&
+                        surveyors.map((surveyor, i) => (
+                          <option
+                            key={i}
+                            selected={features.every(
+                              (f) =>
+                                f.assignment &&
+                                f.assignment.assigneeId == surveyor.id
+                            )}
+                            value={surveyor.id}
+                          >
+                            {surveyor.user.firstName} {surveyor.user.lastName}
+                          </option>
+                        ))}
+                    </select>
+                    <h3>Attached Survey:</h3>
+                    <select
+                      name="surveyId"
+                      className="select select-sm w-fit bg-gray-200"
+                    >
+                      <option
+                        selected={
+                          !features.every(
+                            (f) =>
+                              f.assignment &&
+                              features[0].assignment &&
+                              f.assignment.surveyId ==
+                                features[0].assignment.surveyId
+                          )
+                        }
+                        disabled
+                      >
+                        Choose a survey
+                      </option>
+                      {surveys &&
+                        surveys.length > 0 &&
+                        surveys.map((survey, i) => (
+                          <option
+                            key={i}
+                            selected={
+                              features.every(
+                                (f) =>
+                                  f.assignment &&
+                                  f.assignment.surveyId == survey.id
+                              ) ||
+                              features.every(
+                                (f) =>
+                                  !f.assignment &&
+                                  layer.defaultSurveyId == survey.id
+                              )
+                            }
+                            value={survey.id}
+                          >
+                            {survey.name}
+                          </option>
+                        ))}
+                    </select>
                     <button
                       type="submit"
                       name="actionId"
@@ -110,46 +173,79 @@ export function AssignmentSelect({ layer, features }) {
                       name="featureIds"
                       value={[feature.id]}
                     />
-                    <h3>Assignee:</h3>
-                    <label>
-                      <input
-                        type="text"
-                        key={
-                          fetcher.type === "done"
-                            ? "assigneeFetched"
-                            : "assigneeReady"
+                    <h3>Assigned to:</h3>
+                    <select
+                      name="assigneeId"
+                      className="select select-sm w-fit"
+                    >
+                      <option
+                        selected={
+                          !(
+                            (fetcher.type === "done" &&
+                              fetcher.data.ids.includes(feature.id)) ||
+                            (feature.assignment &&
+                              feature.assignment.assigneeId)
+                          )
                         }
-                        defaultValue={
-                          fetcher.type === "done" &&
-                          fetcher.data.ids.includes(feature.id)
-                            ? fetcher.data.assigneeEmail
-                            : feature.assignment?.assignee.email
+                        disabled
+                      >
+                        Choose a surveyor
+                      </option>
+                      {surveyors &&
+                        surveyors.length > 0 &&
+                        surveyors.map((surveyor, i) => (
+                          <option
+                            key={i}
+                            selected={
+                              fetcher.type === "done" &&
+                              fetcher.data.ids.includes(feature.id)
+                                ? fetcher.data.assigneeId == surveyor.id
+                                : feature.assignment
+                                ? feature.assignment.assigneeId == surveyor.id
+                                : false
+                            }
+                            value={surveyor.id}
+                          >
+                            {surveyor.user.firstName} {surveyor.user.lastName}
+                          </option>
+                        ))}
+                    </select>
+                    <h3>Attached Survey:</h3>
+                    <select name="surveyId" className="select select-sm w-fit">
+                      <option
+                        selected={
+                          !(
+                            (fetcher.type === "done" &&
+                              fetcher.data.ids.includes(feature.id)) ||
+                            feature.assignment
+                          )
                         }
-                        name="assigneeEmail"
-                      />
-                    </label>
-                    <h3>Survey ID:</h3>
-                    <label>
-                      <input
-                        type="text"
-                        key={
-                          fetcher.type === "done"
-                            ? "surveyUpdated"
-                            : "surveyReady"
-                        }
-                        defaultValue={
-                          fetcher.type === "done" &&
-                          fetcher.data.ids.includes(feature.id)
-                            ? fetcher.data.surveyId
-                            : feature.assignment
-                            ? feature.assignment.surveyId
-                            : layer.defaultSurveyId
-                            ? layer.defaultSurveyId
-                            : undefined
-                        }
-                        name="surveyId"
-                      />
-                    </label>
+                        disabled
+                      >
+                        Choose a survey
+                      </option>
+                      {surveys &&
+                        surveys.length > 0 &&
+                        surveys.map((survey, i) => (
+                          <option
+                            key={i}
+                            selected={
+                              fetcher.type === "done" &&
+                              fetcher.data.ids.includes(feature.id)
+                                ? fetcher.data.surveyId == survey.id
+                                : feature.assignment
+                                ? feature.assignment.surveyId == survey.id
+                                : layer.defaultSurveyId
+                                ? layer.defaultSurveyId == survey.id
+                                : false
+                            }
+                            value={survey.id}
+                          >
+                            {survey.name}
+                          </option>
+                        ))}
+                    </select>
+
                     <button
                       type="submit"
                       name="actionId"
