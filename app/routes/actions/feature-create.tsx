@@ -2,22 +2,25 @@ import type { ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prisma } from "~/utils/db.server";
 
-export const action: ActionFunction = async ({ request }) => {  
-  const { layerId, coordinates, userId } = Object.fromEntries(
+export const action: ActionFunction = async ({ request }) => {
+  let { layerId, coordinates, userId } = Object.fromEntries(
     await request.formData()
   );
 
-  const lId = parseInt(layerId);
-  const uId = parseInt(userId);
-  const coords = JSON.parse(coordinates);
+  layerId = parseInt(layerId);
+  userId = parseInt(userId);
+  coordinates = JSON.parse(coordinates);
 
   const newFeat = await prisma.feature.create({
     data: {
-      layer: { connect: { id: lId } },
-      creator: { connect: { id: uId } },
+      layer: { connect: { id: layerId } },
+      creator: { connect: { id: userId } },
       geojson: {
         type: "Feature",
-        geometry: { type: "Point", coordinates: [coords.lng, coords.lat] },
+        geometry: {
+          type: "Point",
+          coordinates: [coordinates.lng, coordinates.lat],
+        },
         properties: {},
       },
     },
@@ -34,15 +37,11 @@ export const action: ActionFunction = async ({ request }) => {
       },
     },
   });
-  if (
-    newFeat.layer.defaultSurvey &&
-    newFeat.creator &&
-    newFeat.creator.surveyor
-  ) {
+  if (newFeat.layer.defaultSurvey && newFeat.creator.surveyor) {
     await prisma.assignment.create({
       data: {
         feature: { connect: { id: newFeat.id } },
-        assignee: { connect: { id: newFeat.creator.id } },
+        assignee: { connect: { id: newFeat.creator.surveyor.id } },
         survey: { connect: { id: newFeat.layer.defaultSurveyId } },
       },
     });

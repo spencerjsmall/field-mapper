@@ -13,6 +13,7 @@ import * as SurveyReact from "survey-react-ui";
 import type { SurveyModel } from "survey-core";
 import styles from "survey-core/defaultV2.css";
 import { prisma } from "~/utils/db.server";
+import { requireUserId } from "~/utils/auth.server";
 
 export function links() {
   return [{ rel: "stylesheet", href: styles }];
@@ -23,17 +24,22 @@ Survey.StylesManager.applyTheme("defaultV2");
 export const loader: LoaderFunction = async ({ request, params }) => {
   const assnId = parseInt(params.assignmentId);
   const assn = await prisma.assignment.findUniqueOrThrow({
-    where: {
-      id: assnId,
-    },
+    where: { id: assnId },
+    include: { survey: true },
   });
-  return assn.surveyId;
+  return assn.survey;
 };
 
 export async function action({ request, params }) {
   const assnId = parseInt(params.assignmentId);
-  const taskId = params.taskId;
-  const { results, userId } = Object.fromEntries(await request.formData());
+  const userId = await requireUserId(request);
+  const surveyor = await prisma.surveyor.findUniqueOrThrow({
+    where: {
+      userId: userId,
+    },
+  });
+  const layerId = params.layerId;
+  const { results } = Object.fromEntries(await request.formData());
   await prisma.assignment.update({
     where: {
       id: assnId,
@@ -41,28 +47,22 @@ export async function action({ request, params }) {
     data: {
       completed: true,
       results: JSON.parse(results),
-      assignee: { connect: { id: parseInt(userId) } },
+      assignee: { connect: { id: surveyor.id } },
     },
   });
-  return redirect(`/tasks/${taskId}`);
+  return redirect(`/layers/${layerId}`);
 }
 
 export default function SurveyPage() {
-  const surveyId = useLoaderData();
-  const userId = useOutletContext<Number>();
+  const assnSurvey = useLoaderData();  
   const submit = useSubmit();
   const [model, setModel] = useState<SurveyModel>();
-
-  var surveyJson = {
-    surveyId: surveyId,
-  };
 
   const handleComplete = useCallback(
     (sender) => {
       submit(
         {
           results: JSON.stringify(sender.data),
-          userId: String(userId),
         },
         { method: "post" }
       );
@@ -71,7 +71,7 @@ export default function SurveyPage() {
   );
 
   useEffect(() => {
-    var survey = new Survey.Model(surveyJson);
+    var survey = new Survey.Model(assnSurvey.json);
     survey.onComplete.add(handleComplete);
     setModel(survey);
   }, []);

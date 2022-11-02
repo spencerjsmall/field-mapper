@@ -46,12 +46,12 @@ export function links() {
 
 export const action: ActionFunction = async ({ request, params }) => {
   const session = await getUserSession(request);
-  const taskId = params.taskId;
+  const layerId = params.layerId;
   const { assignmentId, viewState } = Object.fromEntries(
     await request.formData()
   );
   session.set("viewState", viewState);
-  return redirect(`/tasks/${taskId}/${assignmentId}`, {
+  return redirect(`/layers/${layerId}/${assignmentId}`, {
     headers: {
       "Set-Cookie": await commitSession(session),
     },
@@ -62,21 +62,25 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   const session = await getUserSession(request);
   const userId = session.get("userId");
   const savedState = session.get("viewState");
-  const taskId = params.taskId;
+  const layerId = params.layerId;
   const layer = await prisma.layer.findUniqueOrThrow({
-    where: { name: taskId },
+    where: { id: parseInt(layerId) },
   });
-  const assignments = await prisma.feature.findMany({
+  const assignments = await prisma.assignment.findMany({
     where: {
-      layerId: layer.id,
-      assignment: {
+      feature: {
         is: {
-          assigneeId: userId,
+          layerId: layer.id,
+        },
+      },
+      assignee: {
+        is: {
+          userId: userId,
         },
       },
     },
     include: {
-      assignment: true,
+      feature: true,
     },
   });
   const token = process.env.MAPBOX_ACCESS_TOKEN;
@@ -111,14 +115,14 @@ export default function TaskMap() {
   const completedAssignments = {
     type: "FeatureCollection",
     features: assignments
-      .filter((f) => f.assignment.completed)
-      .map((f) => ({
-        id: f.id,
-        geometry: f.geojson.geometry,
+      .filter((a) => a.completed)
+      .map((a) => ({
+        id: a.feature.id,
+        geometry: a.feature.geojson.geometry,
         properties: {
-          ...f.geojson.properties,
-          surveyId: f.assignment.surveyId,
-          assignmentId: f.assignment.id,
+          ...a.feature.geojson.properties,
+          surveyId: a.surveyId,
+          assignmentId: a.id,
           completed: true,
         },
       })),
@@ -127,14 +131,14 @@ export default function TaskMap() {
   const todoAssignments = {
     type: "FeatureCollection",
     features: assignments
-      .filter((f) => !f.assignment.completed)
-      .map((f) => ({
-        id: f.id,
-        geometry: f.geojson.geometry,
+      .filter((a) => !a.completed)
+      .map((a) => ({
+        id: a.feature.id,
+        geometry: a.feature.geojson.geometry,
         properties: {
-          ...f.geojson.properties,
-          surveyId: f.assignment.surveyId,
-          assignmentId: f.assignment.id,
+          ...a.feature.geojson.properties,
+          surveyId: a.surveyId,
+          assignmentId: a.id,
           completed: false,
         },
       })),

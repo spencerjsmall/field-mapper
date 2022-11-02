@@ -5,13 +5,6 @@ import clsx from "clsx";
 
 export function AssignmentSelect({ layer, features, surveys, surveyors }) {
   const fetcher = useFetcher();
-  console.log("data", fetcher.data);
-  console.log("features", features);
-  console.log("surveys", surveys);
-  console.log("surveyors", surveyors);
-  console.log(
-    features.every((f) => f.assignment && f.assignment.surveyId == 3)
-  );
   return (
     <div className="h-full p-4">
       {features && features.length > 0 ? (
