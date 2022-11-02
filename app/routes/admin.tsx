@@ -10,24 +10,15 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function AdminLayout() {
-  const { userId } = useLoaderData();  
+  const { userId } = useLoaderData();
 
   return (
     <div className="h-screen w-screen flex flex-col">
       <div className="flex flex-row bg-black items-center sticky top-0 z-50 justify-between drop-shadow-xl border-b border-white text-white text-2xl py-4 px-6">
         <div className="flex flex-row text-2xl items-center space-x-2">
-          <div className="dropdown">
-            <label tabIndex={0} className="">
-              <AiOutlineMenu />
-            </label>
-            <ul
-              tabIndex={0}
-              className="dropdown-content menu p-2 mt-6 shadow bg-base-100 rounded-box w-52"
-            >
-              <li>Home</li>
-              <li>Settings</li>
-            </ul>
-          </div>
+          <label htmlFor="my-drawer" className='cursor-pointer'>
+            <AiOutlineMenu />
+          </label>
           <h1 className="uppercase">Field Mapper</h1>
         </div>
 
@@ -40,8 +31,20 @@ export default function AdminLayout() {
         </div>
       </div>
 
-      <div className="w-full max-h-full h-full bg-base-500 overflow-y-hidden z-0">
-        <Outlet context={userId} />
+      <div className="drawer">
+        <input id="my-drawer" type="checkbox" className="drawer-toggle" />
+        <div className="drawer-content">
+          <div className="w-full max-h-full h-full bg-base-500 overflow-y-hidden z-0">
+            <Outlet context={userId} />
+          </div>
+        </div>
+        <div className="drawer-side">
+          <label htmlFor="my-drawer" className="drawer-overlay"></label>
+          <ul className="menu p-4 overflow-y-auto w-80 bg-base-100 text-base-content">
+            <li>Sidebar Item 1</li>
+            <li>Sidebar Item 2</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
