@@ -2,42 +2,56 @@ import { Link } from "@remix-run/react";
 import { AdminAvatars } from "../admin-avatars";
 import { SurveyAdminManager } from "../modals/survey-admin-manager";
 
-export function SurveyTable({ surveys, adminData }) {
+export function SurveyTable({ surveys, adminData, preview = false }) {
   return (
     <div className="overflow-x-auto">
       <table className="table w-full">
         <thead>
           <tr>
-            <th></th>
+            {!preview && <th></th>}
             <th>Name</th>
-            <th>Created</th>
-            <th>Updated</th>
-            <th>Managed By</th>
-            <th>Assigned Layer</th>
+            {!preview && (
+              <>
+                <th>Created</th>
+                <th>Updated</th>
+                <th>Managed By</th>
+              </>
+            )}
+            <th>Assigned In</th>
             <th>Assignments</th>
           </tr>
         </thead>
         <tbody>
           {surveys.map((survey, i) => (
             <tr key={i} className="hover">
-              <td>
-                <Link to={`/admin/surveys/${survey.id}`}>Edit</Link>
-              </td>
+              {!preview && (
+                <td>
+                  <Link to={`/admin/surveys/${survey.id}`}>Edit</Link>
+                </td>
+              )}
               <td>{survey.name}</td>
-              <td>{new Date(survey.createdAt).toDateString()}</td>
-              <td>
-                {new Date(survey.createdAt).toString() ===
-                new Date(survey.updatedAt).toString()
-                  ? null
-                  : new Date(survey.updatedAt)
-                      .toString()
-                      .split(" ")
-                      .slice(0, 5)
-                      .join(" ")}
-              </td>
-              <td>
-                <AdminAvatars admins={survey.admins} id={survey.id} addAdmins />
-              </td>
+              {!preview && (
+                <>
+                  <td>{new Date(survey.createdAt).toDateString()}</td>
+                  <td>
+                    {new Date(survey.createdAt).toString() ===
+                    new Date(survey.updatedAt).toString()
+                      ? null
+                      : new Date(survey.updatedAt)
+                          .toString()
+                          .split(" ")
+                          .slice(0, 5)
+                          .join(" ")}
+                  </td>
+                  <td>
+                    <AdminAvatars
+                      admins={survey.admins}
+                      id={survey.id}
+                      addAdmins
+                    />
+                  </td>
+                </>
+              )}
               <td>{survey.layers.map((l) => l.name).join(", ")}</td>
               <td>
                 {survey.assignments.filter((a) => a.completed).length} /

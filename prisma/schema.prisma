@@ -21,17 +21,15 @@ model User {
 }
 
 model Surveyor {
-  id          Int          @id @default(autoincrement())
-  userId      Int          @unique
-  user        User         @relation(fields: [userId], references: [id])
+  id          Int          @id 
+  user        User         @relation(fields: [id], references: [id], onDelete: Cascade)
   assignments Assignment[]
   admins      Admin[]
 }
 
 model Admin {
-  id        Int        @id @default(autoincrement())
-  userId    Int        @unique
-  user      User       @relation(fields: [userId], references: [id])
+  id        Int        @id
+  user      User       @relation(fields: [id], references: [id], onDelete: Cascade)
   layers    Layer[]
   surveys   Survey[]
   surveyors Surveyor[]

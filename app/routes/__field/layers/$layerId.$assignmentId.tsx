@@ -33,11 +33,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export async function action({ request, params }) {
   const assnId = parseInt(params.assignmentId);
   const userId = await requireUserId(request);
-  const surveyor = await prisma.surveyor.findUniqueOrThrow({
-    where: {
-      userId: userId,
-    },
-  });
   const layerId = params.layerId;
   const { results } = Object.fromEntries(await request.formData());
   await prisma.assignment.update({
@@ -47,14 +42,14 @@ export async function action({ request, params }) {
     data: {
       completed: true,
       results: JSON.parse(results),
-      assignee: { connect: { id: surveyor.id } },
+      assignee: { connect: { id: userId } },
     },
   });
   return redirect(`/layers/${layerId}`);
 }
 
 export default function SurveyPage() {
-  const assnSurvey = useLoaderData();  
+  const assnSurvey = useLoaderData();
   const submit = useSubmit();
   const [model, setModel] = useState<SurveyModel>();
 

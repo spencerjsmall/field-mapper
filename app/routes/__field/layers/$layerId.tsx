@@ -75,7 +75,7 @@ export const loader = async ({ request, params }: LoaderArgs) => {
       },
       assignee: {
         is: {
-          userId: userId,
+          id: userId,
         },
       },
     },

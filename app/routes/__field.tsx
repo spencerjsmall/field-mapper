@@ -32,8 +32,11 @@ export default function FieldLayout() {
             ? "Survey"
             : "Layers"}
         </h1>
-
-        <HiOutlineUserCircle />
+        <form action="/auth/logout" method="post">
+          <button type="submit">
+            <HiOutlineUserCircle />
+          </button>
+        </form>
 
         {/* <div className="btn btn-sm font-sans btn-ghost">
           <form action="/auth/logout" method="post">

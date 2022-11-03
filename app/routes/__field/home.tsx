@@ -1,7 +1,7 @@
 import { prisma } from "~/utils/db.server";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { useLoaderData, useSubmit } from "@remix-run/react";
+import { useLoaderData, useOutletContext, useSubmit } from "@remix-run/react";
 import {
   getUserSession,
   commitSession,
@@ -22,18 +22,13 @@ export const action: ActionFunction = async ({ request }) => {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const surveyor = await prisma.surveyor.findUniqueOrThrow({
-    where: {
-      userId: userId,
-    },
-  });
   const userLayers = await prisma.layer.findMany({
     where: {
       features: {
         some: {
           assignment: {
             is: {
-              assigneeId: surveyor.id,
+              assigneeId: userId,
             },
           },
         },
@@ -44,7 +39,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function HomePage() {
-  const { userLayers } = useLoaderData();  
+  const { userLayers } = useLoaderData();
   const submit = useSubmit();
 
   const setLayer = (layerId: number) => {

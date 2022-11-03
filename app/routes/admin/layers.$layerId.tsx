@@ -1,11 +1,16 @@
 import { useState, useMemo, useRef } from "react";
 import { prisma } from "~/utils/db.server";
-import type { LoaderArgs } from "@remix-run/node";
+import { json, LoaderArgs } from "@remix-run/node";
 import { useLoaderData, useOutletContext, useFetcher } from "@remix-run/react";
 
 import Map, { Source, Layer } from "react-map-gl";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
-import { requireUserId } from "~/utils/auth.server";
+import {
+  commitSession,
+  getSession,
+  requireSession,
+  requireUserId,
+} from "~/utils/auth.server";
 
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../styles/mapbox.css";
@@ -25,7 +30,6 @@ export function links() {
 }
 
 export const loader = async ({ request, params }: LoaderArgs) => {
-  const userId = await requireUserId(request);
   const layerId = params.layerId;
   const layer = await prisma.layer.findUniqueOrThrow({
     where: { id: parseInt(layerId) },
@@ -39,33 +43,23 @@ export const loader = async ({ request, params }: LoaderArgs) => {
       },
     },
   });
-  const userSurveys = await prisma.survey.findMany({
-    where: {
-      admins: {
-        some: {
-          userId: userId,
-        },
-      },
-    },
-  });
-  const userSurveyors = await prisma.surveyor.findMany({
-    where: {
-      admins: {
-        some: {
-          userId: userId,
-        },
-      },
-    },
-    include: {
-      user: true,
-    },
-  });
+  const session = await getSession(request.headers.get("Cookie"));
+  session.set("layerId", layerId);
+  console.log("session", session.get("layerId"));
   const token = process.env.MAPBOX_ACCESS_TOKEN;
-  return { layer, userSurveys, userSurveyors, token };
+  return json(
+    { layer, token },
+    {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    }
+  );
 };
 
 export default function AdminTaskMap() {
-  const { layer, userSurveys, userSurveyors, token } = useLoaderData();
+  const { layer, token } = useLoaderData();
+  const { userSurveys, userSurveyors } = useOutletContext();
   const userId = useOutletContext();
   const mapRef = useRef();
   const fetcher = useFetcher();
@@ -206,7 +200,7 @@ export default function AdminTaskMap() {
             <div className="absolute top-1/2 left-1/2 transform pointer-events-none -translate-x-1/2 -translate-y-1/2">
               <img src={crosshairs} className="w-64 h-64" alt="crosshairs" />
             </div>
-            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+            <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2">
               <button onClick={createPoint} className="btn w-40">
                 Add Point
               </button>

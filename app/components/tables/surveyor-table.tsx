@@ -1,7 +1,6 @@
-import { Link } from "@remix-run/react";
 import { AdminAvatars } from "../admin-avatars";
 
-export function SurveyorTable({ surveyors }) {  
+export function SurveyorTable({ surveyors, preview = false }) {
   return (
     <div className="overflow-x-auto">
       <table className="table w-full">
@@ -9,7 +8,7 @@ export function SurveyorTable({ surveyors }) {
           <tr>
             <th>Name</th>
             <th>Email</th>
-            <th>Managed By</th>
+            {!preview && <th>Managed By</th>}
             <th>Assignments</th>
           </tr>
         </thead>
@@ -20,13 +19,15 @@ export function SurveyorTable({ surveyors }) {
                 {surveyor.user.firstName} {surveyor.user.lastName}
               </td>
               <td>{surveyor.user.email}</td>
-              <td>
-                <AdminAvatars admins={surveyor.admins} id={surveyor.id} />
-              </td>
+              {!preview && (
+                <td>
+                  <AdminAvatars admins={surveyor.admins} id={surveyor.id} />
+                </td>
+              )}
               <td>
                 {surveyor.assignments.filter((a) => a.completed).length} /{" "}
                 {surveyor.assignments.length} completed
-              </td>              
+              </td>
             </tr>
           ))}
         </tbody>

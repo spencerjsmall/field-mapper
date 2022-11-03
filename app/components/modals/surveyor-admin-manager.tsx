@@ -7,8 +7,8 @@ import { AiOutlineClose } from "react-icons/ai";
 export function SurveyorAdminManager({
   userSurveyors,
   allSurveyorData,
-  adminId,
-}) {   
+  admin,
+}) {
   const submit = useSubmit();
   const [formData, setFormData] = useState({
     email: "",
@@ -32,17 +32,6 @@ export function SurveyorAdminManager({
         </label>
       </div>
       <h1>Surveyors</h1>
-      <div className="flex flex-row space-x-4 items-center">
-        {userSurveyors &&
-          userSurveyors.map((s, i) => (
-            <div
-              key={i}
-              className="w-fit h-fit py-1 px-3 rounded-2xl bg-black text-white hover:bg-gray-600"
-            >
-              {s.user.firstName} {s.user.lastName}
-            </div>
-          ))}
-      </div>
       <ReactSearchBox
         placeholder="Add existing surveyors"
         data={allSurveyorData.filter(
@@ -52,7 +41,7 @@ export function SurveyorAdminManager({
         )}
         onSelect={(record: any) =>
           submit(
-            { surveyorId: record.item.key, adminId: adminId },
+            { surveyorId: record.item.key, adminId: admin.id },
             { method: "post", action: "/actions/add-surveyor-admin" }
           )
         }
@@ -65,9 +54,21 @@ export function SurveyorAdminManager({
         <input
           type="text"
           name="adminId"
-          value={String(adminId)}
+          value={String(admin.id)}
           className="hidden"
           readOnly
+        />
+        <FormField
+          htmlFor="firstName"
+          label="First Name"
+          onChange={(e) => handleInputChange(e, "firstName")}
+          value={formData.firstName}
+        />
+        <FormField
+          htmlFor="lastName"
+          label="Last Name"
+          onChange={(e) => handleInputChange(e, "lastName")}
+          value={formData.lastName}
         />
         <FormField
           htmlFor="email"
@@ -81,18 +82,6 @@ export function SurveyorAdminManager({
           label="Password"
           value={formData.password}
           onChange={(e) => handleInputChange(e, "password")}
-        />
-        <FormField
-          htmlFor="firstName"
-          label="First Name"
-          onChange={(e) => handleInputChange(e, "firstName")}
-          value={formData.firstName}
-        />
-        <FormField
-          htmlFor="lastName"
-          label="Last Name"
-          onChange={(e) => handleInputChange(e, "lastName")}
-          value={formData.lastName}
         />
 
         <div className="w-full text-center">

@@ -7,19 +7,21 @@ export const action: ActionFunction = async ({ request }) => {
     await request.formData()
   );
 
-  layerId = parseInt(layerId);
-  userId = parseInt(userId);
+  const lId = parseInt(layerId);
+  const uId = parseInt(userId);
+  const coords = JSON.parse(coordinates);
+
   coordinates = JSON.parse(coordinates);
 
   const newFeat = await prisma.feature.create({
     data: {
-      layer: { connect: { id: layerId } },
-      creator: { connect: { id: userId } },
+      layer: { connect: { id: lId } },
+      creator: { connect: { id: uId } },
       geojson: {
         type: "Feature",
         geometry: {
           type: "Point",
-          coordinates: [coordinates.lng, coordinates.lat],
+          coordinates: [coords.lng, coords.lat],
         },
         properties: {},
       },
@@ -41,7 +43,7 @@ export const action: ActionFunction = async ({ request }) => {
     await prisma.assignment.create({
       data: {
         feature: { connect: { id: newFeat.id } },
-        assignee: { connect: { id: newFeat.creator.surveyor.id } },
+        assignee: { connect: { id: uId } },
         survey: { connect: { id: newFeat.layer.defaultSurveyId } },
       },
     });

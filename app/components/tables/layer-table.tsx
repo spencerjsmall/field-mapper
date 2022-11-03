@@ -5,7 +5,7 @@ import { Link, useFetcher } from "@remix-run/react";
 import { LayerAdminManager } from "../modals/layer-admin-manager";
 import { AdminAvatars } from "../admin-avatars";
 
-export function LayerTable({ layers, surveys, adminData }) {
+export function LayerTable({ layers, surveys, adminData, preview = false }) {
   const [csv, setCSV] = useState({ data: null, fileName: "" });
   const csvLink = useRef(null);
   const fetcher = useFetcher();
@@ -44,19 +44,23 @@ export function LayerTable({ layers, surveys, adminData }) {
   };
 
   return (
-    <div className="overflow-x-auto px-8">
+    <div className={`${!preview && "overflow-x-auto px-8"}`}>
       <table className="table w-full">
         <thead>
           <tr>
             <th></th>
             <th>Name</th>
-            <th>Created</th>
-            <th>Updated</th>
-            <th>Managed By</th>
+            {!preview && (
+              <>
+                <th>Created</th>
+                <th>Updated</th>
+                <th>Managed By</th>
+              </>
+            )}
             <th>Features</th>
             <th>Assignments</th>
             <th>Assigned Survey</th>
-            <th>Download</th>
+            {!preview && <th>Download</th>}
           </tr>
         </thead>
         <tbody>
@@ -69,27 +73,36 @@ export function LayerTable({ layers, surveys, adminData }) {
                 >
                   <Link
                     className="hover:text-white text-2xl"
-                    to={String(layer.id)}
+                    to={`/admin/layers/${String(layer.id)}`}
                   >
                     <BsGlobe />
                   </Link>
                 </div>
               </td>
+
               <td>{layer.name}</td>
-              <td>{new Date(layer.createdAt).toDateString()}</td>
-              <td>
-                {new Date(layer.createdAt).toString() ===
-                new Date(layer.updatedAt).toString()
-                  ? null
-                  : new Date(layer.updatedAt)
-                      .toString()
-                      .split(" ")
-                      .slice(0, 5)
-                      .join(" ")}
-              </td>
-              <td>
-                <AdminAvatars admins={layer.admins} id={layer.id} addAdmins />
-              </td>
+              {!preview && (
+                <>
+                  <td>{new Date(layer.createdAt).toDateString()}</td>
+                  <td>
+                    {new Date(layer.createdAt).toString() ===
+                    new Date(layer.updatedAt).toString()
+                      ? null
+                      : new Date(layer.updatedAt)
+                          .toString()
+                          .split(" ")
+                          .slice(0, 5)
+                          .join(" ")}
+                  </td>
+                  <td>
+                    <AdminAvatars
+                      admins={layer.admins}
+                      id={layer.id}
+                      addAdmins
+                    />
+                  </td>
+                </>
+              )}
               <td>{layer._count.features}</td>
               <td>
                 {
@@ -130,34 +143,36 @@ export function LayerTable({ layers, surveys, adminData }) {
                   </Link>
                 )}
               </td>
-              <td>
-                <div className="btn-group">
-                  <button
-                    onClick={() => exportToJson(layer)}
-                    className="btn font-sans btn-xs text-white btn-ghost"
-                    id="jsonDownload"
-                    value="download"
-                  >
-                    JSON
-                  </button>
-                  <button
-                    onClick={() => exportToCsv(layer)}
-                    className="btn font-sans btn-xs text-white btn-ghost"
-                    id="csvDownload"
-                    value="download"
-                  >
-                    CSV
-                  </button>
-                  {csv.data && (
-                    <CSVLink
-                      ref={csvLink}
-                      data={csv.data}
-                      filename={csv.fileName}
-                      target="_blank"
-                    />
-                  )}
-                </div>
-              </td>
+              {!preview && (
+                <td>
+                  <div className="btn-group">
+                    <button
+                      onClick={() => exportToJson(layer)}
+                      className="btn font-sans btn-xs text-white btn-ghost"
+                      id="jsonDownload"
+                      value="download"
+                    >
+                      JSON
+                    </button>
+                    <button
+                      onClick={() => exportToCsv(layer)}
+                      className="btn font-sans btn-xs text-white btn-ghost"
+                      id="csvDownload"
+                      value="download"
+                    >
+                      CSV
+                    </button>
+                    {csv.data && (
+                      <CSVLink
+                        ref={csvLink}
+                        data={csv.data}
+                        filename={csv.fileName}
+                        target="_blank"
+                      />
+                    )}
+                  </div>
+                </td>
+              )}
               <input
                 type="checkbox"
                 id={`add-admins-modal-${layer.id}`}

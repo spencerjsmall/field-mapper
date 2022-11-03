@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import type { AdminRegisterForm, RegisterForm } from "./types.server";
 import { prisma } from "./db.server";
-import { Role } from "@prisma/client";
 
 export const createUser = async (user: RegisterForm) => {
   const passwordHash = await bcrypt.hash(user.password, 10);
@@ -39,14 +38,98 @@ export const createSurveyor = async (user: AdminRegisterForm) => {
   return newUser;
 };
 
-export const getUserById = async (userId: number) => {
-  return await prisma.user.findUnique({
+export const deleteUser = async (id: number) => {
+  await prisma.user.delete({ where: { id } });
+};
+
+export const getUserAdmin = async (id: number) => {
+  return await prisma.admin.findUniqueOrThrow({
+    where: { id: id },
+    include: { user: true },
+  });
+};
+
+export const getUserSurveys = async (id: number) => {
+  return await prisma.survey.findMany({
     where: {
-      id: userId,
+      admins: {
+        some: {
+          id: id,
+        },
+      },
+    },
+    include: {
+      layers: true,
+      admins: {
+        include: {
+          user: true,
+        },
+      },
+      assignments: true,
+      _count: {
+        select: {
+          assignments: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
     },
   });
 };
 
-export const deleteUser = async (id: number) => {
-  await prisma.user.delete({ where: { id } });
+export const getUserSurveyors = async (id: number) => {
+  return await prisma.surveyor.findMany({
+    where: {
+      admins: {
+        some: {
+          id: id,
+        },
+      },
+    },
+    include: {
+      user: true,
+      admins: {
+        include: {
+          user: true,
+        },
+      },
+      assignments: true,
+    },
+    orderBy: {
+      user: { createdAt: "desc" },
+    },
+  });
+};
+
+//FOR LAYERS
+export const getUserLayers = async (id: number) => {
+  return await prisma.layer.findMany({
+    where: {
+      admins: {
+        some: {
+          id: id,
+        },
+      },
+    },
+    include: {
+      admins: {
+        include: {
+          user: true,
+        },
+      },
+      defaultSurvey: true,
+      features: {
+        include: {
+          assignment: true,
+        },
+      },
+      _count: {
+        select: { features: true },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 };
