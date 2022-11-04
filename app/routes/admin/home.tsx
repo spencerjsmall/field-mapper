@@ -23,19 +23,19 @@ export default function HomePage() {
     value: `${a.user.firstName} ${a.user.lastName}`,
   }));
   return (
-    <div className="grid w-full h-full mx-auto grid-cols-2 gap-y-10 py-14 px-20">
+    <div className="grid w-full overflow-y-scroll h-full mx-auto grid-cols-1 xl:grid-cols-2 gap-y-10 xl:gap-y-0 py-14 px-20">
       <div className="flex flex-col items-center self-center justify-self-center">
         <h1 className="text-gray-200">Welcome, {userAdmin.user.firstName}</h1>
         {recentLayer !== null && (
           <div className="contents">
             <h3 className="italic my-4">Jump back into</h3>
             <Link to={`/admin/layers/${recentLayer.id}`}>
-              <button className="btn btn-ghost">{recentLayer.name}</button>
+              <button className="btn">{recentLayer.name}</button>
             </Link>
           </div>
         )}
       </div>
-      <div className="w-fit flex justify-self-center flex-col items-start">
+      <div className="w-fit flex justify-self-center flex-col items-center xl:items-start">
         <div className="flex flex-row space-x-2">
           <Link to="/admin/surveys">
             <h2 className="text-gray-100 mb-6 hover:text-blue-200">Surveys</h2>
@@ -49,7 +49,7 @@ export default function HomePage() {
         </div>
         <SurveyTable surveys={userSurveys} adminData={adminData} preview />
       </div>
-      <div className="w-fit justify-self-center flex flex-col items-start">
+      <div className="w-fit justify-self-center flex flex-col items-center xl:items-start">
         <div className="flex flex-row space-x-2">
           <Link to="/admin/layers">
             <h2 className="text-gray-100 mb-6 hover:text-blue-200">Layers</h2>
@@ -68,7 +68,7 @@ export default function HomePage() {
           preview
         />
       </div>
-      <div className="w-fit flex justify-self-center flex-col items-start">
+      <div className="w-fit flex justify-self-center flex-col items-center xl:items-start">
         <div className="flex flex-row space-x-2">
           <Link to="/admin/surveyors">
             <h2 className="text-gray-100 mb-6 hover:text-blue-200">

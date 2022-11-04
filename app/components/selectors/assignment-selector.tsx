@@ -6,17 +6,17 @@ import clsx from "clsx";
 export function AssignmentSelect({ layer, features, surveys, surveyors }) {
   const fetcher = useFetcher();
   return (
-    <div className="h-full p-4">
+    <div className="h-full bg-ggp bg-blend-multiply bg-gray-800 bg-center p-4">
       {features && features.length > 0 ? (
         <ul className="justify-center items-center w-full flex flex-col space-y-2">
           {features.length > 1 && (
             <li key={0} className="w-full">
               <div
                 tabIndex={0}
-                className="collapse collapse-arrow border w-full border-base-300 bg-white rounded-box"
+                className="collapse collapse-arrow border w-full border-base-300 bg-black rounded-box"
               >
                 <input type="checkbox" />
-                <div className="collapse-title text-center font-sans text-black text-xl font-medium">
+                <div className="collapse-title text-center font-sans text-white text-xl font-medium">
                   Update {features.length} records
                 </div>
                 <div className="collapse-content text-black w-full">
@@ -146,7 +146,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
             <li key={feature.id} className="w-full">
               <div
                 tabIndex={feature.id}
-                className="collapse collapse-arrow border border-base-300 bg-black rounded-box w-full"
+                className="collapse collapse-arrow border border-base-300 bg-gray-800 rounded-box w-full"
               >
                 <input type="checkbox" />
                 <div className="collapse-title font-sans text-center text-xl text-white font-medium w-full">

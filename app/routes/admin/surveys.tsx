@@ -2,8 +2,7 @@ import { Link, useOutletContext } from "@remix-run/react";
 import { SurveyTable } from "~/components/tables/survey-table";
 
 export default function Surveys() {
-  const { userSurveys, allAdmins } = useOutletContext();
-  console.log(allAdmins);
+  const { userSurveys, allAdmins } = useOutletContext();  
   const adminData = allAdmins.map((a) => ({
     key: a.id,
     value: `${a.user.firstName} ${a.user.lastName}`,

@@ -7,6 +7,7 @@ import c_styles from "survey-creator-core/survey-creator-core.min.css";
 import { SurveyCreator, SurveyCreatorComponent } from "survey-creator-react";
 import { useOutletContext, useSubmit } from "@remix-run/react";
 import { prisma } from "~/utils/db.server";
+import { getUserId } from "~/utils/auth.server";
 
 export function links() {
   return [
@@ -16,13 +17,14 @@ export function links() {
 }
 
 export const action: ActionFunction = async ({ request }) => {
-  const { surveyData, userId } = Object.fromEntries(await request.formData());
+  const userId = await getUserId(request);
+  const { surveyData } = Object.fromEntries(await request.formData());
   const surveyJson = JSON.parse(JSON.parse(surveyData));
   await prisma.survey.create({
     data: {
       name: surveyJson.title ? surveyJson.title : "New Survey",
       json: surveyJson,
-      admins: { connect: { id: parseInt(userId) } },
+      admins: { connect: { id: userId } },
     },
   });
   return redirect("/admin/surveys");
@@ -30,7 +32,6 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function SurveyCreatorWidget() {
   const submit = useSubmit();
-  const userId = useOutletContext();
   const [creator, setCreator] = useState<SurveyCreator>();
 
   const creatorOptions = {
@@ -44,7 +45,6 @@ export default function SurveyCreatorWidget() {
       submit(
         {
           surveyData: JSON.stringify(survey),
-          userId: userId,
         },
         { method: "post" }
       );
@@ -64,7 +64,7 @@ export default function SurveyCreatorWidget() {
       4
     );
     creatorObj.saveSurveyFunc = (saveNo, callback) => {
-      window.localStorage.setItem("survey-json", creatorObj.text);      
+      window.localStorage.setItem("survey-json", creatorObj.text);
       callback(saveNo, true);
     };
     setCreator(creatorObj);

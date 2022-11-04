@@ -4,7 +4,7 @@ import { SurveyAdminManager } from "../modals/survey-admin-manager";
 
 export function SurveyTable({ surveys, adminData, preview = false }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto drop-shadow-lg border border-gray-700 rounded-lg">
       <table className="table w-full">
         <thead>
           <tr>

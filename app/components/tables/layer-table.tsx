@@ -44,7 +44,11 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
   };
 
   return (
-    <div className={`${!preview && "overflow-x-auto px-8"}`}>
+    <div
+      className={`${
+        !preview && "overflow-x-auto"
+      } drop-shadow-lg border border-gray-700 rounded-lg`}
+    >
       <table className="table w-full">
         <thead>
           <tr>
@@ -68,7 +72,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
             <tr key={i} className="hover overflow-y-visible">
               <td>
                 <div
-                  data-tip="Map Viewer"
+                  data-tip="Map"
                   className="tooltip tooltip-bottom z-50"
                 >
                   <Link

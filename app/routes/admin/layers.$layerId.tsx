@@ -44,8 +44,7 @@ export const loader = async ({ request, params }: LoaderArgs) => {
     },
   });
   const session = await getSession(request.headers.get("Cookie"));
-  session.set("layerId", layerId);
-  console.log("session", session.get("layerId"));
+  session.set("layerId", layerId);  
   const token = process.env.MAPBOX_ACCESS_TOKEN;
   return json(
     { layer, token },
