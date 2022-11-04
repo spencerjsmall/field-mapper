@@ -26,7 +26,7 @@ export function SurveyTable({ surveys, adminData, preview = false }) {
             <tr key={i} className="hover">
               {!preview && (
                 <td>
-                  <Link to={`/admin/surveys/${survey.id}`}>Edit</Link>
+                  <Link className='text-gray-600 hover:text-gray-100' to={`/admin/surveys/${survey.id}`}>Edit</Link>
                 </td>
               )}
               <td>{survey.name}</td>

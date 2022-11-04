@@ -5,7 +5,7 @@ import d_styles from "survey-core/defaultV2.min.css";
 import c_styles from "survey-creator-core/survey-creator-core.min.css";
 
 import { SurveyCreator, SurveyCreatorComponent } from "survey-creator-react";
-import { useOutletContext, useSubmit } from "@remix-run/react";
+import { useSubmit } from "@remix-run/react";
 import { prisma } from "~/utils/db.server";
 import { getUserId } from "~/utils/auth.server";
 

@@ -1,4 +1,11 @@
-import { Link, Outlet, useFetcher, useLoaderData, useLocation } from "@remix-run/react";
+import {
+  Link,
+  Outlet,
+  useFetcher,
+  useLoaderData,
+  useLocation,
+  useMatches,
+} from "@remix-run/react";
 import { requireAdminSession } from "~/utils/auth.server";
 import { AiOutlineMenu } from "react-icons/ai";
 import { AdminAvatars } from "~/components/admin-avatars";
@@ -55,11 +62,9 @@ export default function AdminLayout() {
     allSurveyors,
     allAdmins,
   } = useLoaderData();
-  const location = useLocation();  
-
-  useEffect(() => {
-        
-  }, [location]);
+  const location = useLocation();
+  const matches = useMatches();
+  console.log("matches", matches);
 
   const surveyorsData = allSurveyors.map((s) => ({
     key: s.id,
@@ -69,31 +74,28 @@ export default function AdminLayout() {
   return (
     <div className="h-screen w-screen flex flex-col">
       <div className="grid grid-cols-3 grid-rows-1 bg-black sticky top-0 z-50 drop-shadow-xl border-b border-white text-white text-2xl py-4 px-6">
-        <div className="flex flex-row justify-self-start text-2xl items-center space-x-3">
-          {/* <label htmlFor="sidebar" className="cursor-pointer text-3xl">
+        {/* <label htmlFor="sidebar" className="cursor-pointer text-3xl">
             <AiOutlineMenu />
           </label> */}
+        <Link
+          className="flex flex-row justify-self-start text-2xl items-center space-x-3"
+          to="/admin/home"
+        >
           <img
             src={sf_seal}
             className="w-14"
             alt="City and County of San Francico"
           />
-          <Link to="/admin/home">
-            <h1 className="uppercase">Field Mapper</h1>
-          </Link>
-        </div>
+
+          <h1 className="uppercase">
+            {matches[2].id == "routes/admin/layers.$layerId" &&
+            matches[2].data.layer
+              ? matches[2].data.layer.name
+              : "Field Mapper"}
+          </h1>
+        </Link>
 
         <div className="flex flex-row justify-self-center space-x-12 items-center text-xl uppercase cursor-pointer">
-          <Link
-            className={
-              location.pathname == "/admin/layers"
-                ? "text-gray-100"
-                : "text-gray-500 hover:text-gray-100"
-            }
-            to="/admin/layers"
-          >
-            layers
-          </Link>
           <Link
             className={
               location.pathname == "/admin/surveys"
@@ -103,6 +105,16 @@ export default function AdminLayout() {
             to="/admin/surveys"
           >
             surveys
+          </Link>
+          <Link
+            className={
+              location.pathname == "/admin/layers"
+                ? "text-gray-100"
+                : "text-gray-500 hover:text-gray-100"
+            }
+            to="/admin/layers"
+          >
+            layers
           </Link>
           <Link
             className={
