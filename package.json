@@ -10,7 +10,8 @@
     "dev": "concurrently \"npm run dev:css\" \"npm run dev:sass\" \"remix dev\"",
     "dev:css": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
     "build:sass": "node-sass ./styles -o ./app/styles --output-style compressed",
-    "dev:sass": "npm run build:sass && node-sass -rw ./styles -o ./app/styles"
+    "dev:sass": "npm run build:sass && node-sass -rw ./styles -o ./app/styles",
+    "start": "remix-serve build"
   },
   "dependencies": {
     "@loaders.gl/core": "^3.2.9",
