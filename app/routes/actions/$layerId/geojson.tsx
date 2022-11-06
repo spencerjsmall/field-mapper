@@ -10,10 +10,18 @@ export async function loader({ request, params }) {
         select: {
           completedAt: true,
           results: true,
-          surveyId: true,
+          survey: {
+            select: {
+              name: true,
+            },
+          },
           assignee: {
             select: {
-              email: true,
+              user: {
+                select: {
+                  email: true,
+                },
+              },
             },
           },
         },
@@ -28,8 +36,8 @@ export async function loader({ request, params }) {
       geometry: f.geojson.geometry,
       properties: {
         ...f.geojson.properties,
-        surveyId: f.assignment?.surveyId,
-        surveyor: f.assignment?.assignee?.email,
+        surveyId: f.assignment?.survey.name,
+        surveyor: f.assignment?.assignee?.user.email,
         completedAt: f.assignment?.completedAt,
         ...f.assignment?.results,
       },
