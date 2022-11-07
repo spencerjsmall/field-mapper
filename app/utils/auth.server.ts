@@ -85,7 +85,7 @@ export async function login({ email, password }: LoginForm) {
 }
 
 export async function createUserSession(user: User, redirectTo: string) {
-  const session = await getSession();
+  const session = await getSession();  
   session.set("userId", user.id);
   session.set("role", user.admin ? "admin" : "field");
   return redirect(redirectTo, {

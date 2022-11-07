@@ -1,4 +1,4 @@
-export function AdminAvatars({ admins, id, addAdmins = false }) {
+export function AdminAvatars({ admins, id, addAdmins = false }) {  
   return (
     <>
       {addAdmins ? (
@@ -25,7 +25,7 @@ export function AdminAvatars({ admins, id, addAdmins = false }) {
         <div className={`avatar-group ${admins.length > 1 && "-space-x-3"}`}>
           {admins.map((a) => (
             <div key={admins.id} className="avatar placeholder">
-              <div className="bg-neutral-focus text-neutral-content rounded-full w-10">
+              <div className="bg-neutral-focus text-neutral-content rounded-full w-8 lg:w-10">
                 <span className="text-xs">
                   {a.user.firstName.charAt(0)}
                   {a.user.lastName.charAt(0)}

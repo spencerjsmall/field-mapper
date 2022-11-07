@@ -3,7 +3,7 @@ import { SurveyorTable } from "~/components/tables/surveyor-table";
 import { SurveyorAdminManager } from "~/components/modals/surveyor-admin-manager";
 
 export default function Surveyors() {
-  const { userSurveyors, allSurveyors, userAdmin } = useOutletContext();  
+  const { userSurveyors } = useOutletContext();  
   return (
     <div className="flex mx-auto flex-col items-center pt-32 w-3/4 h-full">
       <div className="flex w-full justify-between">

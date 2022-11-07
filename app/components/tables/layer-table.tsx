@@ -186,7 +186,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
                 htmlFor={`add-admins-modal-${layer.id}`}
                 className="modal cursor-pointer"
               >
-                <label className="modal-box relative" for="">
+                <label className="modal-box bg-gray-800 border border-gray-700 relative" for="">
                   <LayerAdminManager admins={adminData} layer={layer} />
                 </label>
               </label>

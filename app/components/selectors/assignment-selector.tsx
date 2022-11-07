@@ -19,7 +19,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                 <div className="collapse-title text-center font-sans text-white text-xl font-medium">
                   Update {features.length} records
                 </div>
-                <div className="collapse-content text-black w-full">
+                <div className="collapse-content text-gray-200 w-full">
                   <fetcher.Form
                     method="post"
                     className="flex flex-col items-center"
@@ -33,7 +33,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                     <h3>Assigned to:</h3>
                     <select
                       name="assigneeId"
-                      className="select select-sm w-fit bg-gray-200"
+                      className="select select-sm w-fit bg-gray-700"
                     >
                       <option
                         selected={
@@ -68,7 +68,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                     <h3>Attached Survey:</h3>
                     <select
                       name="surveyId"
-                      className="select select-sm w-fit bg-gray-200"
+                      className="select select-sm w-fit bg-gray-700"
                     >
                       <option
                         selected={
@@ -169,7 +169,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                     <h3>Assigned to:</h3>
                     <select
                       name="assigneeId"
-                      className="select select-sm w-fit"
+                      className="select select-sm w-fit bg-gray-200"
                     >
                       <option
                         selected={
@@ -204,7 +204,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                         ))}
                     </select>
                     <h3>Attached Survey:</h3>
-                    <select name="surveyId" className="select select-sm w-fit">
+                    <select name="surveyId" className="select select-sm w-fit bg-gray-200">
                       <option
                         selected={
                           !(

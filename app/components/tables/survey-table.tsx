@@ -26,7 +26,12 @@ export function SurveyTable({ surveys, adminData, preview = false }) {
             <tr key={i} className="hover">
               {!preview && (
                 <td>
-                  <Link className='text-gray-600 hover:text-gray-100' to={`/admin/surveys/${survey.id}`}>Edit</Link>
+                  <Link
+                    className="text-gray-600 hover:text-gray-100"
+                    to={`/admin/surveys/${survey.id}`}
+                  >
+                    Edit
+                  </Link>
                 </td>
               )}
               <td>{survey.name}</td>
@@ -66,7 +71,10 @@ export function SurveyTable({ surveys, adminData, preview = false }) {
                 htmlFor={`add-admins-modal-${survey.id}`}
                 className="modal cursor-pointer"
               >
-                <label className="modal-box relative" for="">
+                <label
+                  className="modal-box bg-gray-800 border border-gray-700 relative"
+                  for=""
+                >
                   <SurveyAdminManager admins={adminData} survey={survey} />
                 </label>
               </label>

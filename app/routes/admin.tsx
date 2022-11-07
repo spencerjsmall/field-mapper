@@ -24,10 +24,7 @@ import { useEffect, useState } from "react";
 export const loader: LoaderFunction = async ({ request }) => {
   const session = await requireAdminSession(request);
   const userId = session.get("userId");
-  const recentId = session.get("layerId");
-  const recentLayer = await prisma.layer.findUnique({
-    where: { id: recentId ? parseInt(recentId) : -1 },
-  });
+
   const userAdmin = await getUserAdmin(userId);
   const userSurveys = await getUserSurveys(userId);
   const userSurveyors = await getUserSurveyors(userId);
@@ -41,8 +38,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     include: { user: true },
   });
 
-  return {
-    recentLayer,
+  return {    
     userAdmin,
     userSurveys,
     userSurveyors,
@@ -53,8 +49,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function AdminLayout() {
-  const {
-    recentLayer,
+  const {    
     userAdmin,
     userSurveys,
     userSurveyors,
@@ -63,8 +58,7 @@ export default function AdminLayout() {
     allAdmins,
   } = useLoaderData();
   const location = useLocation();
-  const matches = useMatches();
-  console.log("matches", matches);
+  const matches = useMatches();  
 
   const surveyorsData = allSurveyors.map((s) => ({
     key: s.id,
@@ -138,7 +132,7 @@ export default function AdminLayout() {
       <div className="drawer">
         <input id="sidebar" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content">
-          <div className="w-full max-h-full bg-ggp bg-blend-multiply bg-gray-800 bg-center h-full bg-base-500 overflow-y-hidden z-0">
+          <div className="w-full max-h-full bg-ggp bg-blend-multiply bg-gray-800 bg-center h-full overflow-y-hidden z-0">
             <Outlet
               context={{
                 userAdmin,
@@ -162,7 +156,7 @@ export default function AdminLayout() {
 
         <input type="checkbox" id="new-layer-modal" className="modal-toggle" />
         <div className="modal">
-          <div className="modal-box relative p-8 bg-black">
+          <div className="modal-box relative p-8 bg-gray-800 border border-gray-700">
             <LayerUploader surveys={userSurveys} />
           </div>
         </div>
@@ -173,7 +167,7 @@ export default function AdminLayout() {
           className="modal-toggle"
         />
         <div className="modal">
-          <div className="modal-box relative p-8 bg-black">
+          <div className="modal-box relative p-8 bg-gray-800 border border-gray-700">
             <SurveyorAdminManager
               userSurveyors={userSurveyors}
               allSurveyorData={surveyorsData}

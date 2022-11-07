@@ -38,7 +38,7 @@ export default function HomePage() {
       <div className="w-fit flex justify-self-center flex-col items-center xl:items-start">
         <div className="flex flex-row space-x-2">
           <Link to="/admin/surveys">
-            <h2 className="text-gray-100 mb-6 hover:text-blue-200">Surveys</h2>
+            <h2 className="text-gray-100 mb-6 hover:text-orange-400">Surveys</h2>
           </Link>
           <Link
             className="text-xl text-gray-400 cursor-pointer hover:text-white"
@@ -52,7 +52,7 @@ export default function HomePage() {
       <div className="w-fit justify-self-center flex flex-col items-center xl:items-start">
         <div className="flex flex-row space-x-2">
           <Link to="/admin/layers">
-            <h2 className="text-gray-100 mb-6 hover:text-blue-200">Layers</h2>
+            <h2 className="text-gray-100 mb-6 hover:text-orange-400">Layers</h2>
           </Link>
           <label
             className="text-xl text-gray-400 cursor-pointer hover:text-white"
@@ -71,7 +71,7 @@ export default function HomePage() {
       <div className="w-fit flex justify-self-center flex-col items-center xl:items-start">
         <div className="flex flex-row space-x-2">
           <Link to="/admin/surveyors">
-            <h2 className="text-gray-100 mb-6 hover:text-blue-200">
+            <h2 className="text-gray-100 mb-6 hover:text-orange-400">
               Surveyors
             </h2>
           </Link>

@@ -80,7 +80,7 @@ export const LayerUploader = ({ surveys }) => {
           <AiOutlineClose />
         </label>
       </div>
-      <h1>Create Layer</h1>
+      <h1 className="text-white my-4">Create Layer</h1>
       <Form
         method="post"
         action="/actions/layer-create"
@@ -89,7 +89,7 @@ export const LayerUploader = ({ surveys }) => {
         <input
           type="file"
           onChange={handleFileChange}
-          className="file-input rounded-2xl border border-white file-input-primary file-input-bordered w-3/4 mx-auto"
+          className="file-input file-input-bordered w-3/4 mx-auto"
           multiple
         />
         <input
@@ -131,9 +131,7 @@ export const LayerUploader = ({ surveys }) => {
             <label className="text-white font-space">Survey </label>
             <select name="surveyId" className="select w-fit">
               <option disabled selected key={0}>
-                {surveys && surveys.length > 0
-                  ? "Select a survey"
-                  : "None"}
+                {surveys && surveys.length > 0 ? "Select a survey" : "None"}
               </option>
               {surveys &&
                 surveys.length > 0 &&
