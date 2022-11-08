@@ -1,11 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import type { LoaderFunction } from "@remix-run/node";
-import {
-  useCatch,
-  useLoaderData,
-  useOutletContext,
-  useSubmit,
-} from "@remix-run/react";
+import { useCatch, useLoaderData, useSubmit } from "@remix-run/react";
 import { redirect } from "@remix-run/node";
 
 import * as Survey from "survey-core";
@@ -25,9 +20,9 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   const assnId = parseInt(params.assignmentId);
   const assn = await prisma.assignment.findUniqueOrThrow({
     where: { id: assnId },
-    include: { survey: true },
+    include: { survey: true, feature: true },
   });
-  return assn.survey;
+  return assn;
 };
 
 export async function action({ request, params }) {
@@ -49,7 +44,7 @@ export async function action({ request, params }) {
 }
 
 export default function SurveyPage() {
-  const assnSurvey = useLoaderData();
+  const assn = useLoaderData();
   const submit = useSubmit();
   const [model, setModel] = useState<SurveyModel>();
 
@@ -66,7 +61,7 @@ export default function SurveyPage() {
   );
 
   useEffect(() => {
-    var survey = new Survey.Model(assnSurvey.json);
+    var survey = new Survey.Model(assn.survey.json);
     survey.onComplete.add(handleComplete);
     setModel(survey);
   }, []);

@@ -150,10 +150,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
               >
                 <input type="checkbox" />
                 <div className="collapse-title font-sans text-center text-xl text-white font-medium w-full">
-                  {layer.labelField &&
-                  feature.geojson.properties[layer.labelField] !== undefined
-                    ? `${feature.geojson.properties[layer.labelField]}`
-                    : `Record #${feature.id}`}
+                  {feature.label ? feature.label : `Record #${feature.id}`}
                 </div>
                 <div className="collapse-content w-full">
                   <fetcher.Form
@@ -204,7 +201,10 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                         ))}
                     </select>
                     <h3>Attached Survey:</h3>
-                    <select name="surveyId" className="select select-sm w-fit bg-gray-200">
+                    <select
+                      name="surveyId"
+                      className="select select-sm w-fit bg-gray-200"
+                    >
                       <option
                         selected={
                           !(

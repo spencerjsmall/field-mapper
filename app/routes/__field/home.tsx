@@ -56,52 +56,56 @@ export default function HomePage() {
 
   return (
     <div className="w-full h-full bg-ob bg-blend-multiply bg-gray-800 bg-top bg-no-repeat bg-cover bg-fixed">
-      <ul className="justify-center h-full w-full items-center flex flex-col space-y-6">
-        {userLayers.map((layer, i) => (
-          <li className="w-3/4" key={layer.id}>
-            <div
-              tabIndex={i}
-              className="collapse mx-auto w-full collapse-arrow border border-gray-600 bg-gray-800 rounded-box"
-            >
-              <div className="collapse-title text-2xl">{layer.name}</div>
-              <div className="collapse-content flex flex-row justify-evenly items-center w-full">
-                <div>
-                  <div className="flex flex-row items-center space-x-1">
-                    <span className="font-semibold text-lg">
-                      {
-                        layer.features.filter(
-                          (f) =>
-                            f.assignment && f.assignment.assigneeId == userId
-                        ).length
-                      }
-                    </span>
-                    <p>assignments</p>
+      {userLayers && userLayers.length > 0 ? (
+        <ul className="justify-center h-full w-full items-center flex flex-col space-y-6">
+          {userLayers.map((layer, i) => (
+            <li className="w-3/4" key={layer.id}>
+              <div
+                tabIndex={i}
+                className="collapse mx-auto w-full collapse-arrow border border-gray-600 bg-gray-800 rounded-box"
+              >
+                <div className="collapse-title text-2xl">{layer.name}</div>
+                <div className="collapse-content flex flex-row justify-evenly items-center w-full">
+                  <div>
+                    <div className="flex flex-row items-center space-x-1">
+                      <span className="font-semibold text-lg">
+                        {
+                          layer.features.filter(
+                            (f) =>
+                              f.assignment && f.assignment.assigneeId == userId
+                          ).length
+                        }
+                      </span>
+                      <p>assignments</p>
+                    </div>
+                    <div className="flex flex-row items-center space-x-1">
+                      <span className="font-semibold text-lg">
+                        {
+                          layer.features.filter(
+                            (f) =>
+                              f.assignment &&
+                              f.assignment.assigneeId == userId &&
+                              f.assignment.completed
+                          ).length
+                        }
+                      </span>
+                      <p>completed</p>
+                    </div>
                   </div>
-                  <div className="flex flex-row items-center space-x-1">
-                    <span className="font-semibold text-lg">
-                      {
-                        layer.features.filter(
-                          (f) =>
-                            f.assignment &&
-                            f.assignment.assigneeId == userId &&
-                            f.assignment.completed
-                        ).length
-                      }
-                    </span>
-                    <p>completed</p>
-                  </div>
+                  <button
+                    className="btn bg-gray-400 text-white"
+                    onClick={() => setLayer(layer.id)}
+                  >
+                    Map
+                  </button>
                 </div>
-                <button
-                  className="btn bg-gray-400 text-white"
-                  onClick={() => setLayer(layer.id)}
-                >
-                  Map
-                </button>
               </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <h2 className='text-center pt-14'>No Assignments</h2>
+      )}
     </div>
   );
 }

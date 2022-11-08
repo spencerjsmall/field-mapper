@@ -23,7 +23,6 @@ export const action: ActionFunction = async ({ request }) => {
   if (features == "") {
     layer = {
       name: String(name),
-      labelField: String(field),
       admins: { connect: { id: userId } },
       defaultSurvey: surveyId
         ? { connect: { id: parseInt(surveyId) } }
@@ -32,11 +31,13 @@ export const action: ActionFunction = async ({ request }) => {
   } else {
     layer = {
       name: String(name),
-      labelField: String(field),
       admins: { connect: { id: userId } },
       features: {
         createMany: {
-          data: parsedFeatures,
+          data: parsedFeatures.map((f) => ({
+            ...f,
+            label: f.geojson.properties[String(field)],
+          })),
         },
       },
       defaultSurvey: surveyId
@@ -45,9 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
     };
   }
 
-  const newLayer = await prisma.layer.create({ data: layer });
-
-  session.set("layer", newLayer.id);
+  await prisma.layer.create({ data: layer });
   return redirect(`/admin/layers`, {
     headers: {
       "Set-Cookie": await commitSession(session),

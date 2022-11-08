@@ -144,16 +144,12 @@ export const LayerUploader = ({ surveys }) => {
           </div>
         </div>
 
-        <div className="modal-action pt-10 w-full">
-          <label htmlFor="new-layer-modal" className="mx-auto">
-            <button
-              type="submit"
-              className="rounded-xl font-space bg-black border border-white px-3 py-2 text-white transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
-            >
-              Create Layer
-            </button>
-          </label>
-        </div>
+        <button
+          type="submit"
+          className="rounded-xl font-space bg-black border border-white px-3 py-2 text-white transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
+        >
+          Create Layer
+        </button>
       </Form>
     </div>
   );

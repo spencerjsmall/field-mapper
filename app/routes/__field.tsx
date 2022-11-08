@@ -27,7 +27,6 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function FieldLayout() {
   const { userSurveyor } = useLoaderData();
   const matches = useMatches();
-  console.log("matches", matches);
 
   return (
     <div className="h-screen w-screen flex flex-col">
@@ -46,21 +45,17 @@ export default function FieldLayout() {
         <h1 className="uppercase">
           {matches[2].id == "routes/__field/layers/$layerId"
             ? matches[2].data.layer.name
-            : matches[2].id == "routes/__field/layers/$layerId.$assignmentId"
-            ? matches[2].data.name
-            : "Layers"}
+            : matches[2].id == "routes/__field/home"
+            ? "Layers"
+            : matches[2].data.feature.label
+            ? matches[2].data.feature.label
+            : `Record #${matches[2].data.feature.id}`}
         </h1>
         <form action="/auth/logout" method="post">
           <button type="submit">
             <AdminAvatars admins={[userSurveyor]} />
           </button>
         </form>
-
-        {/* <div className="btn btn-sm font-sans btn-ghost">
-          <form action="/auth/logout" method="post">
-            <button type="submit">Sign Out</button>
-          </form>
-        </div> */}
       </div>
 
       <div className="w-full max-h-full h-full overflow-y-hidden z-0">
