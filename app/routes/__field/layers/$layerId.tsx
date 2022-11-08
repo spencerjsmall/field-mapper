@@ -47,15 +47,18 @@ export function links() {
 export const action: ActionFunction = async ({ request, params }) => {
   const session = await getUserSession(request);
   const layerId = params.layerId;
-  const { assignmentId, viewState } = Object.fromEntries(
+  const { assignmentId, viewState, page } = Object.fromEntries(
     await request.formData()
   );
   session.set("viewState", viewState);
-  return redirect(`/layers/${layerId}/${assignmentId}`, {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  });
+  return redirect(
+    `/layers/${layerId}/${assignmentId}${page == "notes" ? "/notes" : ""}`,
+    {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    }
+  );
 };
 
 export const loader = async ({ request, params }: LoaderArgs) => {
@@ -111,7 +114,7 @@ export default function TaskMap() {
   );
   const [completed, setCompleted] = useState<Boolean>();
   const [assignment, setAssignment] = useState();
-
+  const [label, setLabel] = useState("");  
   const completedAssignments = {
     type: "FeatureCollection",
     features: assignments
@@ -121,6 +124,7 @@ export default function TaskMap() {
         geometry: a.feature.geojson.geometry,
         properties: {
           ...a.feature.geojson.properties,
+          label: a.feature.label,
           surveyId: a.surveyId,
           assignmentId: a.id,
           completed: true,
@@ -137,6 +141,7 @@ export default function TaskMap() {
         geometry: a.feature.geojson.geometry,
         properties: {
           ...a.feature.geojson.properties,
+          label: a.feature.label,
           surveyId: a.surveyId,
           assignmentId: a.id,
           completed: false,
@@ -159,6 +164,7 @@ export default function TaskMap() {
     if (e.features.length > 0) {
       setAddPoint(false);
       setShowPopup(true);
+      setLabel(e.features[0].properties.label);
       setAssignment(e.features[0].properties.assignmentId);
       setCompleted(e.features[0].properties.completed);
     } else if (addPoint) {
@@ -207,11 +213,23 @@ export default function TaskMap() {
     );
   };
 
-  const getSurvey = () => {
+  const goToSurvey = () => {
     submit(
       {
         assignmentId: String(assignment),
         viewState: JSON.stringify(viewState),
+        page: "survey",
+      },
+      { method: "post" }
+    );
+  };
+
+  const goToNotes = () => {
+    submit(
+      {
+        assignmentId: String(assignment),
+        viewState: JSON.stringify(viewState),
+        page: "notes",
       },
       { method: "post" }
     );
@@ -274,6 +292,7 @@ export default function TaskMap() {
             onClose={() => setShowPopup(false)}
           >
             <div className="flex flex-col items-center space-y-2">
+              <h2>{label}</h2>
               <button
                 onClick={getDirections}
                 className="btn btn-xs btn-outline btn-primary"
@@ -282,12 +301,18 @@ export default function TaskMap() {
               </button>
               {!completed && assignment && (
                 <button
-                  onClick={getSurvey}
+                  onClick={goToSurvey}
                   className="btn btn-xs btn-outline btn-secondary"
                 >
                   Complete Survey
                 </button>
               )}
+              <button
+                onClick={goToNotes}
+                className="btn btn-xs btn-outline btn-secondary"
+              >
+                Add Notes
+              </button>
             </div>
           </Popup>
         )}
