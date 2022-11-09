@@ -31,8 +31,15 @@ export default function FieldLayout() {
   return (
     <div className="h-screen w-screen flex flex-col">
       <div className="flex flex-row bg-black items-center border-b border-gray-300 sticky top-0 z-50 justify-between text-white text-2xl py-4 px-6">
-        {matches[2].id == "routes/__field/layers/$layerId" ? (
-          <Link to="/home" className="text-4xl">
+        {matches[2].id != "routes/__field/home" ? (
+          <Link
+            to={
+              matches[2].id == "routes/__field/layers/$layerId"
+                ? "/home"
+                : `/layers/${matches[2].params.layerId}`
+            }
+            className="text-4xl"
+          >
             <IoArrowBackCircle />
           </Link>
         ) : (
@@ -42,7 +49,7 @@ export default function FieldLayout() {
             alt="City and County of San Francico"
           />
         )}
-        <h1 className="uppercase">
+        <h1 className="uppercase truncate">
           {matches[2].id == "routes/__field/layers/$layerId"
             ? matches[2].data.layer.name
             : matches[2].id == "routes/__field/home"

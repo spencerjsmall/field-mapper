@@ -57,14 +57,16 @@ export default function HomePage() {
   return (
     <div className="w-full h-full bg-ob bg-blend-multiply bg-gray-800 bg-top bg-no-repeat bg-cover bg-fixed">
       {userLayers && userLayers.length > 0 ? (
-        <ul className="justify-center h-full w-full items-center flex flex-col space-y-6">
+        <ul className="justify-start py-8 h-full w-full items-center flex flex-col space-y-6">
           {userLayers.map((layer, i) => (
-            <li className="w-3/4" key={layer.id}>
+            <li className="w-full px-4" key={layer.id}>
               <div
                 tabIndex={i}
-                className="collapse mx-auto w-full collapse-arrow border border-gray-600 bg-gray-800 rounded-box"
+                className="collapse collapse-open mx-auto w-full border border-gray-600 bg-black rounded-box"
               >
-                <div className="collapse-title text-2xl">{layer.name}</div>
+                <div className="collapse-title px-4 text-2xl text-center">
+                  {layer.name}
+                </div>
                 <div className="collapse-content flex flex-row justify-evenly items-center w-full">
                   <div>
                     <div className="flex flex-row items-center space-x-1">
@@ -76,7 +78,7 @@ export default function HomePage() {
                           ).length
                         }
                       </span>
-                      <p>assignments</p>
+                      <p className="text-gray-600">assignments</p>
                     </div>
                     <div className="flex flex-row items-center space-x-1">
                       <span className="font-semibold text-lg">
@@ -89,11 +91,11 @@ export default function HomePage() {
                           ).length
                         }
                       </span>
-                      <p>completed</p>
+                      <p className="text-gray-600">completed</p>
                     </div>
                   </div>
                   <button
-                    className="btn bg-gray-400 text-white"
+                    className="btn btn-outline hover:text-white"
                     onClick={() => setLayer(layer.id)}
                   >
                     Map
@@ -104,7 +106,7 @@ export default function HomePage() {
           ))}
         </ul>
       ) : (
-        <h2 className='text-center pt-14'>No Assignments</h2>
+        <h2 className="text-center pt-14">No Assignments</h2>
       )}
     </div>
   );

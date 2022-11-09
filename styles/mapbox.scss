@@ -1,9 +1,10 @@
 .mapboxgl-map {
   .mapboxgl-popup.mapboxgl-popup-anchor-bottom {
     .mapboxgl-popup-content {
-      background-color: white !important;
+      background: none;
       border-radius: 8px;
       width: fit-content;
+      padding: 0;
 
       .mapboxgl-popup-close-button {
         visibility: hidden;
@@ -11,7 +12,7 @@
     }
 
     .mapboxgl-popup-tip {
-      border-top-color: gray !important;
+      border-top-color: black !important;
     }
   }
 }
@@ -28,18 +29,19 @@
     margin: 10px 10px 0 10px;
     .directions-control {
       .directions-control-directions {
-        border-radius: 10px;
+        border-radius: 2% 2% 0 0;
         .mapbox-directions-instructions {
-          max-height: 25vh;
+          max-height: 15vh;
+          margin-bottom: 35px;
+          border-bottom: 1px solid gray;
         }
       }
     }
   }
   .mapboxgl-ctrl-directions {
-    max-width: 50%;
-    width: auto;
-    min-width: 0px;
-    margin-bottom: 35px;
+    width: 100%;
+    min-width: 100%;
+    margin: 0px auto;
     overflow: hidden;
   }
 }

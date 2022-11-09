@@ -1,4 +1,4 @@
-export function AdminAvatars({ admins, id, addAdmins = false }) {  
+export function AdminAvatars({ admins, id, addAdmins = false }) {
   return (
     <>
       {addAdmins ? (
@@ -16,7 +16,7 @@ export function AdminAvatars({ admins, id, addAdmins = false }) {
                 </div>
               ))}
             </div>
-            <div key={id} className="tooltip tooltip-right" data-tip="Add">
+            <div key="more" className="tooltip tooltip-right" data-tip="Add">
               <span className="cursor-pointer text-lg">+</span>
             </div>
           </div>

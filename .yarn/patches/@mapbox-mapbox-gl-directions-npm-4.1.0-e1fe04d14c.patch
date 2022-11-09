@@ -17225,7 +17225,8 @@ index 4f9d6aef1e0d9449b355e99d61031e6178797806..1a85e600adfd5617d4f93137cc4a8684
 +              {
 +                key: "onRemove",
 +                value: function onRemove(map) {
-+                  this.container.parentNode.removeChild(this.container);
++                  var ctainer = document.getElementsByClassName("mapboxgl-ctrl-directions mapboxgl-ctrl")[0]
++                  ctainer.parentNode.removeChild(ctainer);
 +                  this.removeRoutes();
 +                  map.off("mousedown", this.onDragDown);
 +                  map.off("mousemove", this.move);

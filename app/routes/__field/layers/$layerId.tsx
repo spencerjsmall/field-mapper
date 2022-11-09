@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import {
@@ -12,6 +12,7 @@ import clsx from "clsx";
 import Map, {
   Source,
   Layer,
+  useMap,
   useControl,
   Popup,
   GeolocateControl,
@@ -96,6 +97,7 @@ export default function TaskMap() {
   const userId = useOutletContext();
   const fetcher = useFetcher();
   const submit = useSubmit();
+  const mapRef = useRef();
 
   const [showPopup, setShowPopup] = useState(false);
   const [addPoint, setAddPoint] = useState(false);
@@ -114,7 +116,8 @@ export default function TaskMap() {
   );
   const [completed, setCompleted] = useState<Boolean>();
   const [assignment, setAssignment] = useState();
-  const [label, setLabel] = useState("");  
+  const [label, setLabel] = useState("");
+
   const completedAssignments = {
     type: "FeatureCollection",
     features: assignments
@@ -149,6 +152,16 @@ export default function TaskMap() {
       })),
   };
 
+  const mapDirections = new MapboxDirections({
+    accessToken: token,
+    placeholderOrigin: "Current Location",
+    controls: {
+      inputs: false,
+      instructions: true,
+    },
+    zoom: 14,
+  });
+
   const geolocateRef = useCallback((ref) => {
     if (ref !== null) {
       setTimeout(() => {
@@ -157,6 +170,17 @@ export default function TaskMap() {
       }, 1000);
     }
   }, []);
+
+  const addNavigation = () => {
+    mapRef.current.addControl(mapDirections);
+  };
+
+  const setCurrentLocation = (e) => {
+    setCCoords({
+      lng: e.coords.longitude,
+      lat: e.coords.latitude,
+    });
+  };
 
   const onFeatureClick = (e) => {
     console.log(e.features);
@@ -169,25 +193,12 @@ export default function TaskMap() {
       setCompleted(e.features[0].properties.completed);
     } else if (addPoint) {
       setAddPoint(false);
+    } else {
+      mapDirections.removeRoutes();
     }
   };
 
-  const mapDirections = new MapboxDirections({
-    accessToken: token,
-    placeholderOrigin: "Current Location",
-    controls: {
-      inputs: false,
-      instructions: false,
-    },
-    zoom: 14,
-  });
-
-  const DirectionsControl = () => {
-    useControl(() => mapDirections);
-    return null;
-  };
-
-  const getDirections = () => {
+  const getDirections = () => {    
     mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
     mapDirections.setDestination([dCoords.lng, dCoords.lat]);
     mapDirections.on("route", () => {
@@ -197,6 +208,14 @@ export default function TaskMap() {
         console.error("error", e);
       }
     });
+  };
+
+  const changeStyle = (bmap) => {
+    mapRef.current.removeControl(mapDirections);
+    setBasemap(bmap);
+    setTimeout(() => {
+      addNavigation();
+    }, 2000);
   };
 
   const createPoint = () => {
@@ -235,17 +254,12 @@ export default function TaskMap() {
     );
   };
 
-  const setCurrentLocation = (e) => {
-    setCCoords({
-      lng: e.coords.longitude,
-      lat: e.coords.latitude,
-    });
-  };
-
   return (
     <div className="h-full relative">
       <Map
         initialViewState={viewState}
+        ref={mapRef}
+        onLoad={addNavigation}
         onMove={(e) => {
           setShowPopup(false);
           setViewState(e.viewState);
@@ -258,7 +272,7 @@ export default function TaskMap() {
         }}
         mapStyle={
           basemap == "satellite"
-            ? "mapbox://styles/mapbox/satellite-v9"
+            ? `mapbox://styles/mapbox/satellite-v9`
             : `mapbox://styles/mapbox/${basemap}`
         }
         mapboxAccessToken={token}
@@ -291,29 +305,22 @@ export default function TaskMap() {
             anchor="bottom"
             onClose={() => setShowPopup(false)}
           >
-            <div className="flex flex-col items-center space-y-2">
-              <h2>{label}</h2>
-              <button
-                onClick={getDirections}
-                className="btn btn-xs btn-outline btn-primary"
-              >
-                Get Directions
-              </button>
+            <ul className="menu bg-base-100 w-56 p-2 rounded-box">
+              <li className="menu-title ">
+                <h2 className="text-xl truncate">{label}</h2>
+              </li>
+              <li className="border border-gray-700" onClick={getDirections}>
+                <p className="text-xl">Directions</p>
+              </li>
               {!completed && assignment && (
-                <button
-                  onClick={goToSurvey}
-                  className="btn btn-xs btn-outline btn-secondary"
-                >
-                  Complete Survey
-                </button>
+                <li className="border border-gray-700" onClick={goToSurvey}>
+                  <p className="text-xl">Survey</p>
+                </li>
               )}
-              <button
-                onClick={goToNotes}
-                className="btn btn-xs btn-outline btn-secondary"
-              >
-                Add Notes
-              </button>
-            </div>
+              <li className="border border-gray-700" onClick={goToNotes}>
+                <p className="text-xl">Notes</p>
+              </li>
+            </ul>
           </Popup>
         )}
 
@@ -331,8 +338,6 @@ export default function TaskMap() {
         )}
 
         <GeolocateControl onGeolocate={setCurrentLocation} ref={geolocateRef} />
-
-        {mapDirections != null && <DirectionsControl />}
       </Map>
 
       <div className="absolute top-1.5 left-1.5 flex flex-col items-center space-y-1">
@@ -346,7 +351,7 @@ export default function TaskMap() {
           <ul className="dropdown-content menu p-2 shadow bg-white rounded-box w-52">
             <li tabIndex={1}>
               <div
-                onClick={() => setBasemap("satellite")}
+                onClick={() => changeStyle("satellite")}
                 className={clsx("p2 font-sans", {
                   active: basemap == "satellite",
                 })}
@@ -356,7 +361,7 @@ export default function TaskMap() {
             </li>
             <li tabIndex={2}>
               <div
-                onClick={() => setBasemap("streets-v11")}
+                onClick={() => changeStyle("streets-v11")}
                 className={clsx("p2 font-sans", {
                   active: basemap == "streets-v11",
                 })}
@@ -366,7 +371,7 @@ export default function TaskMap() {
             </li>
             <li tabIndex={3}>
               <div
-                onClick={() => setBasemap("outdoors-v11")}
+                onClick={() => changeStyle("outdoors-v11")}
                 className={clsx("p2 font-sans", {
                   active: basemap == "outdoors-v11",
                 })}
@@ -376,7 +381,7 @@ export default function TaskMap() {
             </li>
             <li tabIndex={4}>
               <div
-                onClick={() => setBasemap("dark-v10")}
+                onClick={() => changeStyle("dark-v10")}
                 className={clsx("p2 font-sans", {
                   active: basemap == "dark-v10",
                 })}
