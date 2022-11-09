@@ -67,7 +67,7 @@
     "node": ">=16"
   },
   "resolutions": {
-    "@mapbox/mapbox-gl-directions@^4.1.0": "patch:@mapbox/mapbox-gl-directions@npm%3A4.1.0#./.yarn/patches/@mapbox-mapbox-gl-directions-npm-4.1.0-e1fe04d14c.patch",
-    "survey-creator-core@1.9.47": "patch:survey-creator-core@npm%3A1.9.47#./.yarn/patches/survey-creator-core-npm-1.9.47-6d1e00a785.patch"
+    "survey-creator-core@1.9.47": "patch:survey-creator-core@npm%3A1.9.47#./.yarn/patches/survey-creator-core-npm-1.9.47-6d1e00a785.patch",
+    "@mapbox/mapbox-gl-directions@^4.1.0": "patch:@mapbox/mapbox-gl-directions@npm%3A4.1.0#./.yarn/patches/@mapbox-mapbox-gl-directions-npm-4.1.0-e1fe04d14c.patch"
   }
 }
