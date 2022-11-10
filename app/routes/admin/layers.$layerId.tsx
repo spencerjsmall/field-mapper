@@ -189,21 +189,21 @@ export default function AdminTaskMap() {
             ]}
             tileSize={256}
           >
-            <Layer beforeId="assigned" type="raster" />
+            <Layer beforeId="todo" type="raster" />
           </Source>
         )}
 
         <Source id="todo" type="geojson" data={todoCollection}>
-          <Layer beforeId="done" id="todo" {...todoStyle} />
+          <Layer id="todo" beforeId="assigned" {...todoStyle} />
         </Source>
         <Source id="assigned" type="geojson" data={assignedCollection}>
-          <Layer beforeId="todo" id="assigned" {...assignedStyle} />
-        </Source>
-        <Source id="highlighted" type="geojson" data={selectCollection}>
-          <Layer id="highlighted" beforeId="assigned" {...highlightedStyle} />
+          <Layer id="assigned" beforeId="done" {...assignedStyle} />
         </Source>
         <Source id="done" type="geojson" data={completedCollection}>
-          <Layer id="done" {...doneStyle} />
+          <Layer beforeId="highlighted" id="done" {...doneStyle} />
+        </Source>
+        <Source id="highlighted" type="geojson" data={selectCollection}>
+          <Layer id="highlighted" {...highlightedStyle} />
         </Source>
 
         {addPoint && (
