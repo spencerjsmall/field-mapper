@@ -5,16 +5,16 @@ import { useLoaderData, useOutletContext, useFetcher } from "@remix-run/react";
 
 import Map, { Source, Layer } from "react-map-gl";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
-import {
-  commitSession,
-  getSession,
-  requireSession,
-  requireUserId,
-} from "~/utils/auth.server";
+import { commitSession, getSession } from "~/utils/auth.server";
 
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../styles/mapbox.css";
-import { assignedStyle, highlightedStyle, todoStyle } from "~/styles/features";
+import {
+  assignedStyle,
+  highlightedStyle,
+  todoStyle,
+  doneStyle,
+} from "~/styles/features";
 import { BasemapSelector } from "~/components/selectors/basemap-selector";
 import crosshairs from "../../../public/images/crosshairs.svg";
 import { AssignmentSelect } from "~/components/selectors/assignment-selector";
@@ -102,6 +102,16 @@ export default function AdminTaskMap() {
     [layer.features]
   );
 
+  const completedCollection = useMemo(
+    () => ({
+      type: "FeatureCollection",
+      features: layer.features
+        .filter((f) => f.assignment && f.assignment.completed)
+        .map((f) => ({ id: f.id, ...f.geojson })),
+    }),
+    [layer.features]
+  );
+
   const onFeatureClick = (e) => {
     console.log(e.lngLat);
     setAddPoint(false);
@@ -184,13 +194,16 @@ export default function AdminTaskMap() {
         )}
 
         <Source id="todo" type="geojson" data={todoCollection}>
-          <Layer beforeId="highlighted" id="todo" {...todoStyle} />
+          <Layer beforeId="done" id="todo" {...todoStyle} />
         </Source>
         <Source id="assigned" type="geojson" data={assignedCollection}>
           <Layer beforeId="todo" id="assigned" {...assignedStyle} />
         </Source>
         <Source id="highlighted" type="geojson" data={selectCollection}>
-          <Layer id="highlighted" {...highlightedStyle} />
+          <Layer id="highlighted" beforeId="assigned" {...highlightedStyle} />
+        </Source>
+        <Source id="done" type="geojson" data={completedCollection}>
+          <Layer id="done" {...doneStyle} />
         </Source>
 
         {addPoint && (

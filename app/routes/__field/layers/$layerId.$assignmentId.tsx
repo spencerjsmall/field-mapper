@@ -36,6 +36,7 @@ export async function action({ request, params }) {
     },
     data: {
       completed: true,
+      completedAt: new Date(),
       results: JSON.parse(results),
       assignee: { connect: { id: userId } },
     },

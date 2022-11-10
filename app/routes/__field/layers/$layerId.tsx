@@ -2,27 +2,19 @@ import { useState, useCallback, useRef } from "react";
 import type { LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import {
-  useLoaderData,
-  useOutletContext,
+  useLoaderData,  
   useSubmit,
   useFetcher,
 } from "@remix-run/react";
 import clsx from "clsx";
 
-import Map, {
-  Source,
-  Layer,
-  useMap,
-  useControl,
-  Popup,
-  GeolocateControl,
-} from "react-map-gl";
+import Map, { Source, Layer, Popup, GeolocateControl } from "react-map-gl";
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
 
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 import m_styles from "../../../styles/mapbox.css";
-import { assignedStyle, todoStyle } from "~/styles/features";
+import { todoStyle, doneStyle } from "~/styles/features";
 import { BasemapSelector } from "~/components/selectors/basemap-selector";
 import crosshairs from "../../../../public/images/crosshairs.svg";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
@@ -298,10 +290,10 @@ export default function TaskMap() {
           </Source>
         )}
         <Source id="done" type="geojson" data={completedAssignments}>
-          <Layer beforeId="todo" id="done" {...assignedStyle} />
+          <Layer beforeId="todo" id="done" {...todoStyle} />
         </Source>
         <Source id="todo" type="geojson" data={todoAssignments}>
-          <Layer id="todo" {...todoStyle} />
+          <Layer id="todo" {...doneStyle} />
         </Source>
 
         {showPopup && (
