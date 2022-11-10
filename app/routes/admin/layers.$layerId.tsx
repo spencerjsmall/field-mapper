@@ -44,7 +44,7 @@ export const loader = async ({ request, params }: LoaderArgs) => {
     },
   });
   const session = await getSession(request.headers.get("Cookie"));
-  session.set("layerId", layerId);  
+  session.set("layerId", layerId);
   const token = process.env.MAPBOX_ACCESS_TOKEN;
   return json(
     { layer, token },
@@ -58,8 +58,7 @@ export const loader = async ({ request, params }: LoaderArgs) => {
 
 export default function AdminTaskMap() {
   const { layer, token } = useLoaderData();
-  const { userSurveys, userSurveyors } = useOutletContext();
-  const userId = useOutletContext();
+  const { userSurveys, userSurveyors, userAdmin } = useOutletContext();
   const mapRef = useRef();
   const fetcher = useFetcher();
 
@@ -122,7 +121,7 @@ export default function AdminTaskMap() {
           lng: viewState.longitude,
           lat: viewState.latitude,
         }),
-        userId: String(userId),
+        userId: String(userAdmin.id),
       },
       { method: "post", action: "/actions/feature-create" }
     );

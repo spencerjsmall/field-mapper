@@ -3,15 +3,13 @@ import { json } from "@remix-run/node";
 import { prisma } from "~/utils/db.server";
 
 export const action: ActionFunction = async ({ request }) => {
-  let { layerId, coordinates, userId } = Object.fromEntries(
+  const { layerId, coordinates, userId } = Object.fromEntries(
     await request.formData()
   );
 
   const lId = parseInt(layerId);
   const uId = parseInt(userId);
   const coords = JSON.parse(coordinates);
-
-  coordinates = JSON.parse(coordinates);
 
   const newFeat = await prisma.feature.create({
     data: {
@@ -39,12 +37,18 @@ export const action: ActionFunction = async ({ request }) => {
       },
     },
   });
-  if (newFeat.layer.defaultSurvey && newFeat.creator.surveyor) {
+  if (newFeat.creator.surveyor) {
     await prisma.assignment.create({
       data: {
         feature: { connect: { id: newFeat.id } },
         assignee: { connect: { id: uId } },
-        survey: { connect: { id: newFeat.layer.defaultSurveyId } },
+        survey: newFeat.layer.defaultSurveyId
+          ? {
+              connect: {
+                id: newFeat.layer.defaultSurveyId,
+              },
+            }
+          : undefined,
       },
     });
   }

@@ -89,12 +89,11 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   });
   const token = process.env.MAPBOX_ACCESS_TOKEN;
 
-  return { assignments, layer, savedState, token };
+  return { assignments, layer, savedState, token, userId };
 };
 
 export default function TaskMap() {
-  const { assignments, layer, savedState, token } = useLoaderData();
-  const userId = useOutletContext();
+  const { assignments, layer, savedState, token, userId } = useLoaderData();
   const fetcher = useFetcher();
   const submit = useSubmit();
   const mapRef = useRef();
@@ -116,6 +115,7 @@ export default function TaskMap() {
   );
   const [completed, setCompleted] = useState<Boolean>();
   const [assignment, setAssignment] = useState();
+  const [hasSurvey, setHasSurvey] = useState(false);
   const [label, setLabel] = useState("");
 
   const completedAssignments = {
@@ -186,11 +186,17 @@ export default function TaskMap() {
     console.log(e.features);
     setDCoords(e.lngLat);
     if (e.features.length > 0) {
+      let feat = e.features[0];
       setAddPoint(false);
       setShowPopup(true);
-      setLabel(e.features[0].properties.label);
-      setAssignment(e.features[0].properties.assignmentId);
-      setCompleted(e.features[0].properties.completed);
+      setLabel(
+        feat.properties.label == undefined
+          ? `Record #${feat.id}`
+          : feat.properties.label
+      );
+      setAssignment(feat.properties.assignmentId);
+      setHasSurvey(feat.properties.surveyId !== undefined);
+      setCompleted(feat.properties.completed);
     } else if (addPoint) {
       setAddPoint(false);
     } else {
@@ -198,7 +204,7 @@ export default function TaskMap() {
     }
   };
 
-  const getDirections = () => {    
+  const getDirections = () => {
     mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
     mapDirections.setDestination([dCoords.lng, dCoords.lat]);
     mapDirections.on("route", () => {
@@ -306,19 +312,19 @@ export default function TaskMap() {
             onClose={() => setShowPopup(false)}
           >
             <ul className="menu bg-base-100 w-56 p-2 rounded-box">
-              <li className="menu-title ">
-                <h2 className="text-xl truncate">{label}</h2>
+              <li className="menu-title">
+                <h2 className="text-xl text-orange-400 truncate">{label}</h2>
               </li>
               <li className="border border-gray-700" onClick={getDirections}>
-                <p className="text-xl">Directions</p>
+                <p className="text-lg">Get Directions</p>
               </li>
-              {!completed && assignment && (
+              {!completed && assignment && hasSurvey && (
                 <li className="border border-gray-700" onClick={goToSurvey}>
-                  <p className="text-xl">Survey</p>
+                  <p className="text-lg">Complete Survey</p>
                 </li>
               )}
               <li className="border border-gray-700" onClick={goToNotes}>
-                <p className="text-xl">Notes</p>
+                <p className="text-lg">Add Notes</p>
               </li>
             </ul>
           </Popup>
