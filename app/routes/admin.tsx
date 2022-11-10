@@ -81,7 +81,7 @@ export default function AdminLayout() {
             alt="City and County of San Francico"
           />
 
-          <h1 className="uppercase">
+          <h1 className="uppercase hidden lg:inline">
             {matches[2].id == "routes/admin/layers.$layerId" &&
             matches[2].data.layer
               ? matches[2].data.layer.name
@@ -89,7 +89,7 @@ export default function AdminLayout() {
           </h1>
         </Link>
 
-        <div className="flex flex-row justify-self-center space-x-12 items-center text-xl uppercase cursor-pointer">
+        <div className="flex flex-row justify-self-center space-x-4 lg:space-x-8 xl:space-x-12 items-center text-xl uppercase cursor-pointer">
           <Link
             className={
               location.pathname == "/admin/surveys"

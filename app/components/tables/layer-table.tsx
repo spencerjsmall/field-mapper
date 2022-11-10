@@ -52,7 +52,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
       <table className="table w-full">
         <thead>
           <tr>
-            <th></th>
+            {!preview && <th></th>}
             <th>Name</th>
             {!preview && (
               <>
@@ -70,21 +70,27 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
         <tbody>
           {layers.map((layer, i) => (
             <tr key={i} className="hover overflow-y-visible">
-              <td>
-                <div
-                  data-tip="Map"
-                  className="tooltip tooltip-bottom z-50"
-                >
-                  <Link
-                    className="hover:text-white text-2xl"
-                    to={`/admin/layers/${String(layer.id)}`}
-                  >
-                    <BsGlobe />
-                  </Link>
-                </div>
-              </td>
+              {!preview && (
+                <td>
+                  <div data-tip="Map" className="tooltip tooltip-bottom z-50">
+                    <Link
+                      className="hover:text-white text-2xl"
+                      to={`/admin/layers/${String(layer.id)}`}
+                    >
+                      <BsGlobe />
+                    </Link>
+                  </div>
+                </td>
+              )}
 
-              <td>{layer.name}</td>
+              <td>
+                <Link
+                  className="hover:text-orange-400"
+                  to={`/admin/layers/${String(layer.id)}`}
+                >
+                  {layer.name}
+                </Link>
+              </td>
               {!preview && (
                 <>
                   <td>{new Date(layer.createdAt).toDateString()}</td>
@@ -186,7 +192,10 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
                 htmlFor={`add-admins-modal-${layer.id}`}
                 className="modal cursor-pointer"
               >
-                <label className="modal-box bg-gray-800 border border-gray-700 relative" for="">
+                <label
+                  className="modal-box bg-gray-800 border border-gray-700 relative"
+                  for=""
+                >
                   <LayerAdminManager admins={adminData} layer={layer} />
                 </label>
               </label>

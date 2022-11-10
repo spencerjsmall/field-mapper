@@ -23,8 +23,8 @@ export default function HomePage() {
     value: `${a.user.firstName} ${a.user.lastName}`,
   }));
   return (
-    <div className="grid w-full overflow-y-scroll h-full mx-auto grid-cols-1 xl:grid-cols-2 gap-y-10 xl:gap-y-0 py-14 px-20">
-      <div className="flex flex-col items-center self-center justify-self-center">
+    <div className="xl:grid xl:mx-auto flex flex-col h-full xl:h-fit items-center justify-center grid-flow-row xl:mt-12 xl:w-full 2xl:w-10/12 grid-cols-2 gap-y-10">
+      <div className="flex flex-col pb-20 xl:p-0 items-center self-center justify-self-center">
         <h1 className="text-gray-200">Welcome, {userAdmin.user.firstName}</h1>
         {recentLayer !== null && (
           <div className="contents">
@@ -35,10 +35,12 @@ export default function HomePage() {
           </div>
         )}
       </div>
-      <div className="w-fit flex justify-self-center flex-col items-center xl:items-start">
+      <div className="w-fit xl:flex hidden justify-self-center flex-col items-center xl:items-start">
         <div className="flex flex-row space-x-2">
           <Link to="/admin/surveys">
-            <h2 className="text-gray-100 mb-6 hover:text-orange-400">Surveys</h2>
+            <h2 className="text-gray-100 mb-6 hover:text-orange-400">
+              Surveys
+            </h2>
           </Link>
           <Link
             className="text-xl text-gray-400 cursor-pointer hover:text-white"
@@ -47,9 +49,11 @@ export default function HomePage() {
             +
           </Link>
         </div>
-        <SurveyTable surveys={userSurveys} adminData={adminData} preview />
+        <div className="max-h-60 overflow-y-scroll">
+          <SurveyTable surveys={userSurveys} adminData={adminData} preview />
+        </div>
       </div>
-      <div className="w-fit justify-self-center flex flex-col items-center xl:items-start">
+      <div className="w-fit justify-self-center xl:flex hidden flex-col items-center xl:items-start">
         <div className="flex flex-row space-x-2">
           <Link to="/admin/layers">
             <h2 className="text-gray-100 mb-6 hover:text-orange-400">Layers</h2>
@@ -61,14 +65,16 @@ export default function HomePage() {
             +
           </label>
         </div>
-        <LayerTable
-          layers={userLayers}
-          surveys={userSurveys}
-          adminData={adminData}
-          preview
-        />
+        <div className="max-h-60 overflow-y-scroll">
+          <LayerTable
+            layers={userLayers}
+            surveys={userSurveys}
+            adminData={adminData}
+            preview
+          />
+        </div>
       </div>
-      <div className="w-fit flex justify-self-center flex-col items-center xl:items-start">
+      <div className="w-fit xl:flex hidden justify-self-center flex-col items-center xl:items-start">
         <div className="flex flex-row space-x-2">
           <Link to="/admin/surveyors">
             <h2 className="text-gray-100 mb-6 hover:text-orange-400">
@@ -82,7 +88,9 @@ export default function HomePage() {
             +
           </label>
         </div>
-        <SurveyorTable surveyors={userSurveyors} preview />
+        <div className="max-h-60 overflow-y-scroll">
+          <SurveyorTable surveyors={userSurveyors} preview />
+        </div>
       </div>
     </div>
   );

@@ -65,7 +65,7 @@ export default function FieldLayout() {
         </form>
       </div>
 
-      <div className="w-full max-h-full h-full overflow-y-hidden z-0">
+      <div className="w-full max-h-full h-full overflow-y-auto z-0">
         <Outlet context={userSurveyor} />
       </div>
     </div>

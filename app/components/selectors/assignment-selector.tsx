@@ -166,7 +166,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                     <h3>Assigned to:</h3>
                     <select
                       name="assigneeId"
-                      className="select select-sm w-fit bg-gray-200"
+                      className="select select-sm w-fit bg-black"
                     >
                       <option
                         selected={
@@ -203,7 +203,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                     <h3>Attached Survey:</h3>
                     <select
                       name="surveyId"
-                      className="select select-sm w-fit bg-gray-200"
+                      className="select select-sm w-fit bg-black"
                     >
                       <option
                         selected={
