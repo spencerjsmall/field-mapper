@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { prisma } from "~/utils/db.server";
 import { json, LoaderArgs } from "@remix-run/node";
 import { useLoaderData, useOutletContext, useFetcher } from "@remix-run/react";
@@ -16,6 +16,7 @@ import {
   doneStyle,
 } from "~/styles/features";
 import { BasemapSelector } from "~/components/selectors/basemap-selector";
+import { FilterSelector } from "~/components/selectors/filter-selector";
 import crosshairs from "../../../public/images/crosshairs.svg";
 import { AssignmentSelect } from "~/components/selectors/assignment-selector";
 
@@ -63,6 +64,8 @@ export default function AdminTaskMap() {
   const fetcher = useFetcher();
 
   const [basemap, setBasemap] = useState("satellite");
+  const [filter, setFilter] = useState(["todo", "assigned", "done"]);
+  const [beforeId, setBeforeId] = useState("todo");
   const [addPoint, setAddPoint] = useState(false);
   const [start, setStart] = useState<Number[]>();
   const [filterIds, setFilterIds] = useState<Number[]>([]);
@@ -96,7 +99,7 @@ export default function AdminTaskMap() {
     () => ({
       type: "FeatureCollection",
       features: layer.features
-        .filter((f) => f.assignment)
+        .filter((f) => f.assignment && !f.assignment.completed)
         .map((f) => ({ id: f.id, ...f.geojson })),
     }),
     [layer.features]
@@ -111,6 +114,10 @@ export default function AdminTaskMap() {
     }),
     [layer.features]
   );
+
+  useEffect(() => {
+    setBeforeId(filter[0]);
+  }, [filter]);
 
   const onFeatureClick = (e) => {
     console.log(e.lngLat);
@@ -141,7 +148,7 @@ export default function AdminTaskMap() {
     const topLeft = [Math.min(start[0], end[0]), Math.min(start[1], end[1])];
     const botRight = [Math.max(start[0], end[0]), Math.max(start[1], end[1])];
     const queried = mapRef.current.queryRenderedFeatures([topLeft, botRight], {
-      layers: ["todo", "assigned"],
+      layers: filter,
     });
     const ids = queried.map((record) => record.id);
     //take symetrical difference of existing and new selections
@@ -165,7 +172,7 @@ export default function AdminTaskMap() {
             : `mapbox://styles/mapbox/${basemap}`
         }
         mapboxAccessToken={token}
-        interactiveLayerIds={["todo", "assigned"]}
+        interactiveLayerIds={filter}
         onClick={onFeatureClick}
         ref={mapRef}
         className="basis-2/3 relative"
@@ -189,19 +196,26 @@ export default function AdminTaskMap() {
             ]}
             tileSize={256}
           >
-            <Layer beforeId="todo" type="raster" />
+            <Layer beforeId={beforeId} type="raster" />
           </Source>
         )}
 
-        <Source id="todo" type="geojson" data={todoCollection}>
-          <Layer id="todo" beforeId="assigned" {...todoStyle} />
-        </Source>
-        <Source id="assigned" type="geojson" data={assignedCollection}>
-          <Layer id="assigned" beforeId="done" {...assignedStyle} />
-        </Source>
-        <Source id="done" type="geojson" data={completedCollection}>
-          <Layer beforeId="highlighted" id="done" {...doneStyle} />
-        </Source>
+        {filter.includes("todo") && (
+          <Source id="todo" type="geojson" data={todoCollection}>
+            <Layer id="todo" beforeId="highlighted" {...todoStyle} />
+          </Source>
+        )}
+        {filter.includes("assigned") && (
+          <Source id="assigned" type="geojson" data={assignedCollection}>
+            <Layer id="assigned" beforeId="highlighted" {...assignedStyle} />
+          </Source>
+        )}
+        {filter.includes("done") && (
+          <Source id="done" type="geojson" data={completedCollection}>
+            <Layer id="done" beforeId="highlighted" {...doneStyle} />
+          </Source>
+        )}
+
         <Source id="highlighted" type="geojson" data={selectCollection}>
           <Layer id="highlighted" {...highlightedStyle} />
         </Source>
@@ -221,6 +235,9 @@ export default function AdminTaskMap() {
 
         <div className="absolute top-3 left-1">
           <BasemapSelector basemap={basemap} setBasemap={setBasemap} />
+        </div>
+        <div className="absolute top-20 left-1">
+          <FilterSelector filter={filter} setFilter={setFilter} />
         </div>
         <div className="absolute top-2 right-2">
           <div className="tooltip tooltip-left" data-tip="Add Point">
