@@ -15,10 +15,9 @@ import {
   todoStyle,
   doneStyle,
 } from "~/styles/features";
-import { BasemapSelector } from "~/components/selectors/basemap-selector";
-import { FilterSelector } from "~/components/selectors/filter-selector";
 import crosshairs from "../../../public/images/crosshairs.svg";
 import { AssignmentSelect } from "~/components/selectors/assignment-selector";
+import { MapSettings } from "~/components/selectors/map-settings";
 
 export function links() {
   return [
@@ -159,107 +158,121 @@ export default function AdminTaskMap() {
   };
 
   return (
-    <div className="flex flex-row h-full">
-      <Map
-        initialViewState={{
-          longitude: -122.44,
-          latitude: 37.75,
-          zoom: 12,
-        }}
-        mapStyle={
-          basemap == "satellite"
-            ? "mapbox://styles/mapbox/satellite-v9"
-            : `mapbox://styles/mapbox/${basemap}`
-        }
-        mapboxAccessToken={token}
-        interactiveLayerIds={filter}
-        onClick={onFeatureClick}
-        ref={mapRef}
-        className="basis-2/3 relative"
-        onMove={(e) => setViewState(e.viewState)}
-        onZoom={(e) => {
-          e.target.stop();
-        }}
-        onBoxZoomStart={(e) =>
-          setStart([e.originalEvent.layerX, e.originalEvent.layerY])
-        }
-        onBoxZoomEnd={(e) =>
-          getQueried([e.originalEvent.layerX, e.originalEvent.layerY])
-        }
-      >
-        {basemap == "satellite" && (
-          <Source
-            id="tiles"
-            type="raster"
-            tiles={[
-              "https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png",
-            ]}
-            tileSize={256}
+    <div className="drawer drawer-end">
+      <input
+        id="sidebar"
+        type="checkbox"
+        checked={filterIds.length > 0}        
+        className="drawer-toggle"
+      />
+      <div className="drawer-content">
+        <div className="flex flex-row h-full">
+          <Map
+            initialViewState={{
+              longitude: -122.44,
+              latitude: 37.75,
+              zoom: 12,
+            }}
+            mapStyle={
+              basemap == "satellite"
+                ? "mapbox://styles/mapbox/satellite-v9"
+                : `mapbox://styles/mapbox/${basemap}`
+            }
+            mapboxAccessToken={token}
+            interactiveLayerIds={filter}
+            onClick={onFeatureClick}
+            ref={mapRef}
+            className="relative"
+            onMove={(e) => setViewState(e.viewState)}
+            onZoom={(e) => {
+              e.target.stop();
+            }}
+            onBoxZoomStart={(e) =>
+              setStart([e.originalEvent.layerX, e.originalEvent.layerY])
+            }
+            onBoxZoomEnd={(e) =>
+              getQueried([e.originalEvent.layerX, e.originalEvent.layerY])
+            }
           >
-            <Layer beforeId={beforeId} type="raster" />
-          </Source>
-        )}
+            {basemap == "satellite" && (
+              <Source
+                id="tiles"
+                type="raster"
+                tiles={[
+                  "https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png",
+                ]}
+                tileSize={256}
+              >
+                <Layer beforeId={beforeId} type="raster" />
+              </Source>
+            )}
 
-        {filter.includes("todo") && (
-          <Source id="todo" type="geojson" data={todoCollection}>
-            <Layer id="todo" beforeId="highlighted" {...todoStyle} />
-          </Source>
-        )}
-        {filter.includes("assigned") && (
-          <Source id="assigned" type="geojson" data={assignedCollection}>
-            <Layer id="assigned" beforeId="highlighted" {...assignedStyle} />
-          </Source>
-        )}
-        {filter.includes("done") && (
-          <Source id="done" type="geojson" data={completedCollection}>
-            <Layer id="done" beforeId="highlighted" {...doneStyle} />
-          </Source>
-        )}
+            {filter.includes("todo") && (
+              <Source id="todo" type="geojson" data={todoCollection}>
+                <Layer id="todo" beforeId="highlighted" {...todoStyle} />
+              </Source>
+            )}
+            {filter.includes("assigned") && (
+              <Source id="assigned" type="geojson" data={assignedCollection}>
+                <Layer
+                  id="assigned"
+                  beforeId="highlighted"
+                  {...assignedStyle}
+                />
+              </Source>
+            )}
+            {filter.includes("done") && (
+              <Source id="done" type="geojson" data={completedCollection}>
+                <Layer id="done" beforeId="highlighted" {...doneStyle} />
+              </Source>
+            )}
 
-        <Source id="highlighted" type="geojson" data={selectCollection}>
-          <Layer id="highlighted" {...highlightedStyle} />
-        </Source>
+            <Source id="highlighted" type="geojson" data={selectCollection}>
+              <Layer id="highlighted" {...highlightedStyle} />
+            </Source>
 
-        {addPoint && (
-          <>
-            <div className="absolute top-1/2 left-1/2 transform pointer-events-none -translate-x-1/2 -translate-y-1/2">
-              <img src={crosshairs} className="w-64 h-64" alt="crosshairs" />
+            {addPoint && (
+              <div className="absolute top-1/2 left-1/2 transform pointer-events-none flex flex-col items-center space-y-52 -translate-x-1/2 -translate-y-1/2">
+                <img src={crosshairs} className="w-64 h-64" alt="crosshairs" />
+                <button onClick={createPoint} className="btn w-40">
+                  Add Point
+                </button>
+              </div>
+            )}
+
+            <div className="absolute top-3 left-5">
+              <MapSettings
+                setFilter={setFilter}
+                filter={filter}
+                setBasemap={setBasemap}
+                basemap={basemap}
+                setAddPoint={setAddPoint}
+                addPoint={addPoint}
+              />
             </div>
-            <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2">
-              <button onClick={createPoint} className="btn w-40">
-                Add Point
-              </button>
-            </div>
-          </>
-        )}
 
-        <div className="absolute top-3 left-1">
-          <BasemapSelector basemap={basemap} setBasemap={setBasemap} />
+            <div className="toast">
+              <div className="alert bg-black">
+                <div>
+                  <span className="text-gray-300 font-space">
+                    <span className="font-mono uppercase">Shift </span>+ drag to
+                    select multiple points
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Map>
         </div>
-        <div className="absolute top-20 left-1">
-          <FilterSelector filter={filter} setFilter={setFilter} />
-        </div>
-        <div className="absolute top-2 right-2">
-          <div className="tooltip tooltip-left" data-tip="Add Point">
-            <button
-              onClick={() => setAddPoint(!addPoint)}
-              className="btn btn-sm border-0 text-2xl drop-shadow btn-square bg-white text-black"
-            >
-              {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
-            </button>
-          </div>
-        </div>
-      </Map>
-      {filterIds.length > 0 && (
-        <div className="basis-1/3 drop-shadow-lg min-h-full border-l border-white max-h-full overflow-y-scroll bg-gray-700">
-          <AssignmentSelect
-            layer={layer}
-            features={layer.features.filter((f) => filterIds.includes(f.id))}
-            surveys={userSurveys}
-            surveyors={userSurveyors}
-          />
-        </div>
-      )}
+      </div>
+      <div className="drawer-side">
+        <label htmlFor="sidebar" className="drawer-overlay opacity-0 pointer-events-none"></label>
+        <AssignmentSelect
+          layer={layer}
+          features={layer.features.filter((f) => filterIds.includes(f.id))}
+          surveys={userSurveys}
+          surveyors={userSurveyors}
+        />
+      </div>
     </div>
   );
 }

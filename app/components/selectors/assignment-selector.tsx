@@ -6,7 +6,7 @@ import clsx from "clsx";
 export function AssignmentSelect({ layer, features, surveys, surveyors }) {
   const fetcher = useFetcher();
   return (
-    <div className="h-full bg-ggp bg-blend-multiply bg-gray-800 bg-center p-4">
+    <div className="h-full max-w-md w-screen border-l border-gray-400 bg-ggp bg-blend-multiply bg-gray-800 bg-center p-4">
       {features && features.length > 0 ? (
         <ul className="justify-center items-center w-full flex flex-col space-y-2">
           {features.length > 1 && (
@@ -274,9 +274,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
           ))}
         </ul>
       ) : (
-        <div className="flex flex-col w-full">
-          <h2 className="text-white text-2xl">No selected records</h2>
-        </div>
+        <div className="invisible max-w-md w-screen h-full" />
       )}
     </div>
   );
