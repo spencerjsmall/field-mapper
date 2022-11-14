@@ -4,7 +4,6 @@ import { json, LoaderArgs } from "@remix-run/node";
 import { useLoaderData, useOutletContext, useFetcher } from "@remix-run/react";
 
 import Map, { Source, Layer } from "react-map-gl";
-import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { commitSession, getSession } from "~/utils/auth.server";
 
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";

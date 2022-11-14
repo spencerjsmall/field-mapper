@@ -14,7 +14,16 @@
     @apply font-space;
   }
   p {
-    @apply font-space
+    @apply font-space;
+  }
+  span {
+    @apply font-space;
+  }
+  a {
+    @apply font-space;
+  }
+  li {
+    @apply font-space;
   }
 }
 

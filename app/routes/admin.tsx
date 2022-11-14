@@ -38,7 +38,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     include: { user: true },
   });
 
-  return {    
+  return {
     userAdmin,
     userSurveys,
     userSurveyors,
@@ -49,7 +49,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function AdminLayout() {
-  const {    
+  const {
     userAdmin,
     userSurveys,
     userSurveyors,
@@ -58,7 +58,7 @@ export default function AdminLayout() {
     allAdmins,
   } = useLoaderData();
   const location = useLocation();
-  const matches = useMatches();  
+  const matches = useMatches();
 
   const surveyorsData = allSurveyors.map((s) => ({
     key: s.id,
@@ -68,9 +68,6 @@ export default function AdminLayout() {
   return (
     <div className="h-screen w-screen flex flex-col">
       <div className="grid grid-cols-3 grid-rows-1 bg-black sticky top-0 z-50 drop-shadow-xl border-b border-white text-white text-2xl py-4 px-6">
-        {/* <label htmlFor="sidebar" className="cursor-pointer text-3xl">
-            <AiOutlineMenu />
-          </label> */}
         <Link
           className="flex flex-row justify-self-start text-2xl items-center space-x-3"
           to="/admin/home"
@@ -129,51 +126,38 @@ export default function AdminLayout() {
         </form>
       </div>
 
-      <div className="drawer">
-        <input id="sidebar" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content">
-          <div className="w-full max-h-full bg-ggp bg-blend-multiply bg-gray-800 bg-center h-full overflow-y-hidden z-0">
-            <Outlet
-              context={{
-                userAdmin,
-                userSurveys,
-                userSurveyors,
-                userLayers,
-                allSurveyors,
-                allAdmins,
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="drawer-side">
-          <label htmlFor="sidebar" className="drawer-overlay"></label>
-          <ul className="menu p-4 overflow-y-auto w-80 bg-black border-r border-white text-base-content">
-            <li>Sidebar Item 1</li>
-            <li>Sidebar Item 2</li>
-          </ul>
-        </div>
-
-        <input type="checkbox" id="new-layer-modal" className="modal-toggle" />
-        <div className="modal">
-          <div className="modal-box relative p-8 bg-gray-800 border border-gray-700">
-            <LayerUploader surveys={userSurveys} />
-          </div>
-        </div>
-
-        <input
-          type="checkbox"
-          id="add-surveyors-modal"
-          className="modal-toggle"
+      <div className="w-full max-h-full bg-ggp bg-blend-multiply bg-gray-800 bg-center h-full overflow-y-hidden z-0">
+        <Outlet
+          context={{
+            userAdmin,
+            userSurveys,
+            userSurveyors,
+            userLayers,
+            allSurveyors,
+            allAdmins,
+          }}
         />
-        <div className="modal">
-          <div className="modal-box relative p-8 bg-gray-800 border border-gray-700">
-            <SurveyorAdminManager
-              userSurveyors={userSurveyors}
-              allSurveyorData={surveyorsData}
-              admin={userAdmin}
-            />
-          </div>
+      </div>
+
+      <input type="checkbox" id="new-layer-modal" className="modal-toggle" />
+      <div className="modal">
+        <div className="modal-box relative p-8 bg-gray-800 border border-gray-700">
+          <LayerUploader surveys={userSurveys} />
+        </div>
+      </div>
+
+      <input
+        type="checkbox"
+        id="add-surveyors-modal"
+        className="modal-toggle"
+      />
+      <div className="modal">
+        <div className="modal-box relative p-8 bg-gray-800 border border-gray-700">
+          <SurveyorAdminManager
+            userSurveyors={userSurveyors}
+            allSurveyorData={surveyorsData}
+            admin={userAdmin}
+          />
         </div>
       </div>
     </div>
