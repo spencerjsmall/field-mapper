@@ -15,7 +15,6 @@ import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 import m_styles from "../../../styles/mapbox.css";
 import { todoStyle, doneStyle } from "~/styles/features";
-import { BasemapSelector } from "~/components/selectors/basemap-selector";
 import crosshairs from "../../../../public/images/crosshairs.svg";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { FiLayers } from "react-icons/fi";
@@ -304,8 +303,10 @@ export default function TaskMap() {
             onClose={() => setShowPopup(false)}
           >
             <ul className="menu bg-base-100 w-56 p-2 rounded-box">
-              <li className="menu-title">
-                <h2 className="text-xl text-orange-400 truncate">{label}</h2>
+              <li className="menu-title max-w-full">
+                <h2 className="text-xl text-orange-400">
+                  {label}
+                </h2>
               </li>
               <li className="border border-gray-700" onClick={getDirections}>
                 <p className="text-lg">Get Directions</p>

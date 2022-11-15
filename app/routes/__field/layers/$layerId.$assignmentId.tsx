@@ -63,6 +63,26 @@ export default function SurveyPage() {
 
   useEffect(() => {
     var survey = new Survey.Model(assn.survey.json);
+    survey.onUploadFiles.add(async (sender, options) => {
+      options.callback(
+        "success",
+        await Promise.all(
+          options.files.map(async (file) => {
+            let inputFormData = new FormData();
+            inputFormData.append("file", file);
+            const response = await fetch("/actions/file-upload", {
+              method: "POST",
+              body: inputFormData,
+            });
+            const fileUrl = await response.json();
+            return {
+              file: file,
+              content: fileUrl,
+            };
+          })
+        )
+      );
+    });
     survey.onComplete.add(handleComplete);
     setModel(survey);
   }, []);

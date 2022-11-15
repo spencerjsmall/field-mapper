@@ -51,8 +51,8 @@ export const LayerUploader = ({ surveys }) => {
     let shpUrl = "";
     for (const file of files) {
       let inputFormData = new FormData();
-      inputFormData.append("layer", file);
-      const response = await fetch("/actions/layer-upload", {
+      inputFormData.append("file", file);
+      const response = await fetch("/actions/file-upload", {
         method: "POST",
         body: inputFormData,
       });

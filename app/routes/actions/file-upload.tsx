@@ -1,9 +1,9 @@
 // app/routes/avatar.tsx
 import { ActionFunction, json } from "@remix-run/node";
-import { uploadLayer } from "~/utils/s3.server";
+import { uploadFile } from "~/utils/s3.server";
 
 export const action: ActionFunction = async ({ request }) => {
 
-  const layerUrl = await uploadLayer(request);  
-  return json(layerUrl);
+  const fileUrl = await uploadFile(request);  
+  return json(fileUrl);
 };

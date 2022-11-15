@@ -14,7 +14,7 @@ const uploadHandler: UploadHandler = async ({ name, filename, data }) => {
   // 2
   const stream = Readable.from(data);
 
-  if (name !== "layer") {
+  if (name !== "file") {
     stream.resume();
     return;
   }
@@ -35,13 +35,13 @@ const uploadHandler: UploadHandler = async ({ name, filename, data }) => {
   return Location;
 };
 
-export async function uploadLayer(request: Request) {
+export async function uploadFile(request: Request) {
   const formData = await unstable_parseMultipartFormData(
     request,
     uploadHandler
   );
 
-  const layerUrl = formData.get("layer")?.toString() || "";
+  const fileUrl = formData.get("file")?.toString() || "";
 
-  return layerUrl;
+  return fileUrl;
 }
