@@ -1,9 +1,9 @@
 import { prisma } from "~/utils/db.server";
 
 export async function loader({ request, params }) {
-  const taskId = parseInt(params.taskId);
+  const layerId = parseInt(params.layerId);
   const rawFeatures = await prisma.feature.findMany({
-    where: { layerId: taskId },
+    where: { layerId: layerId },
     select: {
       geojson: true,
       assignment: {

@@ -33,7 +33,7 @@ export async function loader({ request, params }) {
     },
   });
 
-  const features = rawFeatures.map((f) => ({
+  const JSONfeatures = rawFeatures.map((f) => ({
     ...f.geojson?.geometry,
     ...f.geojson?.properties,
     completedAt: f.assignment?.completedAt,
@@ -42,5 +42,14 @@ export async function loader({ request, params }) {
     ...f.assignment?.results,
   }));
 
-  return features;
+  const cleanJSON = JSONfeatures.map((f) =>
+    Object.fromEntries(
+      Object.entries(f).map(([key, val]) => [
+        key,
+        typeof val === "object" ? JSON.stringify(val) : val,
+      ])
+    )
+  );
+
+  return cleanJSON;
 }
