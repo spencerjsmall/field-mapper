@@ -29,7 +29,7 @@ export async function action({ request, params }) {
   const assnId = parseInt(params.assignmentId);
   const userId = await requireUserId(request);
   const layerId = params.layerId;
-  const { results } = Object.fromEntries(await request.formData());
+  const { results } = Object.fromEntries(await request.formData());  
   await prisma.assignment.update({
     where: {
       id: assnId,

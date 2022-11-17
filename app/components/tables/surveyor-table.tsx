@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AdminAvatars } from "../admin-avatars";
 
 export function SurveyorTable({ surveyors, preview = false }) {

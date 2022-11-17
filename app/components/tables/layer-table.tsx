@@ -129,7 +129,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
                     onChange={(e) =>
                       fetcher.submit(
                         { surveyId: e.target.value, layerId: layer.id },
-                        { method: "post" }
+                        { method: "post", action: "/admin/layers" }
                       )
                     }
                     className="select select-sm w-fit"

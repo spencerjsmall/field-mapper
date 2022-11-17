@@ -119,9 +119,9 @@ export default function AdminTaskMap() {
 
   const onFeatureClick = (e) => {
     console.log(e.lngLat);
-    setAddPoint(false);
     if (e.features.length > 0) {
       console.log(e.features);
+      setAddPoint(false);
       setFilterIds([e.features[0].id]);
     } else if (filterIds.length > 0) {
       setFilterIds([]);
@@ -161,7 +161,7 @@ export default function AdminTaskMap() {
       <input
         id="sidebar"
         type="checkbox"
-        checked={filterIds.length > 0}        
+        checked={filterIds.length > 0}
         className="drawer-toggle"
       />
       <div className="drawer-content">
@@ -231,12 +231,21 @@ export default function AdminTaskMap() {
             </Source>
 
             {addPoint && (
-              <div className="absolute top-1/2 left-1/2 transform pointer-events-none flex flex-col items-center space-y-52 -translate-x-1/2 -translate-y-1/2">
-                <img src={crosshairs} className="w-64 h-64" alt="crosshairs" />
-                <button onClick={createPoint} className="btn w-40">
+              <>
+                <div className="absolute pointer-events-none top-1/2 left-1/2 transform flex flex-col items-center space-y-52 -translate-x-1/2 -translate-y-1/2">
+                  <img
+                    src={crosshairs}
+                    className="w-64 h-64"
+                    alt="crosshairs"
+                  />
+                </div>
+                <button
+                  onClick={createPoint}
+                  className="btn w-40 absolute bottom-32 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                >
                   Add Point
                 </button>
-              </div>
+              </>
             )}
 
             <div className="absolute top-3 left-5">
@@ -264,7 +273,10 @@ export default function AdminTaskMap() {
         </div>
       </div>
       <div className="drawer-side">
-        <label htmlFor="sidebar" className="drawer-overlay opacity-0 pointer-events-none"></label>
+        <label
+          htmlFor="sidebar"
+          className="drawer-overlay opacity-0 pointer-events-none"
+        ></label>
         <AssignmentSelect
           layer={layer}
           features={layer.features.filter((f) => filterIds.includes(f.id))}

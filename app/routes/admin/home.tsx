@@ -36,61 +36,81 @@ export default function HomePage() {
         )}
       </div>
       <div className="w-fit xl:flex hidden justify-self-center flex-col items-center xl:items-start">
-        <div className="flex flex-row space-x-2">
-          <Link to="/admin/surveys">
-            <h2 className="text-gray-100 mb-6 hover:text-orange-400">
-              Surveys
-            </h2>
-          </Link>
-          <Link
-            className="text-xl text-gray-400 cursor-pointer hover:text-white"
-            to="/admin/surveys/new"
-          >
-            +
-          </Link>
+        <div className="flex flex-row justify-between w-full items-center mb-6">
+          <div className="flex flex-row space-x-2">
+            <Link to="/admin/surveys">
+              <h2 className="text-gray-100 hover:text-orange-400">
+                Surveys
+              </h2>
+            </Link>
+            <Link
+              className="text-xl text-gray-400 cursor-pointer hover:text-white"
+              to="/admin/surveys/new"
+            >
+              +
+            </Link>
+          </div>
+          {userSurveys && userSurveys.length > 3 && (
+            <Link to="/admin/surveys" className="hover:hover:text-orange-400">
+              Show all
+            </Link>
+          )}
         </div>
-        <div className="max-h-60 overflow-y-scroll">
-          <SurveyTable surveys={userSurveys} adminData={adminData} preview />
-        </div>
+
+        <SurveyTable
+          surveys={userSurveys.slice(0, 3)}
+          adminData={adminData}
+          preview
+        />
       </div>
       <div className="w-fit justify-self-center xl:flex hidden flex-col items-center xl:items-start">
-        <div className="flex flex-row space-x-2">
-          <Link to="/admin/layers">
-            <h2 className="text-gray-100 mb-6 hover:text-orange-400">Layers</h2>
-          </Link>
-          <label
-            className="text-xl text-gray-400 cursor-pointer hover:text-white"
-            htmlFor="new-layer-modal"
-          >
-            +
-          </label>
+        <div className="flex flex-row justify-between w-full items-center mb-6">
+          <div className="flex flex-row space-x-2">
+            <Link to="/admin/layers">
+              <h2 className="text-gray-100 hover:text-orange-400">Layers</h2>
+            </Link>
+            <label
+              className="text-xl text-gray-400 cursor-pointer hover:text-white"
+              htmlFor="new-layer-modal"
+            >
+              +
+            </label>
+          </div>
+          {userLayers && userLayers.length > 3 && (
+            <Link to="/admin/layers" className="hover:hover:text-orange-400">
+              Show all
+            </Link>
+          )}
         </div>
-        <div className="max-h-60 overflow-y-scroll">
-          <LayerTable
-            layers={userLayers}
-            surveys={userSurveys}
-            adminData={adminData}
-            preview
-          />
-        </div>
+
+        <LayerTable
+          layers={userLayers.slice(0, 3)}
+          surveys={userSurveys}
+          adminData={adminData}
+          preview
+        />
       </div>
       <div className="w-fit xl:flex hidden justify-self-center flex-col items-center xl:items-start">
-        <div className="flex flex-row space-x-2">
-          <Link to="/admin/surveyors">
-            <h2 className="text-gray-100 mb-6 hover:text-orange-400">
-              Surveyors
-            </h2>
-          </Link>
-          <label
-            className="text-xl text-gray-400 cursor-pointer hover:text-white"
-            htmlFor="add-surveyors-modal"
-          >
-            +
-          </label>
+        <div className="flex flex-row justify-between w-full items-center mb-6">
+          <div className="flex flex-row space-x-2">
+            <Link to="/admin/surveyors">
+              <h2 className="text-gray-100 hover:text-orange-400">Surveyors</h2>
+            </Link>
+            <label
+              className="text-xl text-gray-400 cursor-pointer hover:text-white"
+              htmlFor="add-surveyors-modal"
+            >
+              +
+            </label>
+          </div>
+          {userSurveyors && userSurveyors.length > 3 && (
+            <Link to="/admin/surveyors" className="hover:hover:text-orange-400">
+              Show all
+            </Link>
+          )}
         </div>
-        <div className="max-h-60 overflow-y-scroll">
-          <SurveyorTable surveyors={userSurveyors} preview />
-        </div>
+
+        <SurveyorTable surveyors={userSurveyors.slice(0, 3)} preview />
       </div>
     </div>
   );
