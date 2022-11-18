@@ -12,7 +12,7 @@
     }
 
     .mapboxgl-popup-tip {
-      border-top-color: black !important;
+      border-top-color: #F1F5F9 !important;
     }
   }
 }
@@ -38,6 +38,16 @@
       }
     }
   }
+
+  .mapboxgl-ctrl.mapboxgl-ctrl-group {
+    border-radius: 100%;
+    height: 40px;
+    width: 40px;
+    .mapboxgl-ctrl-geolocate {
+      margin: 5px auto;
+    }
+  }
+
   .mapboxgl-ctrl-directions {
     width: 100%;
     min-width: 100%;

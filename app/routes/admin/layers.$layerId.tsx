@@ -262,7 +262,7 @@ export default function AdminTaskMap() {
             <div className="toast">
               <div className="alert bg-black">
                 <div>
-                  <span className="text-gray-300 font-space">
+                  <span className="text-slate-300 font-space">
                     <span className="font-mono uppercase">Shift </span>+ drag to
                     select multiple points
                   </span>

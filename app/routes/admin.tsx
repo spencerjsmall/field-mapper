@@ -90,8 +90,8 @@ export default function AdminLayout() {
           <Link
             className={
               location.pathname == "/admin/surveys"
-                ? "text-gray-100"
-                : "text-gray-500 hover:text-gray-100"
+                ? "text-slate-100"
+                : "text-slate-500 hover:text-slate-100"
             }
             to="/admin/surveys"
           >
@@ -100,8 +100,8 @@ export default function AdminLayout() {
           <Link
             className={
               location.pathname == "/admin/layers"
-                ? "text-gray-100"
-                : "text-gray-500 hover:text-gray-100"
+                ? "text-slate-100"
+                : "text-slate-500 hover:text-slate-100"
             }
             to="/admin/layers"
           >
@@ -110,8 +110,8 @@ export default function AdminLayout() {
           <Link
             className={
               location.pathname == "/admin/surveyors"
-                ? "text-gray-100"
-                : "text-gray-500 hover:text-gray-100"
+                ? "text-slate-100"
+                : "text-slate-500 hover:text-slate-100"
             }
             to="/admin/surveyors"
           >
@@ -126,7 +126,7 @@ export default function AdminLayout() {
         </form>
       </div>
 
-      <div className="w-full max-h-full bg-ggp bg-blend-multiply bg-gray-800 bg-center h-full overflow-y-hidden z-0">
+      <div className="w-full max-h-full bg-ggp bg-blend-multiply bg-slate-800 bg-center h-full overflow-y-hidden z-0">
         <Outlet
           context={{
             userAdmin,
@@ -140,8 +140,8 @@ export default function AdminLayout() {
       </div>
 
       <input type="checkbox" id="new-layer-modal" className="modal-toggle" />
-      <div className="modal">
-        <div className="modal-box relative p-8 bg-gray-800 border border-gray-700">
+      <div className="modal bg-opacity-70 bg-black">
+        <div className="modal-box relative p-8 bg-slate-700 border border-slate-500">
           <LayerUploader surveys={userSurveys} />
         </div>
       </div>
@@ -151,8 +151,8 @@ export default function AdminLayout() {
         id="add-surveyors-modal"
         className="modal-toggle"
       />
-      <div className="modal">
-        <div className="modal-box relative p-8 bg-gray-800 border border-gray-700">
+      <div className="modal bg-opacity-70 bg-black">
+        <div className="modal-box relative p-8 bg-slate-700 border border-slate-500">
           <SurveyorAdminManager
             userSurveyors={userSurveyors}
             allSurveyorData={surveyorsData}

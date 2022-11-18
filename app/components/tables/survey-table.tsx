@@ -4,7 +4,7 @@ import { SurveyAdminManager } from "../modals/survey-admin-manager";
 
 export function SurveyTable({ surveys, adminData, preview = false }) {
   return (
-    <div className="overflow-x-auto drop-shadow-lg border border-gray-700 rounded-lg">
+    <div className="overflow-x-auto drop-shadow-lg border border-slate-700 rounded-lg">
       <table className="table w-full">
         <thead>
           <tr>
@@ -27,7 +27,7 @@ export function SurveyTable({ surveys, adminData, preview = false }) {
               {!preview && (
                 <td>
                   <Link
-                    className="text-gray-600 hover:text-gray-100"
+                    className="text-slate-600 hover:text-slate-100"
                     to={`/admin/surveys/${survey.id}`}
                   >
                     Edit
@@ -72,7 +72,7 @@ export function SurveyTable({ surveys, adminData, preview = false }) {
                 className="modal cursor-pointer"
               >
                 <label
-                  className="modal-box bg-gray-800 border border-gray-700 relative"
+                  className="modal-box bg-slate-700 border border-slate-500 relative"
                   for=""
                 >
                   <SurveyAdminManager admins={adminData} survey={survey} />

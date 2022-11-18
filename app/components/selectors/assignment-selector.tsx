@@ -6,20 +6,20 @@ import clsx from "clsx";
 export function AssignmentSelect({ layer, features, surveys, surveyors }) {
   const fetcher = useFetcher();
   return (
-    <div className="h-full max-w-md w-screen border-l border-gray-400 bg-ggp bg-blend-multiply bg-gray-800 bg-center p-4">
+    <div className="h-full max-w-md w-screen border-l border-slate-400 bg-ggp bg-blend-multiply bg-slate-800 bg-center p-4">
       {features && features.length > 0 ? (
         <ul className="justify-center items-center w-full flex flex-col space-y-2">
           {features.length > 1 && (
             <li key={0} className="w-full">
               <div
                 tabIndex={0}
-                className="collapse collapse-arrow border w-full border-base-300 bg-black rounded-box"
+                className="collapse collapse-arrow border w-full border-slate-700 bg-black rounded-box"
               >
                 <input type="checkbox" />
                 <div className="collapse-title text-center font-sans text-white text-xl font-medium">
                   Update {features.length} records
                 </div>
-                <div className="collapse-content text-gray-200 w-full">
+                <div className="collapse-content text-slate-200 w-full">
                   <fetcher.Form
                     method="post"
                     className="flex flex-col items-center"
@@ -33,7 +33,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                     <h3>Assigned to:</h3>
                     <select
                       name="assigneeId"
-                      className="select select-sm w-fit bg-gray-700"
+                      className="select select-sm w-fit bg-slate-700"
                     >
                       <option
                         selected={
@@ -68,7 +68,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                     <h3>Attached Survey:</h3>
                     <select
                       name="surveyId"
-                      className="select select-sm w-fit bg-gray-700"
+                      className="select select-sm w-fit bg-slate-700"
                     >
                       <option
                         selected={
@@ -146,7 +146,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
             <li key={feature.id} className="w-full">
               <div
                 tabIndex={feature.id}
-                className="collapse collapse-arrow border border-base-300 bg-gray-800 rounded-box w-full"
+                className="collapse collapse-arrow border border-slate-700 bg-slate-800 rounded-box w-full"
               >
                 <input type="checkbox" />
                 <div className="collapse-title font-sans text-center text-xl text-white font-medium w-full">

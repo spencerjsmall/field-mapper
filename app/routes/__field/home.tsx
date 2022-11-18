@@ -55,51 +55,44 @@ export default function HomePage() {
   };
 
   return (
-    <div className="w-full h-full bg-ob bg-blend-multiply bg-gray-800 bg-top bg-no-repeat bg-cover bg-fixed">
+    <div className="w-full h-full bg-ob bg-blend-multiply bg-slate-800 bg-top bg-no-repeat bg-cover bg-fixed">
       {userLayers && userLayers.length > 0 ? (
         <ul className="justify-start py-8 h-full w-full items-center flex flex-col space-y-6">
           {userLayers.map((layer, i) => (
-            <li className="w-full px-4" key={layer.id}>
+            <li className="w-full px-4 drop-shadow-lg" key={layer.id}>
               <div
                 tabIndex={i}
-                className="collapse collapse-open mx-auto w-full border border-gray-600 bg-black rounded-box"
+                onClick={() => setLayer(layer.id)}
+                className="collapse collapse-open mx-auto w-full border border-slate-700 bg-black rounded-box"
               >
-                <div className="collapse-title px-4 text-2xl text-center">
+                <div className="collapse-title px-4 text-white text-2xl text-center">
                   {layer.name}
                 </div>
                 <div className="collapse-content flex flex-row justify-evenly items-center w-full">
-                  <div>
-                    <div className="flex flex-row items-center space-x-1">
-                      <span className="font-semibold text-lg">
-                        {
-                          layer.features.filter(
-                            (f) =>
-                              f.assignment && f.assignment.assigneeId == userId
-                          ).length
-                        }
-                      </span>
-                      <p className="text-gray-600">assignments</p>
-                    </div>
-                    <div className="flex flex-row items-center space-x-1">
-                      <span className="font-semibold text-lg">
-                        {
-                          layer.features.filter(
-                            (f) =>
-                              f.assignment &&
-                              f.assignment.assigneeId == userId &&
-                              f.assignment.completed
-                          ).length
-                        }
-                      </span>
-                      <p className="text-gray-600">completed</p>
-                    </div>
+                  <div className="flex flex-row items-center space-x-1">
+                    <span className="font-semibold text-xl">
+                      {
+                        layer.features.filter(
+                          (f) =>
+                            f.assignment && f.assignment.assigneeId == userId
+                        ).length
+                      }
+                    </span>
+                    <p className="text-slate-500 text-lg">assignments</p>
                   </div>
-                  <button
-                    className="btn btn-outline hover:text-white"
-                    onClick={() => setLayer(layer.id)}
-                  >
-                    Map
-                  </button>
+                  <div className="flex flex-row items-center space-x-1">
+                    <span className="font-semibold text-xl">
+                      {
+                        layer.features.filter(
+                          (f) =>
+                            f.assignment &&
+                            f.assignment.assigneeId == userId &&
+                            f.assignment.completed
+                        ).length
+                      }
+                    </span>
+                    <p className="text-slate-500 text-lg">completed</p>
+                  </div>
                 </div>
               </div>
             </li>

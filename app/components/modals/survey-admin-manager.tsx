@@ -17,7 +17,7 @@ export function SurveyAdminManager({ admins, survey }) {
           survey.admins.map((a, i) => (
             <div
               key={i}
-              className="w-fit h-fit py-1 px-3 rounded-2xl bg-black text-white hover:bg-gray-600"
+              className="w-fit h-fit py-1 px-3 rounded-2xl bg-black text-white hover:bg-slate-600"
             >
               {a.user.firstName} {a.user.lastName}
             </div>

@@ -141,14 +141,14 @@ export default function Login() {
       </button>
 
       <h1 className="uppercase text-white">Field Mapper</h1>
-      <p className=" text-gray-500">
+      <p className=" text-slate-500">
         {action === "login"
           ? "Log In to Start Mapping"
           : "Sign Up To Get Started"}
       </p>
       <form
         method="POST"
-        className="rounded-lg bg-gray-600 p-6 w-3/4 md:w-1/2 lg:w-1/3"
+        className="rounded-lg bg-slate-600 p-6 w-3/4 md:w-1/2 lg:w-1/3"
       >
         <div className="text-xs font-semibold text-center tracking-wide text-red-500 w-full">
           {formError}

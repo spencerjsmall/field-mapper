@@ -25,7 +25,7 @@ export default function HomePage() {
   return (
     <div className="xl:grid xl:mx-auto flex flex-col h-full xl:h-fit items-center justify-center grid-flow-row xl:mt-12 xl:w-full 2xl:w-10/12 grid-cols-2 gap-y-10">
       <div className="flex flex-col pb-20 xl:p-0 items-center self-center justify-self-center">
-        <h1 className="text-gray-200">Welcome, {userAdmin.user.firstName}</h1>
+        <h1 className="text-slate-200">Welcome, {userAdmin.user.firstName}</h1>
         {recentLayer !== null && (
           <div className="contents">
             <h3 className="italic my-4">Jump back into</h3>
@@ -39,12 +39,12 @@ export default function HomePage() {
         <div className="flex flex-row justify-between w-full items-center mb-6">
           <div className="flex flex-row space-x-2">
             <Link to="/admin/surveys">
-              <h2 className="text-gray-100 hover:text-orange-400">
+              <h2 className="text-slate-100 hover:text-orange-400">
                 Surveys
               </h2>
             </Link>
             <Link
-              className="text-xl text-gray-400 cursor-pointer hover:text-white"
+              className="text-xl text-slate-400 cursor-pointer hover:text-white"
               to="/admin/surveys/new"
             >
               +
@@ -67,10 +67,10 @@ export default function HomePage() {
         <div className="flex flex-row justify-between w-full items-center mb-6">
           <div className="flex flex-row space-x-2">
             <Link to="/admin/layers">
-              <h2 className="text-gray-100 hover:text-orange-400">Layers</h2>
+              <h2 className="text-slate-100 hover:text-orange-400">Layers</h2>
             </Link>
             <label
-              className="text-xl text-gray-400 cursor-pointer hover:text-white"
+              className="text-xl text-slate-400 cursor-pointer hover:text-white"
               htmlFor="new-layer-modal"
             >
               +
@@ -94,10 +94,10 @@ export default function HomePage() {
         <div className="flex flex-row justify-between w-full items-center mb-6">
           <div className="flex flex-row space-x-2">
             <Link to="/admin/surveyors">
-              <h2 className="text-gray-100 hover:text-orange-400">Surveyors</h2>
+              <h2 className="text-slate-100 hover:text-orange-400">Surveyors</h2>
             </Link>
             <label
-              className="text-xl text-gray-400 cursor-pointer hover:text-white"
+              className="text-xl text-slate-400 cursor-pointer hover:text-white"
               htmlFor="add-surveyors-modal"
             >
               +

@@ -47,7 +47,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
     <div
       className={`${
         !preview && "overflow-x-auto"
-      } drop-shadow-lg border border-gray-700 rounded-lg`}
+      } drop-shadow-lg border border-slate-700 rounded-lg`}
     >
       <table className="table w-full">
         <thead>
@@ -193,7 +193,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
                 className="modal cursor-pointer"
               >
                 <label
-                  className="modal-box bg-gray-800 border border-gray-700 relative"
+                  className="modal-box bg-slate-700 border border-slate-500 relative"
                   for=""
                 >
                   <LayerAdminManager admins={adminData} layer={layer} />

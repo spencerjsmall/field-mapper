@@ -147,7 +147,7 @@ export const LayerUploader = ({ surveys }) => {
 
         <button
           type="submit"
-          className="rounded-xl font-space bg-black border border-white px-3 py-4 text-white transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
+          className="rounded-xl font-space bg-black border border-slate-600 px-3 py-4 text-white transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
         >
           Create Layer
         </button>

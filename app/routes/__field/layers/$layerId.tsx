@@ -1,11 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import type { LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import {
-  useLoaderData,  
-  useSubmit,
-  useFetcher,
-} from "@remix-run/react";
+import { useLoaderData, useSubmit, useFetcher } from "@remix-run/react";
 import clsx from "clsx";
 
 import Map, { Source, Layer, Popup, GeolocateControl } from "react-map-gl";
@@ -21,6 +17,7 @@ import { FiLayers } from "react-icons/fi";
 
 import { getUserSession, commitSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
+import { BasemapSelector } from "~/components/selectors/basemap-selector";
 
 export function links() {
   return [
@@ -196,6 +193,7 @@ export default function TaskMap() {
   };
 
   const getDirections = () => {
+    setShowPopup(false);
     mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
     mapDirections.setDestination([dCoords.lng, dCoords.lat]);
     mapDirections.on("route", () => {
@@ -289,10 +287,10 @@ export default function TaskMap() {
           </Source>
         )}
         <Source id="done" type="geojson" data={completedAssignments}>
-          <Layer beforeId="todo" id="done" {...todoStyle} />
+          <Layer beforeId="todo" id="done" {...doneStyle} />
         </Source>
         <Source id="todo" type="geojson" data={todoAssignments}>
-          <Layer id="todo" {...doneStyle} />
+          <Layer id="todo" {...todoStyle} />
         </Source>
 
         {showPopup && (
@@ -302,22 +300,20 @@ export default function TaskMap() {
             anchor="bottom"
             onClose={() => setShowPopup(false)}
           >
-            <ul className="menu bg-base-100 w-56 p-2 rounded-box">
-              <li className="menu-title max-w-full">
-                <h2 className="text-xl text-orange-400">
-                  {label}
-                </h2>
+            <ul className="menu bg-slate-100 w-56 border-slate-300 border drop-shadow-md rounded-box">
+              <li className="menu-title max-w-full py-2">
+                <h2 className="text-xl text-orange-400">{label}</h2>
               </li>
-              <li className="border border-gray-700" onClick={getDirections}>
-                <p className="text-lg">Get Directions</p>
+              <li className="border-t border-slate-300" onClick={getDirections}>
+                <p className="text-lg text-slate-800">Get Directions</p>
               </li>
               {!completed && assignment && hasSurvey && (
-                <li className="border border-gray-700" onClick={goToSurvey}>
-                  <p className="text-lg">Complete Survey</p>
+                <li className="border-t border-slate-300 text-center" onClick={goToSurvey}>
+                  <p className="text-lg text-slate-800">Complete Survey</p>
                 </li>
               )}
-              <li className="border border-gray-700" onClick={goToNotes}>
-                <p className="text-lg">Add Notes</p>
+              <li className="border-t border-slate-300" onClick={goToNotes}>
+                <p className="text-lg text-slate-800">Add Notes</p>
               </li>
             </ul>
           </Popup>
@@ -339,60 +335,11 @@ export default function TaskMap() {
         <GeolocateControl onGeolocate={setCurrentLocation} ref={geolocateRef} />
       </Map>
 
-      <div className="absolute top-1.5 left-1.5 flex flex-col items-center space-y-1">
-        <div className="dropdown dropdown-right py-0 drop-shadow">
-          <label
-            tabIndex={0}
-            className="btn m-1 bg-white text-black text-xl py-0 h-8 w-8 min-h-8 p-1 border-none"
-          >
-            <FiLayers />
-          </label>
-          <ul className="dropdown-content menu p-2 shadow bg-white rounded-box w-52">
-            <li tabIndex={1}>
-              <div
-                onClick={() => changeStyle("satellite")}
-                className={clsx("p2 font-sans", {
-                  active: basemap == "satellite",
-                })}
-              >
-                Satellite
-              </div>
-            </li>
-            <li tabIndex={2}>
-              <div
-                onClick={() => changeStyle("streets-v11")}
-                className={clsx("p2 font-sans", {
-                  active: basemap == "streets-v11",
-                })}
-              >
-                Traffic
-              </div>
-            </li>
-            <li tabIndex={3}>
-              <div
-                onClick={() => changeStyle("outdoors-v11")}
-                className={clsx("p2 font-sans", {
-                  active: basemap == "outdoors-v11",
-                })}
-              >
-                Topo
-              </div>
-            </li>
-            <li tabIndex={4}>
-              <div
-                onClick={() => changeStyle("dark-v10")}
-                className={clsx("p2 font-sans", {
-                  active: basemap == "dark-v10",
-                })}
-              >
-                Dark
-              </div>
-            </li>
-          </ul>
-        </div>
+      <div className="absolute top-3 left-3 flex flex-col items-center space-y-2">
+        <BasemapSelector changeStyle={changeStyle} basemap={basemap} />
         <button
           onClick={() => setAddPoint(!addPoint)}
-          className="btn btn-sm border-0 text-2xl drop-shadow btn-square bg-white text-black"
+          className="btn btn-sm border-0 text-2xl rounded-full h-10 w-10 drop-shadow btn-square bg-white text-black"
         >
           {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
         </button>

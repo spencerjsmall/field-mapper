@@ -3,7 +3,7 @@ import { AdminAvatars } from "../admin-avatars";
 
 export function SurveyorTable({ surveyors, preview = false }) {
   return (
-    <div className="overflow-x-auto drop-shadow-lg border border-gray-700 rounded-lg">
+    <div className="overflow-x-auto drop-shadow-lg border border-slate-700 rounded-lg">
       <table className="table w-full">
         <thead>
           <tr>

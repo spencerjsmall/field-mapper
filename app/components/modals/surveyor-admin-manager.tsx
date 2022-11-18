@@ -31,7 +31,7 @@ export function SurveyorAdminManager({
           <AiOutlineClose />
         </label>
       </div>
-      <h1>Surveyors</h1>
+      <h1 className='text-semibold text-white'>Surveyors</h1>
       <div className="modal-action">
         <label htmlFor="add-surveyors-modal">
           <ReactSearchBox
@@ -88,11 +88,11 @@ export function SurveyorAdminManager({
           onChange={(e) => handleInputChange(e, "password")}
         />
 
-        <div className="modal-action w-full text-center">
+        <div className="modal-action w-full">
           <label htmlFor="add-surveyors-modal">
             <button
               type="submit"
-              className="rounded-lg mt-2 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
+              className="rounded-lg mt-2 bg-black w-full border-slate-600 px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
             >
               Create Surveyor
             </button>
