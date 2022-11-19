@@ -55,7 +55,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="w-full h-full bg-ob bg-blend-multiply bg-slate-800 bg-top bg-no-repeat bg-cover bg-fixed">
+    <div className="w-full grow bg-ob bg-blend-multiply bg-slate-800 bg-top bg-no-repeat bg-cover bg-fixed">
       {userLayers && userLayers.length > 0 ? (
         <ul className="justify-start py-8 h-full w-full items-center flex flex-col space-y-6">
           {userLayers.map((layer, i) => (

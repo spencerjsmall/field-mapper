@@ -250,91 +250,90 @@ export default function TaskMap() {
   };
 
   return (
-    <div className="h-full relative">
-      <Map
-        initialViewState={viewState}
-        ref={mapRef}
-        onLoad={addNavigation}
-        onMove={(e) => {
-          setShowPopup(false);
-          setViewState(e.viewState);
-        }}
-        onZoom={(e) => {
-          if (preventZoom) {
-            e.target.stop();
-            setPreventZoom(false);
-          }
-        }}
-        mapStyle={
-          basemap == "satellite"
-            ? `mapbox://styles/mapbox/satellite-v9`
-            : `mapbox://styles/mapbox/${basemap}`
+    <Map
+      initialViewState={viewState}
+      ref={mapRef}
+      onLoad={addNavigation}
+      onMove={(e) => {
+        setShowPopup(false);
+        setViewState(e.viewState);
+      }}
+      onZoom={(e) => {
+        if (preventZoom) {
+          e.target.stop();
+          setPreventZoom(false);
         }
-        mapboxAccessToken={token}
-        interactiveLayerIds={["todo", "done"]}
-        onClick={onFeatureClick}
-      >
-        {basemap == "satellite" && (
-          <Source
-            id="tiles"
-            type="raster"
-            tiles={[
-              "https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png",
-            ]}
-            tileSize={256}
-          >
-            <Layer beforeId="todo" type="raster" />
-          </Source>
-        )}
-        <Source id="done" type="geojson" data={completedAssignments}>
-          <Layer beforeId="todo" id="done" {...doneStyle} />
+      }}
+      mapStyle={
+        basemap == "satellite"
+          ? `mapbox://styles/mapbox/satellite-v9`
+          : `mapbox://styles/mapbox/${basemap}`
+      }
+      mapboxAccessToken={token}
+      interactiveLayerIds={["todo", "done"]}
+      onClick={onFeatureClick}
+      style={{ flexGrow: 1, position: "relative", width: "100%" }}
+    >
+      {basemap == "satellite" && (
+        <Source
+          id="tiles"
+          type="raster"
+          tiles={["https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png"]}
+          tileSize={256}
+        >
+          <Layer beforeId="todo" type="raster" />
         </Source>
-        <Source id="todo" type="geojson" data={todoAssignments}>
-          <Layer id="todo" {...todoStyle} />
-        </Source>
+      )}
+      <Source id="done" type="geojson" data={completedAssignments}>
+        <Layer beforeId="todo" id="done" {...doneStyle} />
+      </Source>
+      <Source id="todo" type="geojson" data={todoAssignments}>
+        <Layer id="todo" {...todoStyle} />
+      </Source>
 
-        {showPopup && (
-          <Popup
-            longitude={dCoords.lng}
-            latitude={dCoords.lat}
-            anchor="bottom"
-            onClose={() => setShowPopup(false)}
-          >
-            <ul className="menu bg-slate-100 w-56 border-slate-300 border drop-shadow-md rounded-box">
-              <li className="menu-title max-w-full py-2">
-                <h2 className="text-xl text-orange-400">{label}</h2>
+      {showPopup && (
+        <Popup
+          longitude={dCoords.lng}
+          latitude={dCoords.lat}
+          anchor="bottom"
+          onClose={() => setShowPopup(false)}
+        >
+          <ul className="menu bg-slate-100 w-56 border-slate-300 border drop-shadow-md rounded-box">
+            <li className="menu-title max-w-full py-2">
+              <h2 className="text-xl text-orange-400">{label}</h2>
+            </li>
+            <li className="border-t border-slate-300" onClick={getDirections}>
+              <p className="text-lg text-slate-800">Get Directions</p>
+            </li>
+            {!completed && assignment && hasSurvey && (
+              <li
+                className="border-t border-slate-300 text-center"
+                onClick={goToSurvey}
+              >
+                <p className="text-lg text-slate-800">Complete Survey</p>
               </li>
-              <li className="border-t border-slate-300" onClick={getDirections}>
-                <p className="text-lg text-slate-800">Get Directions</p>
-              </li>
-              {!completed && assignment && hasSurvey && (
-                <li className="border-t border-slate-300 text-center" onClick={goToSurvey}>
-                  <p className="text-lg text-slate-800">Complete Survey</p>
-                </li>
-              )}
-              <li className="border-t border-slate-300" onClick={goToNotes}>
-                <p className="text-lg text-slate-800">Add Notes</p>
-              </li>
-            </ul>
-          </Popup>
-        )}
+            )}
+            <li className="border-t border-slate-300" onClick={goToNotes}>
+              <p className="text-lg text-slate-800">Add Notes</p>
+            </li>
+          </ul>
+        </Popup>
+      )}
 
-        {addPoint && (
-          <>
-            <div className="absolute top-1/2 left-1/2 transform pointer-events-none -translate-x-1/2 -translate-y-1/2">
-              <img src={crosshairs} className="w-30 h-30" alt="crosshairs" />
-            </div>
-            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
-              <button onClick={createPoint} className="btn w-40">
-                Add Point
-              </button>
-            </div>
-          </>
-        )}
+      {addPoint && (
+        <>
+          <div className="absolute top-1/2 left-1/2 transform pointer-events-none -translate-x-1/2 -translate-y-1/2">
+            <img src={crosshairs} className="w-30 h-30" alt="crosshairs" />
+          </div>
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+            <button onClick={createPoint} className="btn w-40">
+              Add Point
+            </button>
+          </div>
+        </>
+      )}
 
-        <GeolocateControl onGeolocate={setCurrentLocation} ref={geolocateRef} />
-      </Map>
-
+      <GeolocateControl onGeolocate={setCurrentLocation} ref={geolocateRef} />
       <div className="absolute top-3 left-3 flex flex-col items-center space-y-2">
         <BasemapSelector changeStyle={changeStyle} basemap={basemap} />
         <button
@@ -344,6 +343,6 @@ export default function TaskMap() {
           {!addPoint ? <AiOutlinePlus /> : <AiOutlineClose />}
         </button>
       </div>
-    </div>
+    </Map>
   );
 }

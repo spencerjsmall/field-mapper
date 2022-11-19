@@ -89,7 +89,7 @@ export default function SurveyPage() {
 
   if (model && model != null) {
     return (
-      <div className="min-h-full  max-h-full overflow-y-scroll">
+      <div className="grow w-full overflow-y-scroll">
         <SurveyReact.Survey model={model} />
       </div>
     );

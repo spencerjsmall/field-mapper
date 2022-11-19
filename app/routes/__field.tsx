@@ -30,7 +30,7 @@ export default function FieldLayout() {
   const matches = useMatches();
 
   return (
-    <div className="h-screen max-h-screen w-screen flex flex-col">
+    <div className="min-safe-h-screen w-screen flex flex-col">
       <div className="flex flex-row bg-black items-center border-b border-slate-600 sticky top-0 z-50 justify-between text-white text-2xl py-3 px-4">
         {matches[2].id != "routes/__field/home" ? (
           <Link
@@ -66,9 +66,7 @@ export default function FieldLayout() {
         </form>
       </div>
 
-      <div className="w-full max-h-full h-full overflow-y-auto z-0">
-        <Outlet context={userSurveyor} />
-      </div>
+      <Outlet context={userSurveyor} />
     </div>
   );
 }

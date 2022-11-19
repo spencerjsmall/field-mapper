@@ -36,10 +36,7 @@ export default function AssignmentNotes() {
   }, [assn]);
 
   return (
-    <form
-      method="POST"
-      className="h-full w-full flex flex-col items-center p-6"
-    >
+    <form method="POST" className="grow w-full flex flex-col items-center p-6">
       <textarea
         name="note"
         className="textarea text-xl w-full grow textarea-bordered"
