@@ -57,7 +57,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
             {!preview && (
               <>
                 <th>Created</th>
-                <th>Updated</th>
+                {/* <th>Updated</th> */}
                 <th>Managed By</th>
               </>
             )}
@@ -94,7 +94,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
               {!preview && (
                 <>
                   <td>{new Date(layer.createdAt).toDateString()}</td>
-                  <td>
+                  {/* <td>
                     {new Date(layer.createdAt).toString() ===
                     new Date(layer.updatedAt).toString()
                       ? null
@@ -103,7 +103,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
                           .split(" ")
                           .slice(0, 5)
                           .join(" ")}
-                  </td>
+                  </td> */}
                   <td>
                     <AdminAvatars
                       admins={layer.admins}
