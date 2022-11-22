@@ -135,7 +135,7 @@ export default function Login() {
       {/* Form Switcher Button */}
       <button
         onClick={() => setAction(action == "login" ? "register" : "login")}
-        className="absolute top-8 right-8  transition duration-300 ease-in-out btn btn-ghost"
+        className="absolute top-8 right-8 text-slate-200  transition duration-300 ease-in-out btn btn-ghost"
       >
         {action === "login" ? "Sign Up" : "Sign In"}
       </button>
@@ -202,9 +202,7 @@ export default function Login() {
             </div>
             <div className="form-control">
               <label className="label cursor-pointer">
-                <span className="label-text font-space text-red">
-                  Admin
-                </span>
+                <span className="label-text font-space text-red">Admin</span>
                 <input
                   type="radio"
                   name="role"

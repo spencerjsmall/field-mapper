@@ -54,8 +54,16 @@ export default function HomePage() {
             </Link>
           )}
         </div>
-
-        <SurveyTable surveys={userSurveys.slice(0, 3)} preview />
+        {userSurveys && userSurveys.length > 0 ? (
+          <SurveyTable surveys={userSurveys.slice(0, 3)} preview />
+        ) : (
+          <Link
+            className="text-orange-500 btn btn-ghost hover:text-orange-300"
+            to="/admin/surveys/new"
+          >
+            Create one to get started
+          </Link>
+        )}
       </div>
       <div className="w-fit justify-self-center xl:flex hidden flex-col items-center xl:items-start">
         <div className="flex flex-row justify-between w-full items-center mb-6">
@@ -71,12 +79,20 @@ export default function HomePage() {
             </Link>
           )}
         </div>
-
-        <LayerTable
-          layers={userLayers.slice(0, 3)}
-          surveys={userSurveys}
-          preview
-        />
+        {userLayers && userLayers.length > 0 ? (
+          <LayerTable
+            layers={userLayers.slice(0, 3)}
+            surveys={userSurveys}
+            preview
+          />
+        ) : (
+          <Link
+            className="text-orange-500 btn btn-ghost hover:text-orange-300"
+            to="/admin/layers/new"
+          >
+            Create one to get started
+          </Link>
+        )}
       </div>
       <div className="w-fit xl:flex hidden justify-self-center flex-col items-center xl:items-start">
         <div className="flex flex-row justify-between w-full items-center mb-6">
@@ -95,11 +111,20 @@ export default function HomePage() {
           )}
         </div>
 
-        <SurveyorTable
-          surveyors={userSurveyors.slice(0, 3)}
-          admin={userAdmin}
-          preview
-        />
+        {userSurveyors && userSurveyors.length > 0 ? (
+          <SurveyorTable
+            surveyors={userSurveyors.slice(0, 3)}
+            admin={userAdmin}
+            preview
+          />
+        ) : (
+          <Link
+            className="text-orange-500 btn btn-ghost hover:text-orange-300"
+            to="/admin/surveyors/new"
+          >
+            Add or create one to get started
+          </Link>
+        )}
       </div>
     </div>
   );
