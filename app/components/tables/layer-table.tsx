@@ -1,14 +1,21 @@
 import { CSVLink } from "react-csv";
-import { useRef, useState } from "react";
-import { BsGlobe } from "react-icons/bs";
+import { useEffect, useRef, useState } from "react";
+import { BsGlobe, BsTrash } from "react-icons/bs";
 import { Link, useFetcher } from "@remix-run/react";
-import { LayerAdminManager } from "../modals/layer-admin-manager";
 import { AdminAvatars } from "../admin-avatars";
 
-export function LayerTable({ layers, surveys, adminData, preview = false }) {
+export function LayerTable({ layers, surveys, preview = false }) {
   const [csv, setCSV] = useState({ data: null, fileName: "" });
+  const [prev, setPrev] = useState(preview);
   const csvLink = useRef(null);
   const fetcher = useFetcher();
+
+  useEffect(() => {
+    window.addEventListener("resize", () =>
+      setPrev(preview ? true : window.innerWidth < 1024)
+    );
+  }, []);
+
   const downloadFile = (data, fileName, fileType) => {
     const file = new Blob([data], {
       type: fileType,
@@ -45,16 +52,14 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
 
   return (
     <div
-      className={`${
-        !preview && "overflow-x-auto"
-      } drop-shadow-lg border border-slate-700 rounded-lg`}
+      className={`drop-shadow-lg overflow-y-hidden overflow-x-hidden border border-slate-700 rounded-lg`}
     >
       <table className="table w-full">
         <thead>
           <tr>
-            {!preview && <th></th>}
+            {!prev && <th></th>}
             <th>Name</th>
-            {!preview && (
+            {!prev && (
               <>
                 <th>Created</th>
                 {/* <th>Updated</th> */}
@@ -64,13 +69,18 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
             <th>Features</th>
             <th>Assignments</th>
             <th>Assigned Survey</th>
-            {!preview && <th>Download</th>}
+            {!prev && (
+              <>
+                <th>Download</th>
+                <th></th>
+              </>
+            )}
           </tr>
         </thead>
         <tbody>
           {layers.map((layer, i) => (
-            <tr key={i} className="hover overflow-y-visible">
-              {!preview && (
+            <tr key={i} className="hover overflow-y-hidden">
+              {!prev && (
                 <td>
                   <div data-tip="Map" className="tooltip tooltip-bottom z-50">
                     <Link
@@ -91,7 +101,7 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
                   {layer.name}
                 </Link>
               </td>
-              {!preview && (
+              {!prev && (
                 <>
                   <td>{new Date(layer.createdAt).toDateString()}</td>
                   {/* <td>
@@ -105,11 +115,13 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
                           .join(" ")}
                   </td> */}
                   <td>
-                    <AdminAvatars
-                      admins={layer.admins}
-                      id={layer.id}
-                      addAdmins
-                    />
+                    <Link to={`/admin/layers/${layer.id}/admins`}>
+                      <AdminAvatars
+                        admins={layer.admins}
+                        id={layer.id}
+                        addAdmins
+                      />
+                    </Link>
                   </td>
                 </>
               )}
@@ -153,52 +165,51 @@ export function LayerTable({ layers, surveys, adminData, preview = false }) {
                   </Link>
                 )}
               </td>
-              {!preview && (
-                <td>
-                  <div className="btn-group">
-                    <button
-                      onClick={() => exportToJson(layer)}
-                      className="btn font-sans btn-xs text-white btn-ghost"
-                      id="jsonDownload"
-                      value="download"
+              {!prev && (
+                <>
+                  <td>
+                    <div className="btn-group">
+                      <button
+                        onClick={() => exportToJson(layer)}
+                        className="btn font-sans btn-xs text-white btn-ghost"
+                        id="jsonDownload"
+                        value="download"
+                      >
+                        JSON
+                      </button>
+                      <button
+                        onClick={() => exportToCsv(layer)}
+                        className="btn font-sans btn-xs text-white btn-ghost"
+                        id="csvDownload"
+                        value="download"
+                      >
+                        CSV
+                      </button>
+                      {csv.data && (
+                        <CSVLink
+                          ref={csvLink}
+                          data={csv.data}
+                          filename={csv.fileName}
+                          target="_blank"
+                        />
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div
+                      data-tip="Delete"
+                      className="tooltip tooltip-bottom z-50"
                     >
-                      JSON
-                    </button>
-                    <button
-                      onClick={() => exportToCsv(layer)}
-                      className="btn font-sans btn-xs text-white btn-ghost"
-                      id="csvDownload"
-                      value="download"
-                    >
-                      CSV
-                    </button>
-                    {csv.data && (
-                      <CSVLink
-                        ref={csvLink}
-                        data={csv.data}
-                        filename={csv.fileName}
-                        target="_blank"
-                      />
-                    )}
-                  </div>
-                </td>
+                      <Link
+                        className="cursor-pointer hover:text-white text-xl"
+                        to={`/admin/layers/${layer.id}/delete`}
+                      >
+                        <BsTrash />
+                      </Link>
+                    </div>
+                  </td>
+                </>
               )}
-              <input
-                type="checkbox"
-                id={`add-admins-modal-${layer.id}`}
-                className="modal-toggle"
-              />
-              <label
-                htmlFor={`add-admins-modal-${layer.id}`}
-                className="modal cursor-pointer"
-              >
-                <label
-                  className="modal-box bg-slate-700 border border-slate-500 relative"
-                  for=""
-                >
-                  <LayerAdminManager admins={adminData} layer={layer} />
-                </label>
-              </label>
             </tr>
           ))}
         </tbody>

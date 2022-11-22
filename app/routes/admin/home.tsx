@@ -37,11 +37,9 @@ export default function HomePage() {
       </div>
       <div className="w-fit xl:flex hidden justify-self-center flex-col items-center xl:items-start">
         <div className="flex flex-row justify-between w-full items-center mb-6">
-          <div className="flex flex-row space-x-2">
+          <div className="flex flex-row space-x-2 items-center">
             <Link to="/admin/surveys">
-              <h2 className="text-slate-100 hover:text-orange-400">
-                Surveys
-              </h2>
+              <h2 className="text-slate-100 hover:text-orange-400">Surveys</h2>
             </Link>
             <Link
               className="text-xl text-slate-400 cursor-pointer hover:text-white"
@@ -57,24 +55,15 @@ export default function HomePage() {
           )}
         </div>
 
-        <SurveyTable
-          surveys={userSurveys.slice(0, 3)}
-          adminData={adminData}
-          preview
-        />
+        <SurveyTable surveys={userSurveys.slice(0, 3)} preview />
       </div>
       <div className="w-fit justify-self-center xl:flex hidden flex-col items-center xl:items-start">
         <div className="flex flex-row justify-between w-full items-center mb-6">
-          <div className="flex flex-row space-x-2">
+          <div className="flex flex-row space-x-2 items-center">
             <Link to="/admin/layers">
               <h2 className="text-slate-100 hover:text-orange-400">Layers</h2>
             </Link>
-            <label
-              className="text-xl text-slate-400 cursor-pointer hover:text-white"
-              htmlFor="new-layer-modal"
-            >
-              +
-            </label>
+            <Link to="/admin/layers/new">+</Link>
           </div>
           {userLayers && userLayers.length > 3 && (
             <Link to="/admin/layers" className="hover:hover:text-orange-400">
@@ -86,22 +75,18 @@ export default function HomePage() {
         <LayerTable
           layers={userLayers.slice(0, 3)}
           surveys={userSurveys}
-          adminData={adminData}
           preview
         />
       </div>
       <div className="w-fit xl:flex hidden justify-self-center flex-col items-center xl:items-start">
         <div className="flex flex-row justify-between w-full items-center mb-6">
-          <div className="flex flex-row space-x-2">
+          <div className="flex flex-row space-x-2 items-center">
             <Link to="/admin/surveyors">
-              <h2 className="text-slate-100 hover:text-orange-400">Surveyors</h2>
+              <h2 className="text-slate-100 hover:text-orange-400">
+                Surveyors
+              </h2>
             </Link>
-            <label
-              className="text-xl text-slate-400 cursor-pointer hover:text-white"
-              htmlFor="add-surveyors-modal"
-            >
-              +
-            </label>
+            <Link to="/admin/surveyors/new">+</Link>
           </div>
           {userSurveyors && userSurveyors.length > 3 && (
             <Link to="/admin/surveyors" className="hover:hover:text-orange-400">
@@ -110,7 +95,11 @@ export default function HomePage() {
           )}
         </div>
 
-        <SurveyorTable surveyors={userSurveyors.slice(0, 3)} preview />
+        <SurveyorTable
+          surveyors={userSurveyors.slice(0, 3)}
+          admin={userAdmin}
+          preview
+        />
       </div>
     </div>
   );

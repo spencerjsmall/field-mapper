@@ -1,10 +1,9 @@
 import { prisma } from "~/utils/db.server";
 import { ActionFunction } from "@remix-run/node";
-import { useOutletContext } from "@remix-run/react";
-import { LayerUploader } from "~/components/modals/layer-uploader";
+import { Link, Outlet, useOutletContext } from "@remix-run/react";
 import { LayerTable } from "~/components/tables/layer-table";
 import { Paginate } from "~/components/tables/paginate";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 export const action: ActionFunction = async ({ request }) => {
   const { surveyId, layerId } = Object.fromEntries(await request.formData());
@@ -58,19 +57,16 @@ export default function Layers() {
             ))}
           </div>
         )}
-        <label htmlFor="new-layer-modal" className="btn w-36 modal-button">
+        <Link to="/admin/layers/new" className="btn w-36 modal-button">
           New Layer
-        </label>
+        </Link>
       </div>
       {userLayers && userLayers.length > 0 ? (
-        <LayerTable
-          layers={layers}
-          surveys={userSurveys}
-          adminData={adminData}
-        />
+        <LayerTable layers={layers} surveys={userSurveys} />
       ) : (
         <h2>No layers</h2>
       )}
+      <Outlet context={{ adminData, userSurveys }} />
     </div>
   );
 }

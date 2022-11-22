@@ -1,4 +1,4 @@
-import { Link, useOutletContext } from "@remix-run/react";
+import { Link, Outlet, useOutletContext } from "@remix-run/react";
 import { useMemo, useState } from "react";
 import { Paginate } from "~/components/tables/paginate";
 import { SurveyTable } from "~/components/tables/survey-table";
@@ -41,10 +41,11 @@ export default function Surveys() {
         </Link>
       </div>
       {userSurveys && userSurveys.length > 0 ? (
-        <SurveyTable surveys={surveys} adminData={adminData} />
+        <SurveyTable surveys={surveys} />
       ) : (
         <h2>No Surveys</h2>
       )}
+      <Outlet context={{ adminData }} />
     </div>
   );
 }

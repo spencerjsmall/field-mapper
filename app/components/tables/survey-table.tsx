@@ -1,8 +1,8 @@
 import { Link } from "@remix-run/react";
+import { BsTrash } from "react-icons/bs";
 import { AdminAvatars } from "../admin-avatars";
-import { SurveyAdminManager } from "../modals/survey-admin-manager";
 
-export function SurveyTable({ surveys, adminData, preview = false }) {
+export function SurveyTable({ surveys, preview = false }) {
   return (
     <div className="overflow-x-auto drop-shadow-lg border border-slate-700 rounded-lg">
       <table className="table w-full">
@@ -19,6 +19,7 @@ export function SurveyTable({ surveys, adminData, preview = false }) {
             )}
             <th>Assigned In</th>
             <th>Assignments</th>
+            {!preview && <th></th>}
           </tr>
         </thead>
         <tbody>
@@ -49,11 +50,13 @@ export function SurveyTable({ surveys, adminData, preview = false }) {
                           .join(" ")}
                   </td>
                   <td>
-                    <AdminAvatars
-                      admins={survey.admins}
-                      id={survey.id}
-                      addAdmins
-                    />
+                    <Link to={`/admin/surveys/${survey.id}/admins`}>
+                      <AdminAvatars
+                        admins={survey.admins}
+                        id={survey.id}
+                        addAdmins
+                      />
+                    </Link>
                   </td>
                 </>
               )}
@@ -62,22 +65,21 @@ export function SurveyTable({ surveys, adminData, preview = false }) {
                 {survey.assignments.filter((a) => a.completed).length} /
                 {" " + survey._count.assignments} completed
               </td>
-              <input
-                type="checkbox"
-                id={`add-admins-modal-${survey.id}`}
-                className="modal-toggle"
-              />
-              <label
-                htmlFor={`add-admins-modal-${survey.id}`}
-                className="modal cursor-pointer"
-              >
-                <label
-                  className="modal-box bg-slate-700 border border-slate-500 relative"
-                  for=""
-                >
-                  <SurveyAdminManager admins={adminData} survey={survey} />
-                </label>
-              </label>
+              {!preview && (
+                <td>
+                  <div
+                    data-tip="Delete"
+                    className="tooltip tooltip-bottom z-50"
+                  >
+                    <Link
+                      className="cursor-pointer hover:text-white text-xl"
+                      to={`/admin/surveys/${survey.id}/delete`}
+                    >
+                      <BsTrash />
+                    </Link>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

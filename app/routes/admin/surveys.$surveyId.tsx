@@ -34,7 +34,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const survey = prisma.survey.findUniqueOrThrow({
+  const survey = await prisma.survey.findUniqueOrThrow({
     where: {
       id: parseInt(params.surveyId),
     },

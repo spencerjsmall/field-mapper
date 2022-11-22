@@ -1,17 +1,13 @@
 import {
   Link,
   Outlet,
-  useFetcher,
   useLoaderData,
   useLocation,
   useMatches,
 } from "@remix-run/react";
 import { requireAdminSession } from "~/utils/auth.server";
-import { AiOutlineMenu } from "react-icons/ai";
 import { AdminAvatars } from "~/components/admin-avatars";
 import { prisma } from "~/utils/db.server";
-import { LayerUploader } from "~/components/modals/layer-uploader";
-import { SurveyorAdminManager } from "~/components/modals/surveyor-admin-manager";
 import {
   getUserAdmin,
   getUserLayers,
@@ -19,7 +15,6 @@ import {
   getUserSurveys,
 } from "~/utils/user.server";
 import sf_seal from "../../public/images/sf_seal.png";
-import { useEffect, useState } from "react";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const session = await requireAdminSession(request);
@@ -135,30 +130,9 @@ export default function AdminLayout() {
             userLayers,
             allSurveyors,
             allAdmins,
+            surveyorsData,
           }}
         />
-      </div>
-
-      <input type="checkbox" id="new-layer-modal" className="modal-toggle" />
-      <div className="modal bg-opacity-70 bg-black">
-        <div className="modal-box relative p-8 bg-slate-700 border border-slate-500">
-          <LayerUploader surveys={userSurveys} />
-        </div>
-      </div>
-
-      <input
-        type="checkbox"
-        id="add-surveyors-modal"
-        className="modal-toggle"
-      />
-      <div className="modal bg-opacity-70 bg-black">
-        <div className="modal-box relative p-8 bg-slate-700 border border-slate-500">
-          <SurveyorAdminManager
-            userSurveyors={userSurveyors}
-            allSurveyorData={surveyorsData}
-            admin={userAdmin}
-          />
-        </div>
       </div>
     </div>
   );
