@@ -19,16 +19,19 @@ export const action: ActionFunction = async ({ request }) => {
     await request.formData()
   );
 
-  const parsedFeatures = JSON.parse(String(features), (key, value) =>
-    typeof value == "string" &&
-    value.length == 254 &&
-    [...new Set(Array.from(value))].length == 1
+  const parsedFeatures =
+    String(features) == ""
       ? ""
-      : value
-  );
+      : JSON.parse(String(features), (key, value) =>
+          typeof value == "string" &&
+          value.length == 254 &&
+          [...new Set(Array.from(value))].length == 1
+            ? ""
+            : value
+        );
 
   let layer: Prisma.LayerCreateInput;
-  if (features == "") {
+  if (parsedFeatures == "") {
     layer = {
       name: String(name),
       admins: { connect: { id: userId } },
@@ -128,11 +131,7 @@ export default function NewLayer() {
   // 4
   return (
     <Modal title="New Layer">
-      <Form
-        method="post"
-        action="/actions/layer-create"
-        className="flex flex-col w-10/12 mt-6"
-      >
+      <Form method="post" className="flex flex-col w-10/12 mt-6">
         <input
           type="file"
           onChange={handleFileChange}
