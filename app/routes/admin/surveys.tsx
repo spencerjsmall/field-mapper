@@ -37,7 +37,7 @@ export default function Surveys() {
           </div>
         )}
         <Link to="new">
-          <button className="btn w-36 ">New Survey</button>
+          <button className="btn w-36 hover:bg-slate-700">New Survey</button>
         </Link>
       </div>
       {userSurveys && userSurveys.length > 0 ? (

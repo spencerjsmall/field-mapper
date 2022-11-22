@@ -23,7 +23,7 @@ export default function HomePage() {
     value: `${a.user.firstName} ${a.user.lastName}`,
   }));
   return (
-    <div className="xl:grid xl:mx-auto flex flex-col h-full xl:h-fit items-center justify-center grid-flow-row xl:mt-12 xl:w-full 2xl:w-10/12 grid-cols-2 gap-y-10">
+    <div className="xl:grid xl:mx-auto flex flex-col h-full xl:h-fit items-center justify-center grid-flow-row xl:mt-20 xl:w-full 2xl:w-10/12 grid-cols-2 gap-y-10">
       <div className="flex flex-col pb-20 xl:p-0 items-center self-center justify-self-center">
         <h1 className="text-slate-200">Welcome, {userAdmin.user.firstName}</h1>
         {recentLayer !== null && (

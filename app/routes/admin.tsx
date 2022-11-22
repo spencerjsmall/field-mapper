@@ -84,7 +84,7 @@ export default function AdminLayout() {
         <div className="flex flex-row justify-self-center space-x-4 lg:space-x-8 xl:space-x-12 items-center text-xl uppercase cursor-pointer">
           <Link
             className={
-              location.pathname == "/admin/surveys"
+              location.pathname.slice(0, 14) == "/admin/surveys"
                 ? "text-slate-100"
                 : "text-slate-500 hover:text-slate-100"
             }
@@ -94,7 +94,7 @@ export default function AdminLayout() {
           </Link>
           <Link
             className={
-              location.pathname == "/admin/layers"
+              location.pathname.slice(0, 13) == "/admin/layers"
                 ? "text-slate-100"
                 : "text-slate-500 hover:text-slate-100"
             }
@@ -104,7 +104,7 @@ export default function AdminLayout() {
           </Link>
           <Link
             className={
-              location.pathname == "/admin/surveyors"
+              location.pathname.slice(0, 16) == "/admin/surveyors"
                 ? "text-slate-100"
                 : "text-slate-500 hover:text-slate-100"
             }

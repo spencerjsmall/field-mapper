@@ -1,17 +1,7 @@
-import {
-  Outlet,
-  useLoaderData,
-  useLocation,
-  useMatches,
-  useNavigate,
-  Link,
-} from "@remix-run/react";
-import { AiOutlineMenu } from "react-icons/ai";
-import { HiOutlineUserCircle } from "react-icons/hi";
+import { Outlet, useLoaderData, useMatches, Link } from "@remix-run/react";
 import { AdminAvatars } from "~/components/admin-avatars";
 import { requireFieldSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
-import { IoArrowBackCircle } from "react-icons/io5";
 import sf_seal from "../../public/images/sf_seal.png";
 import { BsArrowLeftShort } from "react-icons/bs";
 

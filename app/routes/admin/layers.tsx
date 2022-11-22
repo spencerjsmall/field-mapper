@@ -57,7 +57,7 @@ export default function Layers() {
             ))}
           </div>
         )}
-        <Link to="/admin/layers/new" className="btn w-36 modal-button">
+        <Link to="/admin/layers/new" className="btn w-36 hover:bg-slate-700">
           New Layer
         </Link>
       </div>

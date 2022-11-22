@@ -1,21 +1,23 @@
-import { redirect } from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useOutletContext,
-  useSubmit,
-} from "@remix-run/react";
-import { AiOutlineClose } from "react-icons/ai";
+import { useLoaderData, useOutletContext, useSubmit } from "@remix-run/react";
+import { AiFillCloseCircle } from "react-icons/ai";
 import ReactSearchBox from "react-search-box";
+import { Modal } from "~/components/modal";
 import { prisma } from "~/utils/db.server";
 
 export const action: ActionFunction = async ({ request }) => {
-  const { adminId, layerId } = Object.fromEntries(await request.formData());
+  const { adminId, layerId, action } = Object.fromEntries(
+    await request.formData()
+  );
   await prisma.layer.update({
     where: { id: parseInt(layerId) },
-    data: { admins: { connect: { id: parseInt(adminId) } } },
+    data: {
+      admins:
+        String(action) == "add"
+          ? { connect: { id: parseInt(adminId) } }
+          : { disconnect: { id: parseInt(adminId) } },
+    },
   });
-  return redirect(`/admin/layers`);
+  return null;
 };
 
 export const loader = async ({ request, params }: LoaderArgs) => {
@@ -38,45 +40,47 @@ export default function LayerAdmins() {
   const { adminData } = useOutletContext();
   const submit = useSubmit();
   return (
-    <>
-      <input
-        type="checkbox"
-        id={`layer-${layer.id}-admins`}
-        className="modal-toggle"
-        checked
-      />
-      <div className="modal">
-        <div className="modal-box flex flex-col items-center relative space-y-6">
-          <Link to="/admin/layers" className="text-xl absolute top-5 right-5">
-            <AiOutlineClose />
-          </Link>
-          <h1 className="text-semibold text-white">{layer.name} Managers</h1>
-          <div className="flex flex-row space-x-4 items-center">
-            {layer.admins &&
-              layer.admins.map((a, i) => (
-                <div
-                  key={i}
-                  className="w-fit h-fit py-1 px-3 rounded-2xl bg-black text-white hover:bg-slate-600"
-                >
-                  {a.user.firstName} {a.user.lastName}
-                </div>
-              ))}
-          </div>
-          <ReactSearchBox
-            placeholder="Add new manager"
-            data={adminData.filter(
-              (a) => !layer.admins.map((a) => a.id).includes(a.key)
-            )}
-            onSelect={(record: any) =>
-              submit(
-                { adminId: record.item.key, layerId: layer.id },
-                { method: "post" }
-              )
-            }
-            autoFocus
-          />
-        </div>
+    <Modal title={layer.name}>
+      <div className="flex flex-row justify-center space-x-2 items-center flex-wrap">
+        {layer.admins &&
+          layer.admins.map((a, i) => (
+            <div
+              key={i}
+              className="w-fit h-fit py-1 my-1 px-3 flex flex-row items-center space-x-2 flex-no-wrap rounded-2xl bg-black text-slate-300 hover:bg-slate-900"
+            >
+              <span>
+                {a.user.firstName} {a.user.lastName}
+              </span>
+              <div
+                className="hover:text-white cursor-pointer"
+                onClick={() =>
+                  submit(
+                    { adminId: a.id, layerId: layer.id, action: "remove" },
+                    { method: "post" }
+                  )
+                }
+              >
+                <AiFillCloseCircle />
+              </div>
+            </div>
+          ))}
       </div>
-    </>
+      <div className="py-4">
+        <ReactSearchBox
+          placeholder="Add new admin"
+          data={adminData.filter(
+            (a) => !layer.admins.map((a) => a.id).includes(a.key)
+          )}
+          onSelect={(record: any) =>
+            submit(
+              { adminId: record.item.key, layerId: layer.id, action: "add" },
+              { method: "post" }
+            )
+          }
+          clearOnSelect
+          autoFocus
+        />
+      </div>
+    </Modal>
   );
 }

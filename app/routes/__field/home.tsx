@@ -7,7 +7,6 @@ import {
   commitSession,
   requireUserId,
 } from "~/utils/auth.server";
-import { Layer } from "react-map-gl";
 
 export const action: ActionFunction = async ({ request }) => {
   const session = await getUserSession(request);

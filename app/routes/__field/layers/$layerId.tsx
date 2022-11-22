@@ -2,7 +2,6 @@ import { useState, useCallback, useRef } from "react";
 import type { LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { useLoaderData, useSubmit, useFetcher } from "@remix-run/react";
-import clsx from "clsx";
 
 import Map, { Source, Layer, Popup, GeolocateControl } from "react-map-gl";
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
@@ -13,7 +12,6 @@ import m_styles from "../../../styles/mapbox.css";
 import { todoStyle, doneStyle } from "~/styles/features";
 import crosshairs from "../../../../public/images/crosshairs.svg";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
-import { FiLayers } from "react-icons/fi";
 
 import { getUserSession, commitSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
@@ -333,7 +331,12 @@ export default function TaskMap() {
         </>
       )}
 
-      <GeolocateControl onGeolocate={setCurrentLocation} ref={geolocateRef} />
+      <GeolocateControl
+        trackUserLocation
+        showUserHeading
+        onGeolocate={setCurrentLocation}
+        ref={geolocateRef}
+      />
       <div className="absolute top-3 left-3 flex flex-col items-center space-y-2">
         <BasemapSelector changeStyle={changeStyle} basemap={basemap} />
         <button

@@ -1,7 +1,7 @@
 import { Link, Outlet, useOutletContext } from "@remix-run/react";
 import { SurveyorTable } from "~/components/tables/surveyor-table";
 import { Paginate } from "~/components/tables/paginate";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function Surveyors() {
   const { userAdmin, userSurveyors, surveyorsData } = useOutletContext();
@@ -33,7 +33,7 @@ export default function Surveyors() {
             ))}
           </div>
         )}
-        <Link to="/admin/surveyors/new" className="btn w-36">
+        <Link to="/admin/surveyors/new" className="btn w-36 hover:bg-slate-700">
           Add Surveyors
         </Link>
       </div>

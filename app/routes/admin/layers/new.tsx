@@ -1,6 +1,5 @@
-import React, { useRef, useState } from "react";
-import { Form, Link, useOutletContext } from "@remix-run/react";
-import { AiOutlineClose } from "react-icons/ai";
+import React, { useState } from "react";
+import { Form, useOutletContext } from "@remix-run/react";
 import "@loaders.gl/polyfills";
 import { KMLLoader } from "@loaders.gl/kml";
 import { GeoJSONLoader } from "@loaders.gl/json/dist/geojson-loader";
@@ -11,6 +10,7 @@ import type { ActionFunction } from "@remix-run/node";
 import { getUserSession, commitSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
 import type { Prisma } from "@prisma/client";
+import { Modal } from "~/components/modal";
 
 export const action: ActionFunction = async ({ request }) => {
   const session = await getUserSession(request);
@@ -127,96 +127,80 @@ export default function NewLayer() {
 
   // 4
   return (
-    <>
-      <input
-        type="checkbox"
-        id="new-layer-modal"
-        checked
-        className="modal-toggle"
-      />
-      <div className="modal bg-opacity-70 bg-black">
-        <div className="modal-box relative p-8 bg-slate-700 border border-slate-500">
-          <div className="flex flex-col w-full items-center">
-            <Link to="/admin/layers" className="absolute top-5 text-xl right-5">
-              <AiOutlineClose />
-            </Link>
-            <h1 className="text-white font-semibold my-4">New Layer</h1>
-            <Form
-              method="post"
-              action="/actions/layer-create"
-              className="flex flex-col w-10/12 mt-6"
-            >
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="file-input file-input-bordered w-full mb-6 mx-auto"
-                multiple
-              />
-              <input
-                type="text"
-                name="features"
-                value={formData.features}
-                className="hidden"
-                readOnly
-              />
+    <Modal title="New Layer">
+      <Form
+        method="post"
+        action="/actions/layer-create"
+        className="flex flex-col w-10/12 mt-6"
+      >
+        <input
+          type="file"
+          onChange={handleFileChange}
+          className="file-input file-input-bordered w-full mb-6 mx-auto"
+          multiple
+        />
+        <input
+          type="text"
+          name="features"
+          value={formData.features}
+          className="hidden"
+          readOnly
+        />
 
-              <label className="text-white mb-2 font-space">Layer Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange(e, "name")}
-                className="h-8 mb-8"
-                required
-              />
+        <label className="text-white mb-2 font-space">Layer Name</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={(e) => handleInputChange(e, "name")}
+          className="h-8 mb-8"
+          required
+        />
 
-              <div className="flex flex-row space-x-2 mb-8 justify-around">
-                <div className="flex flex-col space-y-2 justify-start">
-                  <label className="text-white font-space">Label Field </label>
-                  <select name="field" className="select w-fit">
-                    <option disabled selected key={0}>
-                      Select a label field
-                    </option>
-                    {formData.features &&
-                      formData.features.length > 0 &&
-                      Object.keys(
-                        JSON.parse(formData.features)[0].geojson.properties
-                      ).map((prop, i) => (
-                        <option value={prop} key={i + 1}>
-                          {prop}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className="flex flex-col space-y-2 justify-start">
-                  <label className="text-white font-space">Survey </label>
-                  <select name="surveyId" className="select w-fit">
-                    <option disabled selected key={0}>
-                      {userSurveys && userSurveys.length > 0
-                        ? "Select a survey"
-                        : "None"}
-                    </option>
-                    {userSurveys &&
-                      userSurveys.length > 0 &&
-                      userSurveys.map((survey, i) => (
-                        <option value={survey.id} key={i + 1}>
-                          {survey.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="rounded-xl font-space bg-black border border-slate-600 px-3 py-4 text-white transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
-              >
-                Create Layer
-              </button>
-            </Form>
+        <div className="flex flex-row space-x-2 mb-8 justify-around">
+          <div className="flex flex-col space-y-2 justify-start">
+            <label className="text-white font-space">Label Field </label>
+            <select name="field" className="select w-fit">
+              <option disabled selected key={0}>
+                Select a label field
+              </option>
+              {formData.features &&
+                formData.features.length > 0 &&
+                Object.keys(
+                  JSON.parse(formData.features)[0].geojson.properties
+                ).map((prop, i) => (
+                  <option value={prop} key={i + 1}>
+                    {prop}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <div className="flex flex-col space-y-2 justify-start">
+            <label className="text-white font-space">Survey </label>
+            <select name="surveyId" className="select w-fit">
+              <option disabled selected key={0}>
+                {userSurveys && userSurveys.length > 0
+                  ? "Select a survey"
+                  : "None"}
+              </option>
+              {userSurveys &&
+                userSurveys.length > 0 &&
+                userSurveys.map((survey, i) => (
+                  <option value={survey.id} key={i + 1}>
+                    {survey.name}
+                  </option>
+                ))}
+            </select>
           </div>
         </div>
-      </div>
-    </>
+
+        <button
+          type="submit"
+          className="rounded-xl font-space bg-black border border-slate-600 px-3 py-4 text-white transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
+        >
+          Create Layer
+        </button>
+      </Form>
+    </Modal>
   );
 }
