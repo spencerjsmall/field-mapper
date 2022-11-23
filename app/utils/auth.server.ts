@@ -3,9 +3,10 @@ import type {
   AdminRegisterForm,
   RegisterForm,
   LoginForm,
+  UpdateForm,
 } from "./types.server";
 import { prisma } from "./db.server";
-import { createSurveyor, createUser } from "./user.server";
+import { createSurveyor, createUser, updateUser } from "./user.server";
 import bcrypt from "bcryptjs";
 import type { User } from "@prisma/client";
 
@@ -26,6 +27,20 @@ export const { getSession, commitSession, destroySession } =
       httpOnly: true,
     },
   });
+
+export async function update(user: UpdateForm) {
+  const updatedUser = await updateUser(user);
+  if (!updatedUser) {
+    return json(
+      {
+        error: `Something went wrong trying to update the user.`,
+        fields: { email: user.email, password: user.password },
+      },
+      { status: 400 }
+    );
+  }
+  return redirect("/");
+}
 
 export async function register(user: RegisterForm) {
   const exists = await prisma.user.count({ where: { email: user.email } });
@@ -85,7 +100,7 @@ export async function login({ email, password }: LoginForm) {
 }
 
 export async function createUserSession(user: User, redirectTo: string) {
-  const session = await getSession();  
+  const session = await getSession();
   session.set("userId", user.id);
   session.set("role", user.admin ? "admin" : "field");
   return redirect(redirectTo, {

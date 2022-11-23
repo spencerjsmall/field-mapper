@@ -1,5 +1,9 @@
 import bcrypt from "bcryptjs";
-import type { AdminRegisterForm, RegisterForm } from "./types.server";
+import type {
+  AdminRegisterForm,
+  RegisterForm,
+  UpdateForm,
+} from "./types.server";
 import { prisma } from "./db.server";
 
 export const createUser = async (user: RegisterForm) => {
@@ -20,6 +24,21 @@ export const createUser = async (user: RegisterForm) => {
     include: { admin: true },
   });
   return newUser;
+};
+
+export const updateUser = async (user: UpdateForm) => {
+  const passwordHash =
+    user.password == "" ? undefined : await bcrypt.hash(user.password, 10);
+  const updatedUser = await prisma.user.update({
+    where: { id: parseInt(user.id) },
+    data: {
+      email: user.email,
+      password: passwordHash,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    },
+  });
+  return updatedUser;
 };
 
 export const createSurveyor = async (user: AdminRegisterForm) => {

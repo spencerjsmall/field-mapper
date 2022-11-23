@@ -6,6 +6,14 @@ export type RegisterForm = {
   role: string;
 };
 
+export type UpdateForm = {
+  id: string;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+};
+
 export type AdminRegisterForm = {
   email: string;
   password: string;

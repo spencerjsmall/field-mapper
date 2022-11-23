@@ -25,6 +25,9 @@
   li {
     @apply font-space;
   }
+  Link {
+    @apply font-space;
+  }
   .min-safe-h-screen {
     /* equivalent to 100dvh in major browsers */
     min-height: calc(

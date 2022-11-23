@@ -15,6 +15,7 @@ import {
   getUserSurveys,
 } from "~/utils/user.server";
 import sf_seal from "../../public/images/sf_seal.png";
+import { useState } from "react";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const session = await requireAdminSession(request);
@@ -54,6 +55,7 @@ export default function AdminLayout() {
   } = useLoaderData();
   const location = useLocation();
   const matches = useMatches();
+  const [showMenu, setShowMenu] = useState(false);
 
   const surveyorsData = allSurveyors.map((s) => ({
     key: s.id,
@@ -114,11 +116,36 @@ export default function AdminLayout() {
           </Link>
         </div>
 
-        <form action="/auth/logout" className="justify-self-end" method="post">
-          <button type="submit">
+        <div className="dropdown dropdown-end justify-self-end">
+          <label onClick={() => setShowMenu(true)} tabIndex={0}>
             <AdminAvatars admins={[userAdmin]} />
-          </button>
-        </form>
+          </label>
+          {showMenu && (
+            <ul
+              tabIndex={0}
+              className="dropdown-content menu p-2 mt-4 shadow bg-base-100 rounded-box w-52"
+            >
+              <li>
+                <a>
+                  <Link
+                    onClick={() => setShowMenu(false)}
+                    className="text-lg"
+                    to="/admin/settings"
+                  >
+                    Settings
+                  </Link>
+                </a>
+              </li>
+              <li>
+                <form action="/auth/logout" method="post">
+                  <button type="submit" className="text-lg">
+                    Logout
+                  </button>
+                </form>
+              </li>
+            </ul>
+          )}
+        </div>
       </div>
 
       <div className="w-full max-h-full bg-ggp bg-blend-multiply bg-slate-800 bg-center h-full overflow-y-hidden z-0">

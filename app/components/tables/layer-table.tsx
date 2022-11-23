@@ -160,7 +160,10 @@ export function LayerTable({ layers, surveys, preview = false }) {
                     ))}
                   </select>
                 ) : (
-                  <Link className="text-orange-500" to="/admin/surveys/new">
+                  <Link
+                    className="hover:text-orange-500"
+                    to="/admin/surveys/new"
+                  >
                     Create a survey
                   </Link>
                 )}
