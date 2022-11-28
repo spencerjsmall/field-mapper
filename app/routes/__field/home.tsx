@@ -1,4 +1,3 @@
-import { prisma } from "~/utils/db.server";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { useLoaderData, useSubmit } from "@remix-run/react";
@@ -7,6 +6,7 @@ import {
   commitSession,
   requireUserId,
 } from "~/utils/auth.server";
+import { getSurveyorLayers } from "~/utils/user.server";
 
 export const action: ActionFunction = async ({ request }) => {
   const session = await getUserSession(request);
@@ -22,31 +22,12 @@ export const action: ActionFunction = async ({ request }) => {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
-  const userLayers = await prisma.layer.findMany({
-    where: {
-      features: {
-        some: {
-          assignment: {
-            is: {
-              assigneeId: userId,
-            },
-          },
-        },
-      },
-    },
-    include: {
-      features: {
-        include: {
-          assignment: true,
-        },
-      },
-    },
-  });
-  return { userLayers, userId };
+  const userLayers = await getSurveyorLayers(userId)
+  return { userLayers };
 };
 
 export default function HomePage() {
-  const { userLayers, userId } = useLoaderData();
+  const { userLayers } = useLoaderData();
   const submit = useSubmit();
 
   const setLayer = (layerId: number) => {
@@ -56,44 +37,35 @@ export default function HomePage() {
   return (
     <div className="w-full grow bg-ob bg-blend-multiply bg-slate-800 bg-top bg-no-repeat bg-cover bg-fixed">
       {userLayers && userLayers.length > 0 ? (
-        <ul className="justify-start py-8 h-full w-full items-center flex flex-col space-y-6">
+        <ul className="justify-start py-8 h-full w-5/6 mx-auto items-center flex flex-col space-y-6">
           {userLayers.map((layer, i) => (
-            <li className="w-full px-4 drop-shadow-lg" key={layer.id}>
+            <li
+              key={i}
+              className="stack w-full"
+              onClick={() => setLayer(layer.id)}
+            >
               <div
-                tabIndex={i}
-                onClick={() => setLayer(layer.id)}
-                className="collapse collapse-open mx-auto w-full border border-slate-700 bg-black rounded-box"
+                key={0}
+                className="text-center w-full shadow-md card border-slate-600 border hover:bg-slate-600 bg-slate-700"
               >
-                <div className="collapse-title px-4 text-white text-2xl text-center">
-                  {layer.name}
-                </div>
-                <div className="collapse-content flex flex-row justify-evenly items-center w-full">
-                  <div className="flex flex-row items-center space-x-1">
-                    <span className="font-semibold text-xl">
-                      {
-                        layer.features.filter(
-                          (f) =>
-                            f.assignment && f.assignment.assigneeId == userId
-                        ).length
-                      }
+                <div className="card-body">
+                  <h2 className="text-white"> {layer.name} </h2>
+                  <p className="text-lg">
+                    <span className="font-semibold">
+                      {layer._count.features}{" "}
                     </span>
-                    <p className="text-slate-500 text-lg">assignments</p>
-                  </div>
-                  <div className="flex flex-row items-center space-x-1">
-                    <span className="font-semibold text-xl">
-                      {
-                        layer.features.filter(
-                          (f) =>
-                            f.assignment &&
-                            f.assignment.assigneeId == userId &&
-                            f.assignment.completed
-                        ).length
-                      }
-                    </span>
-                    <p className="text-slate-500 text-lg">completed</p>
-                  </div>
+                    todo
+                  </p>
                 </div>
               </div>
+              {[...Array(layer._count.features).keys()].map((a) => (
+                <div
+                  key={a}
+                  className="text-center w-full shadow-md card border border-slate-600 bg-slate-800"
+                >
+                  <div className="card-body">{a}</div>
+                </div>
+              ))}
             </li>
           ))}
         </ul>

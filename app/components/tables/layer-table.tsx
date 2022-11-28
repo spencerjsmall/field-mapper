@@ -2,7 +2,7 @@ import { CSVLink } from "react-csv";
 import { useEffect, useRef, useState } from "react";
 import { BsGlobe, BsTrash } from "react-icons/bs";
 import { Link, useFetcher } from "@remix-run/react";
-import { AdminAvatars } from "../admin-avatars";
+import { Avatars } from "../avatars";
 
 export function LayerTable({ layers, surveys, preview = false }) {
   const [csv, setCSV] = useState({ data: null, fileName: "" });
@@ -116,11 +116,7 @@ export function LayerTable({ layers, surveys, preview = false }) {
                   </td> */}
                   <td>
                     <Link to={`/admin/layers/${layer.id}/admins`}>
-                      <AdminAvatars
-                        admins={layer.admins}
-                        id={layer.id}
-                        addAdmins
-                      />
+                      <Avatars profiles={layer.admins} add />
                     </Link>
                   </td>
                 </>

@@ -1,9 +1,9 @@
 import { Outlet, useLoaderData, useMatches, Link } from "@remix-run/react";
-import { AdminAvatars } from "~/components/admin-avatars";
 import { requireFieldSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
 import sf_seal from "../../public/images/sf_seal.png";
 import { BsArrowLeftShort } from "react-icons/bs";
+import { ProfileIcon } from "~/components/profile-icon";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const session = await requireFieldSession(request);
@@ -41,7 +41,9 @@ export default function FieldLayout() {
           />
         )}
         <h2 className="uppercase truncate mx-2">
-          {matches[2].id == "routes/__field/layers/$layerId"
+          {matches[2].pathname == "/settings"
+            ? "settings"
+            : matches[2].id == "routes/__field/layers/$layerId"
             ? matches[2].data.layer.name
             : matches[2].id == "routes/__field/home"
             ? "assignments"
@@ -49,14 +51,10 @@ export default function FieldLayout() {
             ? matches[2].data.feature.label
             : `Record #${matches[2].data.feature.id}`}
         </h2>
-        <form action="/auth/logout" method="post">
-          <button type="submit">
-            <AdminAvatars admins={[userSurveyor]} />
-          </button>
-        </form>
+        <ProfileIcon profile={userSurveyor} />
       </div>
 
-      <Outlet context={userSurveyor} />
+      <Outlet context={{ userSurveyor }} />
     </div>
   );
 }

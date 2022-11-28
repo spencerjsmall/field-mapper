@@ -131,7 +131,7 @@ export default function Login() {
   }, []);
 
   return (
-    <div className="h-screen bg-black justify-center items-center flex flex-col gap-y-4">
+    <div className="min-safe-h-screen bg-black justify-center items-center flex flex-col gap-y-4">
       {/* Form Switcher Button */}
       <button
         onClick={() => setAction(action == "login" ? "register" : "login")}

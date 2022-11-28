@@ -172,6 +172,7 @@ export default function TaskMap() {
     console.log(e.features);
     setDCoords(e.lngLat);
     if (e.features.length > 0) {
+      mapRef.current.flyTo({ center: e.lngLat });
       let feat = e.features[0];
       setAddPoint(false);
       setShowPopup(true);
@@ -253,7 +254,6 @@ export default function TaskMap() {
       ref={mapRef}
       onLoad={addNavigation}
       onMove={(e) => {
-        setShowPopup(false);
         setViewState(e.viewState);
       }}
       onZoom={(e) => {
@@ -296,23 +296,23 @@ export default function TaskMap() {
           anchor="bottom"
           onClose={() => setShowPopup(false)}
         >
-          <ul className="menu bg-slate-100 w-56 border-slate-300 border drop-shadow-md rounded-box">
+          <ul className="menu bg-slate-700 w-56 border-slate-500 border drop-shadow-md rounded-box">
             <li className="menu-title max-w-full py-2">
               <h2 className="text-xl text-orange-400">{label}</h2>
             </li>
             <li className="border-t border-slate-300" onClick={getDirections}>
-              <p className="text-lg text-slate-800">Get Directions</p>
+              <p className="text-lg text-white">Get Directions</p>
             </li>
             {!completed && assignment && hasSurvey && (
               <li
                 className="border-t border-slate-300 text-center"
                 onClick={goToSurvey}
               >
-                <p className="text-lg text-slate-800">Complete Survey</p>
+                <p className="text-lg text-white">Complete Survey</p>
               </li>
             )}
             <li className="border-t border-slate-300" onClick={goToNotes}>
-              <p className="text-lg text-slate-800">Add Notes</p>
+              <p className="text-lg text-white">Add Notes</p>
             </li>
           </ul>
         </Popup>

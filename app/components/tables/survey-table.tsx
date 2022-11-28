@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { BsTrash } from "react-icons/bs";
-import { AdminAvatars } from "../admin-avatars";
+import { Avatars } from "../avatars";
 
 export function SurveyTable({ surveys, preview = false }) {
   return (
@@ -51,11 +51,7 @@ export function SurveyTable({ surveys, preview = false }) {
                   </td>
                   <td>
                     <Link to={`/admin/surveys/${survey.id}/admins`}>
-                      <AdminAvatars
-                        admins={survey.admins}
-                        id={survey.id}
-                        addAdmins
-                      />
+                      <Avatars profiles={survey.admins} add />
                     </Link>
                   </td>
                 </>

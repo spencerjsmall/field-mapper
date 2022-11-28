@@ -72,7 +72,6 @@ export default function NewLayer() {
     name: "",
     fileName: "",
   });
-  //const [emptyLayer, setEmptyLayer] = useState(false);
 
   // 3
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,7 +196,7 @@ export default function NewLayer() {
           type="submit"
           className="rounded-xl font-space bg-black border border-slate-600 px-3 py-4 text-white transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
         >
-          Create Layer
+          {formData.features == "" ? "Create Empty Layer" : "Create Layer"}
         </button>
       </Form>
     </Modal>

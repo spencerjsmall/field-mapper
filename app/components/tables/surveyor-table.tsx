@@ -1,5 +1,5 @@
 import { AiFillCloseCircle } from "react-icons/ai";
-import { AdminAvatars } from "../admin-avatars";
+import { Avatars } from "../avatars";
 
 export function SurveyorTable({ surveyors, admin, preview = false }) {
   return (
@@ -23,7 +23,7 @@ export function SurveyorTable({ surveyors, admin, preview = false }) {
               <td>{surveyor.user.email}</td>
               {!preview && (
                 <td>
-                  <AdminAvatars admins={surveyor.admins} id={surveyor.id} />
+                  <Avatars profiles={surveyor.admins} />
                 </td>
               )}
               <td>

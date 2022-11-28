@@ -152,3 +152,41 @@ export const getUserLayers = async (id: number) => {
     },
   });
 };
+
+export const getSurveyorLayers = async (id: number) => {
+  return await prisma.layer.findMany({
+    where: {
+      features: {
+        some: {
+          assignment: {
+            is: {
+              assigneeId: id,
+            },
+          },
+        },
+      },
+    },
+    include: {
+      _count: {
+        select: {
+          features: {
+            where: {
+              AND: [
+                {
+                  assignment: {
+                    assigneeId: id,
+                  },
+                },
+                {
+                  assignment: {
+                    completed: false,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  });
+};
