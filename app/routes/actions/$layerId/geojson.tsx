@@ -36,7 +36,7 @@ export async function loader({ request, params }) {
       geometry: f.geojson.geometry,
       properties: {
         ...f.geojson.properties,
-        surveyId: f.assignment?.survey.name,
+        surveyId: f.assignment?.survey?.name,
         surveyor: f.assignment?.assignee?.user.email,
         completedAt: f.assignment?.completedAt,
         ...f.assignment?.results,

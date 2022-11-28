@@ -37,7 +37,7 @@ export async function loader({ request, params }) {
     ...f.geojson?.geometry,
     ...f.geojson?.properties,
     completedAt: f.assignment?.completedAt,
-    survey: f.assignment?.survey.name,
+    survey: f.assignment?.survey?.name,
     assignee: f.assignment?.assignee?.user.email,
     ...f.assignment?.results,
   }));
