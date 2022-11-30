@@ -41,8 +41,8 @@
     "react-map-gl": "^7.0.19",
     "react-search-box": "^2.3.0",
     "redux": "4.2.0",
-    "survey-creator-react": "1.9.52",
-    "survey-react-ui": "1.9.52"
+    "survey-creator-react": "1.9.60",
+    "survey-react-ui": "1.9.60"
   },
   "devDependencies": {
     "@remix-run/dev": "1.7.2",
@@ -67,7 +67,8 @@
     "node": ">=16"
   },
   "resolutions": {
-    "survey-creator-core@1.9.47": "patch:survey-creator-core@npm%3A1.9.47#./.yarn/patches/survey-creator-core-npm-1.9.47-6d1e00a785.patch",
-    "@mapbox/mapbox-gl-directions@^4.1.0": "patch:@mapbox/mapbox-gl-directions@npm%3A4.1.0#./.yarn/patches/@mapbox-mapbox-gl-directions-npm-4.1.0-e1fe04d14c.patch"
+    "@mapbox/mapbox-gl-directions@^4.1.0": "patch:@mapbox/mapbox-gl-directions@npm%3A4.1.0#./.yarn/patches/@mapbox-mapbox-gl-directions-npm-4.1.0-e1fe04d14c.patch",
+    "survey-core": "1.9.60",
+    "survey-creator-core@1.9.60": "patch:survey-creator-core@npm%3A1.9.60#./.yarn/patches/survey-creator-core-npm-1.9.60-6afa5950a5.patch"
   }
 }
