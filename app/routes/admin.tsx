@@ -75,6 +75,7 @@ export default function AdminLayout() {
 
           <h1 className="uppercase hidden lg:inline">
             {matches[2].id == "routes/admin/layers.$layerId" &&
+            matches[2].data &&
             matches[2].data.layer
               ? matches[2].data.layer.name
               : "Field Mapper"}

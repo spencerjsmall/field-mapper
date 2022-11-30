@@ -1,6 +1,7 @@
 import { redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useCatch, useLoaderData, useParams } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { ErrorMessage } from "~/components/error-message";
 import { prisma } from "~/utils/db.server";
 
 export async function action({ request, params }) {
@@ -24,6 +25,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     where: { id: assnId },
     include: { feature: true },
   });
+  if (!assn) {
+    throw new Response("Assignment not found.", {
+      status: 404,
+    });
+  }
   return assn;
 };
 
@@ -51,4 +57,17 @@ export default function AssignmentNotes() {
       </button>
     </form>
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+  const params = useParams();
+  if (caught.status === 404) {
+    return (
+      <ErrorMessage
+        message={`Could not find assignment ${params.assignmentId}`}
+      />
+    );
+  }
+  throw new Error(`Unhandled error: ${caught.status}`);
 }

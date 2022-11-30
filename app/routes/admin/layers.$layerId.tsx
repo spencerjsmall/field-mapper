@@ -1,7 +1,14 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { prisma } from "~/utils/db.server";
 import { json, LoaderArgs } from "@remix-run/node";
-import { useLoaderData, useOutletContext, useFetcher } from "@remix-run/react";
+import {
+  useLoaderData,
+  useOutletContext,
+  useFetcher,
+  useCatch,
+  useParams,
+  Link,
+} from "@remix-run/react";
 
 import Map, { Source, Layer } from "react-map-gl";
 import { commitSession, getSession } from "~/utils/auth.server";
@@ -17,6 +24,7 @@ import {
 import crosshairs from "../../../public/images/crosshairs.svg";
 import { AssignmentSelect } from "~/components/selectors/assignment-selector";
 import { MapSettings } from "~/components/selectors/map-settings";
+import { ErrorMessage } from "~/components/error-message";
 
 export function links() {
   return [
@@ -30,7 +38,7 @@ export function links() {
 
 export const loader = async ({ request, params }: LoaderArgs) => {
   const layerId = params.layerId;
-  const layer = await prisma.layer.findUniqueOrThrow({
+  const layer = await prisma.layer.findUnique({
     where: { id: parseInt(layerId) },
     include: {
       features: {
@@ -42,6 +50,11 @@ export const loader = async ({ request, params }: LoaderArgs) => {
       },
     },
   });
+  if (!layer) {
+    throw new Response("Layer not found.", {
+      status: 404,
+    });
+  }
   const session = await getSession(request.headers.get("Cookie"));
   session.set("layerId", layerId);
   const token = process.env.MAPBOX_ACCESS_TOKEN;
@@ -285,4 +298,13 @@ export default function AdminTaskMap() {
       </div>
     </div>
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+  const params = useParams();
+  if (caught.status === 404) {
+    return <ErrorMessage message={`Could not find layer ${params.layerId}`} />;
+  }
+  throw new Error(`Unhandled error: ${caught.status}`);
 }

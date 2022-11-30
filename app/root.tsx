@@ -1,5 +1,6 @@
 import type { MetaFunction, LinksFunction } from "@remix-run/node";
 import {
+  Link,
   Links,
   LiveReload,
   Meta,
@@ -9,6 +10,8 @@ import {
 } from "@remix-run/react";
 
 import styles from "./styles/app.css";
+import { TbCompassOff } from "react-icons/tb";
+import { ErrorMessage } from "./components/error-message";
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -40,6 +43,25 @@ export default function App() {
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
+      </body>
+    </html>
+  );
+}
+
+export function ErrorBoundary({ error }) {
+  console.error(error);
+  return (
+    <html>
+      <head>
+        <title>Application Error</title>
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <div className="min-safe-h-screen w-screen bg-black flex flex-col items-center justify-center">
+          <ErrorMessage />
+        </div>
+        <Scripts />
       </body>
     </html>
   );

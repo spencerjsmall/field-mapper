@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useCatch, useLoaderData, useParams } from "@remix-run/react";
 
 import d_styles from "survey-core/defaultV2.min.css";
 import c_styles from "survey-creator-core/survey-creator-core.min.css";
@@ -8,6 +8,7 @@ import c_styles from "survey-creator-core/survey-creator-core.min.css";
 import { SurveyCreator, SurveyCreatorComponent } from "survey-creator-react";
 import { useOutletContext, useSubmit } from "@remix-run/react";
 import { prisma } from "~/utils/db.server";
+import { ErrorMessage } from "~/components/error-message";
 
 export function links() {
   return [
@@ -17,9 +18,7 @@ export function links() {
 }
 
 export const action: ActionFunction = async ({ request }) => {
-  const { surveyData, surveyId } = Object.fromEntries(
-    await request.formData()
-  );
+  const { surveyData, surveyId } = Object.fromEntries(await request.formData());
   const surveyJson = JSON.parse(JSON.parse(surveyData));
   await prisma.survey.update({
     where: {
@@ -34,16 +33,21 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const survey = await prisma.survey.findUniqueOrThrow({
+  const survey = await prisma.survey.findUnique({
     where: {
       id: parseInt(params.surveyId),
     },
   });
+  if (!survey) {
+    throw new Response("Survey not found.", {
+      status: 404,
+    });
+  }
   return survey;
 };
 
 export default function SurveyCreatorWidget() {
-  const survey = useLoaderData();  
+  const survey = useLoaderData();
   const submit = useSubmit();
   const userId = useOutletContext();
   const [creator, setCreator] = useState<SurveyCreator>();
@@ -81,7 +85,7 @@ export default function SurveyCreatorWidget() {
     );
     creatorObj.JSON = survey.json;
     creatorObj.saveSurveyFunc = (saveNo, callback) => {
-      window.localStorage.setItem("survey-json", creatorObj.text);      
+      window.localStorage.setItem("survey-json", creatorObj.text);
       callback(saveNo, true);
     };
     setCreator(creatorObj);
@@ -91,4 +95,15 @@ export default function SurveyCreatorWidget() {
   } else {
     return <h1>error</h1>;
   }
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+  const params = useParams();
+  if (caught.status === 404) {
+    return (
+      <ErrorMessage message={`Could not find survey ${params.surveyId}`} />
+    );
+  }
+  throw new Error(`Unhandled error: ${caught.status}`);
 }

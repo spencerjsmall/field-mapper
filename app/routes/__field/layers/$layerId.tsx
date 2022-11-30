@@ -1,7 +1,13 @@
 import { useState, useCallback, useRef } from "react";
 import type { LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { useLoaderData, useSubmit, useFetcher } from "@remix-run/react";
+import {
+  useLoaderData,
+  useSubmit,
+  useFetcher,
+  useCatch,
+  useParams,
+} from "@remix-run/react";
 
 import Map, { Source, Layer, Popup, GeolocateControl } from "react-map-gl";
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
@@ -16,6 +22,7 @@ import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { getUserSession, commitSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
 import { BasemapSelector } from "~/components/selectors/basemap-selector";
+import { ErrorMessage } from "~/components/error-message";
 
 export function links() {
   return [
@@ -53,9 +60,14 @@ export const loader = async ({ request, params }: LoaderArgs) => {
   const userId = session.get("userId");
   const savedState = session.get("viewState");
   const layerId = params.layerId;
-  const layer = await prisma.layer.findUniqueOrThrow({
+  const layer = await prisma.layer.findUnique({
     where: { id: parseInt(layerId) },
   });
+  if (!layer) {
+    throw new Response("Layer not found.", {
+      status: 404,
+    });
+  }
   const assignments = await prisma.assignment.findMany({
     where: {
       feature: {
@@ -348,4 +360,13 @@ export default function TaskMap() {
       </div>
     </Map>
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+  const params = useParams();
+  if (caught.status === 404) {
+    return <ErrorMessage message={`Could not find layer ${params.layerId}`} />;
+  }
+  throw new Error(`Unhandled error: ${caught.status}`);
 }

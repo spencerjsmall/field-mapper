@@ -1,6 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import type { LoaderFunction } from "@remix-run/node";
-import { useCatch, useLoaderData, useSubmit } from "@remix-run/react";
+import {
+  useCatch,
+  useLoaderData,
+  useParams,
+  useSubmit,
+} from "@remix-run/react";
 import { redirect } from "@remix-run/node";
 
 import * as Survey from "survey-core";
@@ -9,6 +14,7 @@ import type { SurveyModel } from "survey-core";
 import styles from "survey-core/defaultV2.css";
 import { prisma } from "~/utils/db.server";
 import { requireUserId } from "~/utils/auth.server";
+import { ErrorMessage } from "~/components/error-message";
 
 export function links() {
   return [{ rel: "stylesheet", href: styles }];
@@ -18,10 +24,15 @@ Survey.StylesManager.applyTheme("defaultV2");
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const assnId = parseInt(params.assignmentId);
-  const assn = await prisma.assignment.findUniqueOrThrow({
+  const assn = await prisma.assignment.findUnique({
     where: { id: assnId },
     include: { survey: true, feature: true },
   });
+  if (!assn) {
+    throw new Response("Assignment not found.", {
+      status: 404,
+    });
+  }
   return assn;
 };
 
@@ -29,7 +40,7 @@ export async function action({ request, params }) {
   const assnId = parseInt(params.assignmentId);
   const userId = await requireUserId(request);
   const layerId = params.layerId;
-  const { results } = Object.fromEntries(await request.formData());  
+  const { results } = Object.fromEntries(await request.formData());
   await prisma.assignment.update({
     where: {
       id: assnId,
@@ -96,18 +107,15 @@ export default function SurveyPage() {
   } else return <h1>error</h1>;
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  console.error(error);
-
-  return <div>An unexpected error occurred: {error.message}</div>;
-}
-
 export function CatchBoundary() {
   const caught = useCatch();
-
+  const params = useParams();
   if (caught.status === 404) {
-    return <div>Note not found</div>;
+    return (
+      <ErrorMessage
+        message={`Could not find assignment ${params.assignmentId}`}
+      />
+    );
   }
-
-  throw new Error(`Unexpected caught response with status: ${caught.status}`);
+  throw new Error(`Unhandled error: ${caught.status}`);
 }

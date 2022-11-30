@@ -1,4 +1,10 @@
-import { Outlet, useLoaderData, useMatches, Link } from "@remix-run/react";
+import {
+  Outlet,
+  useLoaderData,
+  useMatches,
+  Link,
+  useNavigate,
+} from "@remix-run/react";
 import { requireFieldSession } from "~/utils/auth.server";
 import { prisma } from "~/utils/db.server";
 import sf_seal from "../../public/images/sf_seal.png";
@@ -18,21 +24,15 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export default function FieldLayout() {
   const { userSurveyor } = useLoaderData();
   const matches = useMatches();
+  const navigate = useNavigate();
 
   return (
     <div className="min-safe-h-screen w-screen flex flex-col">
       <div className="flex flex-row bg-black items-center border-b border-slate-600 sticky top-0 z-50 justify-between text-white text-2xl py-3 px-4">
         {matches[2].id != "routes/__field/home" ? (
-          <Link
-            to={
-              matches[2].id == "routes/__field/layers/$layerId"
-                ? "/home"
-                : `/layers/${matches[2].params.layerId}`
-            }
-            className="text-3xl"
-          >
+          <div onClick={() => navigate(-1)} className="text-3xl">
             <BsArrowLeftShort />
-          </Link>
+          </div>
         ) : (
           <img
             src={sf_seal}
@@ -43,11 +43,14 @@ export default function FieldLayout() {
         <h2 className="uppercase truncate mx-2">
           {matches[2].pathname == "/settings"
             ? "settings"
-            : matches[2].id == "routes/__field/layers/$layerId"
+            : !matches[2].data
+            ? "error"
+            : matches[2].id == "routes/__field/layers/$layerId" &&
+              matches[2].data.layer
             ? matches[2].data.layer.name
             : matches[2].id == "routes/__field/home"
             ? "assignments"
-            : matches[2].data.feature.label
+            : matches[2].data.feature && matches[2].data.feature.label
             ? matches[2].data.feature.label
             : `Record #${matches[2].data.feature.id}`}
         </h2>
