@@ -1,6 +1,9 @@
 # SFGIS Field Mapper
 
-[![Field Mapper Demo]({https://user-images.githubusercontent.com/61337412/204908062-e4cddfdc-a5f2-463d-b87f-09f33d11a2fa.png})]({https://www.loom.com/share/02d1c86fb5064a2485b258a7eeafb9f3} "Field Mapper Demo")
+Click below to watch demo:
+
+[![FM_thumbnail](https://user-images.githubusercontent.com/61337412/204908726-bb3ba6fc-53a4-4bb1-9f92-03e5f3abe7dd.png)](https://www.loom.com/share/02d1c86fb5064a2485b258a7eeafb9f3)
+
 
 ## Development
 
