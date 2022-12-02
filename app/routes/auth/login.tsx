@@ -13,11 +13,17 @@ import {
   redirect,
 } from "@remix-run/node";
 import { login, register, getUser } from "~/utils/auth.server";
-import { useActionData } from "@remix-run/react";
+import { useActionData, useLoaderData } from "@remix-run/react";
 
 export const loader: LoaderFunction = async ({ request }) => {
   // If there's already a user in the session, redirect to the home page
-  return (await getUser(request)) ? redirect("/home") : null;
+  const user = await getUser(request);
+  if (user) {
+    return redirect("/home");
+  }
+  const url = new URL(request.url);
+  const action = url.searchParams.get("action");
+  return action === "register" ? "register" : "login";
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -85,8 +91,9 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function Login() {
   const actionData = useActionData();
+  const loaderAction = useLoaderData();
   const firstLoad = useRef(true);
-  const [action, setAction] = useState("login");
+  const [action, setAction] = useState(loaderAction);
   const [errors, setErrors] = useState(actionData?.errors || {});
   const [formError, setFormError] = useState(actionData?.error || "");
   const [formData, setFormData] = useState({
