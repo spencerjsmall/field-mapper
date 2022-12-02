@@ -13,7 +13,8 @@ import {
   redirect,
 } from "@remix-run/node";
 import { login, register, getUser } from "~/utils/auth.server";
-import { useActionData, useLoaderData } from "@remix-run/react";
+import { Link, useActionData, useLoaderData } from "@remix-run/react";
+import { BsArrowLeftShort } from "react-icons/bs";
 
 export const loader: LoaderFunction = async ({ request }) => {
   // If there's already a user in the session, redirect to the home page
@@ -140,9 +141,12 @@ export default function Login() {
   return (
     <div className="min-safe-h-screen bg-black justify-center items-center flex flex-col gap-y-4">
       {/* Form Switcher Button */}
+      <Link to="/" className="text-5xl absolute top-8 left-8">
+        <BsArrowLeftShort />
+      </Link>
       <button
         onClick={() => setAction(action == "login" ? "register" : "login")}
-        className="absolute top-8 right-8 text-slate-200  transition duration-300 ease-in-out btn btn-ghost"
+        className="absolute text-lg top-8 right-8 text-slate-200  transition duration-300 ease-in-out btn btn-ghost"
       >
         {action === "login" ? "Sign Up" : "Sign In"}
       </button>
@@ -194,30 +198,35 @@ export default function Login() {
               value={formData.lastName}
               error={errors?.lastName}
             />
-            <span className="font-space text-white">Sign up as a...</span>
-            <div className="form-control">
-              <label className="label cursor-pointer">
-                <span className="label-text font-space text-red">Surveyor</span>
-                <input
-                  type="radio"
-                  name="role"
-                  value="SURVEYOR"
-                  className="radio checked:bg-red-500"
-                  checked
-                />
-              </label>
-            </div>
-            <div className="form-control">
-              <label className="label cursor-pointer">
-                <span className="label-text font-space text-red">Admin</span>
-                <input
-                  type="radio"
-                  name="role"
-                  value="ADMIN"
-                  className="radio checked:bg-red-500"
-                  checked
-                />
-              </label>
+            <div className='flex flex-row justify-evenly my-4'>
+              <div className="form-control">
+                <label className="label flex-row space-x-2 justify-start cursor-pointer">
+                  <span className="label-text font-space font-semibold text-lg text-white">
+                    Surveyor
+                  </span>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="SURVEYOR"
+                    className="radio checked:bg-blue-500"
+                    checked
+                  />
+                </label>
+              </div>
+              <div className="form-control">
+                <label className="label flex flex-row space-x-2 justify-start cursor-pointer">
+                  <span className="label-text font-space font-semibold text-lg text-white">
+                    Admin
+                  </span>
+                  <input
+                    type="radio"
+                    name="role"
+                    value="ADMIN"
+                    className="radio checked:bg-red-500"
+                    checked
+                  />
+                </label>
+              </div>
             </div>
           </>
         )}
