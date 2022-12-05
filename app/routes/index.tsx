@@ -49,7 +49,7 @@ export default function LandingPage() {
                 <AiFillGithub />
               </a>
               <p className="text-xl hidden sm:block ml-1 text-slate-500 pb-1">
-                by SFIGS{" "}
+                by SFGIS{" "}
               </p>
             </div>
             <p className="xl:text-2xl text-center md:text-left text-lg sm:text-xl text-slate-400 tracking-wide">
