@@ -170,7 +170,7 @@ export default function AdminTaskMap() {
   };
 
   return (
-    <div className="drawer drawer-end">
+    <div className="drawer max-h-full h-full drawer-end">
       <input
         id="sidebar"
         type="checkbox"
@@ -284,7 +284,7 @@ export default function AdminTaskMap() {
           </Map>
         </div>
       </div>
-      <div className="drawer-side">
+      <div className="drawer-side max-h-full h-full">
         <label
           htmlFor="sidebar"
           className="drawer-overlay opacity-0 pointer-events-none"
