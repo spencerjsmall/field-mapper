@@ -15,14 +15,14 @@ export function BasemapSelector({ basemap, changeStyle }) {
         </button>
       </label>
       {showOptions && (
-        <ul className="dropdown-content ml-4 menu p-2 shadow bg-white rounded-box w-52">
+        <ul className="dropdown-content ml-4 menu p-2 shadow bg-slate-700 bborder border-slate-500 rounded-box w-52">
           <li tabIndex={1}>
             <div
               onClick={() => {
                 setShowOptions(false);
                 changeStyle("satellite");
               }}
-              className={clsx("p2 font-sans", {
+              className={clsx("p2 font-sans text-lg", {
                 active: basemap == "satellite",
               })}
             >
@@ -35,7 +35,7 @@ export function BasemapSelector({ basemap, changeStyle }) {
                 setShowOptions(false);
                 changeStyle("streets-v11");
               }}
-              className={clsx("p2 font-sans", {
+              className={clsx("p2 font-sans text-lg", {
                 active: basemap == "streets-v11",
               })}
             >
@@ -48,7 +48,7 @@ export function BasemapSelector({ basemap, changeStyle }) {
                 setShowOptions(false);
                 changeStyle("outdoors-v11");
               }}
-              className={clsx("p2 font-sans", {
+              className={clsx("p2 font-sans text-lg", {
                 active: basemap == "outdoors-v11",
               })}
             >
@@ -61,7 +61,7 @@ export function BasemapSelector({ basemap, changeStyle }) {
                 setShowOptions(false);
                 changeStyle("dark-v10");
               }}
-              className={clsx("p2 font-sans", {
+              className={clsx("p2 font-sans text-lg", {
                 active: basemap == "dark-v10",
               })}
             >

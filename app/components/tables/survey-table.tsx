@@ -4,7 +4,7 @@ import { Avatars } from "../avatars";
 
 export function SurveyTable({ surveys, preview = false }) {
   return (
-    <div className="overflow-x-auto drop-shadow-lg border border-slate-700 rounded-lg">
+    <div className="drop-shadow-lg overflow-x-hidden overflow-y-hidden border border-slate-700 rounded-lg">
       <table className="table w-full">
         <thead>
           <tr>

@@ -36,11 +36,11 @@ export default function FieldLayout() {
         ) : (
           <img
             src={sf_seal}
-            className="w-8"
+            className="w-12"
             alt="City and County of San Francico"
           />
         )}
-        <h2 className="uppercase truncate mx-2">
+        <h2 className="uppercase font-semibold truncate mx-2">
           {matches[2].pathname == "/settings"
             ? "settings"
             : !matches[2].data
