@@ -8,12 +8,21 @@ import type {
 import { prisma } from "./db.server";
 import { createSurveyor, createUser, updateUser } from "./user.server";
 import bcrypt from "bcryptjs";
+import { SMTPClient } from "emailjs";
 import type { User } from "@prisma/client";
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
   throw new Error("SESSION_SECRET must be set");
 }
+
+const emailClient = new SMTPClient({
+  user: process.env.EMAIL_USER,
+  password: process.env.EMAIL_PASSWORD,
+  host: process.env.SMTP_HOST,
+  ssl: process.env.SMTP_REQUIRES_SSL == "true",
+  port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : undefined,
+});
 
 export const { getSession, commitSession, destroySession } =
   createCookieSessionStorage({
@@ -97,6 +106,42 @@ export async function login({ email, password }: LoginForm) {
     return json({ error: `Incorrect login` }, { status: 400 });
 
   return createUserSession(user, "/");
+}
+
+export async function forgot({ email }) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user)
+    return json(
+      { error: `No account exists with this email` },
+      { status: 400 }
+    );
+
+  var chars =
+    "0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  var passwordLength = 8;
+  var temp = "";
+
+  for (var i = 0; i <= passwordLength; i++) {
+    var randomNumber = Math.floor(Math.random() * chars.length);
+    temp += chars.substring(randomNumber, randomNumber + 1);
+  }
+
+  emailClient.send(
+    {
+      text: `Your temporary password is: ${temp}`,
+      from: "Field Mapper <sfgis.fieldmapper@gmail.com>",
+      to: `${user.firstName} ${user.lastName} <${user.email}>`,
+      subject: "Reset Password",
+    },
+    (err, message) => {
+      console.log(err || message);
+    }
+  );
+
+  return await updateUser({ id: String(user.id), password: temp });
 }
 
 export async function createUserSession(user: User, redirectTo: string) {

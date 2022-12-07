@@ -30,6 +30,7 @@
     "bcryptjs": "^2.4.3",
     "clsx": "^1.2.1",
     "daisyui": "^2.36.1",
+    "emailjs": "^4.0.1",
     "lodash": "^4.17.21",
     "mapbox-gl": "^2.10.0",
     "node-sass": "^7.0.3",

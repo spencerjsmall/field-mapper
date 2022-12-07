@@ -28,7 +28,9 @@ export const createUser = async (user: RegisterForm) => {
 
 export const updateUser = async (user: UpdateForm) => {
   const passwordHash =
-    user.password == "" ? undefined : await bcrypt.hash(user.password, 10);
+    user.password == undefined || user.password == ""
+      ? undefined
+      : await bcrypt.hash(user.password, 10);
   const updatedUser = await prisma.user.update({
     where: { id: parseInt(user.id) },
     data: {
