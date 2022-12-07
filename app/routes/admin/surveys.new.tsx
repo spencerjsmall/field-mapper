@@ -9,7 +9,7 @@ import {
   SurveyCreatorComponent,
   SurveyQuestionEditorDefinition,
 } from "survey-creator-react";
-import { useSubmit } from "@remix-run/react";
+import { useLoaderData, useSubmit } from "@remix-run/react";
 import { prisma } from "~/utils/db.server";
 import { getUserId } from "~/utils/auth.server";
 
@@ -19,6 +19,11 @@ export function links() {
     { rel: "stylesheet", href: c_styles },
   ];
 }
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const licensed = process.env.SURVEYJS_LICENSED;
+  return licensed;
+};
 
 export const action: ActionFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -36,11 +41,13 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function SurveyCreatorWidget() {
   const submit = useSubmit();
+  const licensed = useLoaderData();  
   const [creator, setCreator] = useState<SurveyCreator>();
 
   const creatorOptions = {
     showLogicTab: true,
     isAutoSave: true,
+    haveCommercialLicense: licensed,
   };
 
   const completePlugin = {

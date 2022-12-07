@@ -3,12 +3,15 @@ import _ from "lodash";
 import clsx from "clsx";
 
 export function AssignmentSelect({ layer, features, surveys, surveyors }) {
+  const incomplete = features.filter(
+    (f) => !f.assignment || !f.assignment.completed
+  );
   const fetcher = useFetcher();
   return (
     <div className="max-h-full h-full max-w-md w-screen border-l border-slate-400 bg-ggp bg-blend-multiply bg-slate-800 bg-center p-4">
       {features && features.length > 0 ? (
         <ul className="justify-center items-center w-full flex flex-col space-y-2">
-          {features.length > 1 && (
+          {incomplete && incomplete.length > 1 && (
             <li key={0} className="w-full">
               <div
                 tabIndex={0}
@@ -16,7 +19,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
               >
                 <input type="checkbox" />
                 <div className="collapse-title text-center font-sans text-white text-xl font-medium">
-                  Update {features.length} records
+                  Update {incomplete.length} records
                 </div>
                 <div className="collapse-content text-slate-200 w-full">
                   <table className="table w-full">
@@ -35,7 +38,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               fetcher.submit(
                                 {
                                   featureIds: JSON.stringify(
-                                    features.map((f) => f.id)
+                                    incomplete.map((f) => f.id)
                                   ),
                                   assigneeId: e.target.value,
                                 },
@@ -48,12 +51,12 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                           >
                             <option
                               selected={
-                                !features.every(
+                                !incomplete.every(
                                   (f) =>
                                     f.assignment &&
-                                    features[0].assignment &&
+                                    incomplete[0].assignment &&
                                     f.assignment.assigneeId ==
-                                      features[0].assignment.assigneeId
+                                      incomplete[0].assignment.assigneeId
                                 )
                               }
                             >
@@ -64,7 +67,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               surveyors.map((surveyor, i) => (
                                 <option
                                   key={i}
-                                  selected={features.every(
+                                  selected={incomplete.every(
                                     (f) =>
                                       f.assignment &&
                                       f.assignment.assigneeId == surveyor.id
@@ -88,7 +91,7 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               fetcher.submit(
                                 {
                                   featureIds: JSON.stringify(
-                                    features.map((f) => f.id)
+                                    incomplete.map((f) => f.id)
                                   ),
                                   surveyId: e.target.value,
                                 },
@@ -101,12 +104,12 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                           >
                             <option
                               selected={
-                                !features.every(
+                                !incomplete.every(
                                   (f) =>
                                     f.assignment &&
-                                    features[0].assignment &&
+                                    incomplete[0].assignment &&
                                     f.assignment.surveyId ==
-                                      features[0].assignment.surveyId
+                                      incomplete[0].assignment.surveyId
                                 )
                               }
                             >
@@ -118,12 +121,12 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                                 <option
                                   key={i}
                                   selected={
-                                    features.every(
+                                    incomplete.every(
                                       (f) =>
                                         f.assignment &&
                                         f.assignment.surveyId == survey.id
                                     ) ||
-                                    features.every(
+                                    incomplete.every(
                                       (f) =>
                                         !f.assignment &&
                                         layer.defaultSurveyId == survey.id
@@ -147,7 +150,15 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
             <li key={feature.id} className="w-full">
               <div
                 tabIndex={feature.id}
-                className="collapse collapse-arrow border border-slate-700 bg-slate-800 rounded-box w-full"
+                className={clsx(
+                  "collapse collapse-arrow border rounded-box w-full",
+                  {
+                    "bg-green-900 border-green-800":
+                      feature.assignment && feature.assignment.completed,
+                    "border-slate-700 bg-slate-800":
+                      !feature.assignment || !feature.assignment.completed,
+                  }
+                )}
               >
                 <input type="checkbox" />
                 <div className="collapse-title font-sans text-center text-xl text-white font-medium w-full">
@@ -158,22 +169,36 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                     <table className="table drop-shadow-md table-compact w-full">
                       <tbody>
                         <tr>
-                          <th className="bg-slate-800">Assignment</th>
-                          <th className="bg-slate-800"></th>
+                          <th
+                            className={
+                              feature.assignment && feature.assignment.completed
+                                ? "bg-green-900 text-gray-300"
+                                : "bg-slate-800"
+                            }
+                          >
+                            Assignment
+                          </th>
+                          <th
+                            className={
+                              feature.assignment && feature.assignment.completed
+                                ? "bg-green-900"
+                                : "bg-slate-800"
+                            }
+                          ></th>
                         </tr>
                         {feature.assignment && feature.assignment.completed ? (
                           <>
                             <tr>
-                              <th className="bg-slate-600">Surveyor</th>
-                              <th className="bg-slate-700">
+                              <th className="bg-gray-800 text-gray-300">Surveyor</th>
+                              <th className="bg-gray-900 text-gray-300">
                                 {feature.assignment.assignee
                                   ? `${feature.assignment.assignee.user.firstName} ${feature.assignment.assignee.user.lastName}`
                                   : "None"}
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-slate-600">Survey</th>
-                              <th className="bg-slate-700">
+                              <th className="bg-gray-800 text-gray-300">Survey</th>
+                              <th className="bg-gray-900 text-gray-300">
                                 {
                                   surveys.filter(
                                     (s) => s.id == feature.assignment.surveyId
@@ -182,8 +207,8 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-slate-600">Completed</th>
-                              <th className="bg-slate-700">
+                              <th className="bg-gray-800 text-gray-300">Completed</th>
+                              <th className="bg-gray-900 text-gray-300">
                                 {new Date(
                                   feature.assignment.completedAt
                                 ).toDateString()}
@@ -192,8 +217,8 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
 
                             {feature.assignment.notes && (
                               <tr>
-                                <th className="bg-slate-600">Notes</th>
-                                <th className="bg-slate-700">
+                                <th className="bg-gray-800 text-gray-300">Notes</th>
+                                <th className="bg-gray-900 text-gray-300">
                                   {feature.assignment.notes}
                                 </th>
                               </tr>
@@ -202,16 +227,16 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                             {feature.assignment.results ? (
                               <>
                                 <tr>
-                                  <th className="bg-slate-800">Results</th>
-                                  <th className="bg-slate-800"></th>
+                                  <th className="bg-green-900 text-gray-300">Results</th>
+                                  <th className="bg-green-900"></th>
                                 </tr>
                                 {Object.entries(feature.assignment.results).map(
                                   ([key, value], i) => (
                                     <tr key={i}>
-                                      <th className="bg-slate-600" key={i}>
+                                      <th className="bg-gray-800 text-gray-300" key={i}>
                                         {key}
                                       </th>
-                                      <th className="bg-slate-700" key={i}>
+                                      <th className="bg-gray-900 text-gray-300" key={i}>
                                         {typeof value == "object"
                                           ? JSON.stringify(value)
                                           : value}
@@ -365,16 +390,48 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                         {Object.keys(feature.geojson.properties).length > 0 ? (
                           <>
                             <tr>
-                              <th className="bg-slate-800">Feature</th>
-                              <th className="bg-slate-800"></th>
+                              <th
+                                className={
+                                  feature.assignment &&
+                                  feature.assignment.completed
+                                    ? "bg-green-900 text-gray-300"
+                                    : "bg-slate-800"
+                                }
+                              >
+                                Feature
+                              </th>
+                              <th
+                                className={
+                                  feature.assignment &&
+                                  feature.assignment.completed
+                                    ? "bg-green-900 text-gray-300"
+                                    : "bg-slate-800"
+                                }
+                              ></th>
                             </tr>
                             {Object.entries(feature.geojson.properties).map(
                               ([key, value], i) => (
                                 <tr key={i}>
-                                  <th className="bg-slate-600" key={i}>
+                                  <th
+                                    className={
+                                      feature.assignment &&
+                                      feature.assignment.completed
+                                        ? "bg-gray-800 text-gray-300"
+                                        : "bg-slate-600"
+                                    }
+                                    key={i}
+                                  >
                                     {key}
                                   </th>
-                                  <th className="bg-slate-700" key={i}>
+                                  <th
+                                    className={
+                                      feature.assignment &&
+                                      feature.assignment.completed
+                                        ? "bg-gray-900 text-gray-300"
+                                        : "bg-slate-700"
+                                    }
+                                    key={i}
+                                  >
                                     {value}
                                   </th>
                                 </tr>
