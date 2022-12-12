@@ -18,9 +18,15 @@ export function links() {
 }
 
 export const action: ActionFunction = async ({ request }) => {
-  const { surveyData, surveyId } = Object.fromEntries(await request.formData());
+  const form = await request.formData();
+  const action = form.get("action");
+  if (action == "redirect") {
+    return redirect("/admin/surveys");
+  }
+  const surveyData = form.get("surveyData");
+  const surveyId = form.get("surveyId");
   const surveyJson = JSON.parse(JSON.parse(surveyData));
-  await prisma.survey.update({
+  const updatedSurvey = await prisma.survey.update({
     where: {
       id: parseInt(surveyId),
     },
@@ -29,10 +35,11 @@ export const action: ActionFunction = async ({ request }) => {
       json: surveyJson,
     },
   });
-  return redirect("/admin/surveys");
+  return updatedSurvey;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  const licensed = process.env.SURVEYJS_LICENSED;
   const survey = await prisma.survey.findUnique({
     where: {
       id: parseInt(params.surveyId),
@@ -43,28 +50,25 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       status: 404,
     });
   }
-  return survey;
+  return { survey, licensed };
 };
 
 export default function SurveyCreatorWidget() {
-  const survey = useLoaderData();
+  const { survey, licensed } = useLoaderData();
   const submit = useSubmit();
-  const userId = useOutletContext();
   const [creator, setCreator] = useState<SurveyCreator>();
 
   const creatorOptions = {
     showLogicTab: true,
     isAutoSave: true,
+    haveCommercialLicense: licensed === "true",
   };
 
-  const completePlugin = {
+  const donePlugin = {
     activate: () => {
-      const newSurvey = window.localStorage.getItem("survey-json");
       submit(
         {
-          surveyData: JSON.stringify(newSurvey),
-          surveyId: survey.id,
-          userId: userId,
+          action: "redirect",
         },
         { method: "post" }
       );
@@ -76,16 +80,16 @@ export default function SurveyCreatorWidget() {
 
   useEffect(() => {
     var creatorObj = new SurveyCreator(creatorOptions);
-    creatorObj.addPluginTab(
-      "complete",
-      completePlugin,
-      "Complete",
-      "svc-tab-template",
-      4
-    );
+    creatorObj.addPluginTab("done", donePlugin, "Done", "svc-tab-template", 4);
     creatorObj.JSON = survey.json;
     creatorObj.saveSurveyFunc = (saveNo, callback) => {
-      window.localStorage.setItem("survey-json", creatorObj.text);
+      submit(
+        {
+          surveyData: JSON.stringify(creatorObj.text),
+          surveyId: survey.id,
+        },
+        { method: "post" }
+      );
       callback(saveNo, true);
     };
     setCreator(creatorObj);
