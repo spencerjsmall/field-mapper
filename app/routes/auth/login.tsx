@@ -12,7 +12,7 @@ import {
   LoaderFunction,
   redirect,
 } from "@remix-run/node";
-import { login, register, getUser } from "~/utils/auth.server";
+import { login, register, forgot, getUser } from "~/utils/auth.server";
 import { Link, useActionData, useLoaderData } from "@remix-run/react";
 import { BsArrowLeftShort } from "react-icons/bs";
 
@@ -37,31 +37,33 @@ export const action: ActionFunction = async ({ request }) => {
   let lastName = form.get("lastName");
 
   // If not all data was passed, error
-  if (
-    typeof action !== "string" ||
-    typeof email !== "string" ||
-    typeof password !== "string"
-  ) {
+  if (typeof action !== "string" || typeof email !== "string") {
     return json({ error: `Invalid Form Data`, form: action }, { status: 400 });
   }
 
-  // If not all data was passed, error
+  if (action !== "forgot" && typeof password !== "string") {
+    return json({ error: `Invalid Form Data`, form: action }, { status: 400 });
+  }
+
   if (
     action === "register" &&
     (typeof firstName !== "string" || typeof lastName !== "string")
   ) {
+    // If not all data was passed, error
     return json({ error: `Invalid Form Data`, form: action }, { status: 400 });
   }
 
   // Validate email & password
   const errors = {
     email: validateEmail(email),
-    password: validatePassword(password),
     ...(action === "register"
       ? {
           firstName: validateName((firstName as string) || ""),
           lastName: validateName((lastName as string) || ""),
+          password: validatePassword(password),
         }
+      : action === "login"
+      ? { password: validatePassword(password) }
       : {}),
   };
 
@@ -84,6 +86,9 @@ export const action: ActionFunction = async ({ request }) => {
       firstName = firstName as string;
       lastName = lastName as string;
       return await register({ email, password, firstName, lastName, role });
+    }
+    case "forgot": {
+      return await forgot({ email });
     }
     default:
       return json({ error: `Invalid Form Data` }, { status: 400 });
@@ -179,6 +184,18 @@ export default function Login() {
           onChange={(e) => handleInputChange(e, "password")}
           error={errors?.password}
         />
+        {action === "login" && (
+          <div className="flex w-full mb-5">
+            <button
+              type="submit"
+              name="_action"
+              value="forgot"
+              className="ml-auto text-sm text-black hover:text-red-500"
+            >
+              Forgot password?
+            </button>
+          </div>
+        )}
 
         {action === "register" && (
           <>
@@ -198,7 +215,7 @@ export default function Login() {
               value={formData.lastName}
               error={errors?.lastName}
             />
-            <div className='flex flex-row justify-evenly my-4'>
+            <div className="flex flex-row justify-evenly my-4">
               <div className="form-control">
                 <label className="label flex-row space-x-2 justify-start cursor-pointer">
                   <span className="label-text font-space font-semibold text-lg text-white">
@@ -236,7 +253,7 @@ export default function Login() {
             type="submit"
             name="_action"
             value={action}
-            className="rounded-lg mt-2 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
+            className="rounded-lg w-full mt-2 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
           >
             {action === "login" ? "Sign In" : "Sign Up"}
           </button>

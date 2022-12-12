@@ -47,7 +47,7 @@ export default function SurveyCreatorWidget() {
   const creatorOptions = {
     showLogicTab: true,
     isAutoSave: true,
-    haveCommercialLicense: licensed,
+    haveCommercialLicense: licensed === "true",
   };
 
   const completePlugin = {

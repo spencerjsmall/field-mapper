@@ -9,6 +9,7 @@ import { prisma } from "./db.server";
 import { createSurveyor, createUser, updateUser } from "./user.server";
 import bcrypt from "bcryptjs";
 import type { User } from "@prisma/client";
+import { emailPasswordReset } from "./email.server";
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -97,6 +98,31 @@ export async function login({ email, password }: LoginForm) {
     return json({ error: `Incorrect login` }, { status: 400 });
 
   return createUserSession(user, "/");
+}
+
+export async function forgot({ email }) {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user)
+    return json(
+      { error: `No account exists with this email` },
+      { status: 400 }
+    );
+
+  var chars =
+    "0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*()ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  var passwordLength = 8;
+  var temp = "";
+  for (var i = 0; i <= passwordLength; i++) {
+    var randomNumber = Math.floor(Math.random() * chars.length);
+    temp += chars.substring(randomNumber, randomNumber + 1);
+  }
+
+  const updatedUser = await updateUser({ id: String(user.id), password: temp });
+  emailPasswordReset(updatedUser, temp);
+  return updatedUser;
 }
 
 export async function createUserSession(user: User, redirectTo: string) {

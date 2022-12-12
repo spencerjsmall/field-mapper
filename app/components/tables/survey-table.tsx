@@ -35,7 +35,14 @@ export function SurveyTable({ surveys, preview = false }) {
                   </Link>
                 </td>
               )}
-              <td>{survey.name}</td>
+              <td>
+                <Link
+                  className="hover:text-orange-400"
+                  to={`/admin/surveys/${String(survey.id)}`}
+                >
+                  {survey.name}
+                </Link>
+              </td>
               {!preview && (
                 <>
                   <td>{new Date(survey.createdAt).toDateString()}</td>

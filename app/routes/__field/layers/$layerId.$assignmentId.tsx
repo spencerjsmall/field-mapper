@@ -15,6 +15,7 @@ import styles from "survey-core/defaultV2.css";
 import { prisma } from "~/utils/db.server";
 import { requireUserId } from "~/utils/auth.server";
 import { ErrorMessage } from "~/components/error-message";
+import { emailCompleteAssignment } from "~/utils/email.server";
 
 export function links() {
   return [{ rel: "stylesheet", href: styles }];
@@ -41,7 +42,7 @@ export async function action({ request, params }) {
   const userId = await requireUserId(request);
   const layerId = params.layerId;
   const { results } = Object.fromEntries(await request.formData());
-  await prisma.assignment.update({
+  const assn = await prisma.assignment.update({
     where: {
       id: assnId,
     },
@@ -51,7 +52,24 @@ export async function action({ request, params }) {
       results: JSON.parse(results),
       assignee: { connect: { id: userId } },
     },
+    include: {
+      feature: {
+        include: {
+          layer: {
+            include: {
+              admins: true,
+            },
+          },
+        },
+      },
+      assignee: {
+        include: {
+          user: true,
+        },
+      },
+    },
   });
+  emailCompleteAssignment(assn);
   return redirect(`/layers/${layerId}`);
 }
 

@@ -4376,6 +4376,14 @@ Link {
   margin-bottom: 3.5rem !important;
 }
 
+.mb-5 {
+  margin-bottom: 1.25rem !important;
+}
+
+.ml-auto {
+  margin-left: auto !important;
+}
+
 .mt-2 {
   margin-top: 0.5rem !important;
 }
@@ -5041,6 +5049,11 @@ Link {
   line-height: 2.5rem !important;
 }
 
+.text-sm {
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+}
+
 .font-bold {
   font-weight: 700 !important;
 }
@@ -5273,6 +5286,11 @@ Link {
 .hover\:text-orange-300:hover {
   --tw-text-opacity: 1 !important;
   color: rgb(253 186 116 / var(--tw-text-opacity)) !important;
+}
+
+.hover\:text-red-500:hover {
+  --tw-text-opacity: 1 !important;
+  color: rgb(239 68 68 / var(--tw-text-opacity)) !important;
 }
 
 @media (min-width: 640px) {
