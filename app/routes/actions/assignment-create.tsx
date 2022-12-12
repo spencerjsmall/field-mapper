@@ -1,5 +1,6 @@
 import { json } from "@remix-run/node";
 import { prisma } from "~/utils/db.server";
+import { emailNewAssignment } from "~/utils/email.server";
 
 export async function action({ request }) {
   const form = await request.formData();
@@ -11,7 +12,7 @@ export async function action({ request }) {
   const featIds = JSON.parse(featureIds);
 
   for (const fid of featIds) {
-    await prisma.assignment.upsert({
+    const assn = await prisma.assignment.upsert({
       where: { featureId: fid },
       update: {
         survey: surveyId ? { connect: { id: surveyId } } : undefined,
@@ -22,7 +23,18 @@ export async function action({ request }) {
         survey: surveyId ? { connect: { id: surveyId } } : undefined,
         assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
       },
+      include: {
+        assignee: {
+          include: {
+            user: true,
+          },
+        },
+        feature: true,
+      },
     });
+    if (assigneeId) {
+      emailNewAssignment(assn);
+    }
   }
 
   return json({
