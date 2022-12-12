@@ -1,5 +1,5 @@
 import { SMTPClient } from "emailjs";
-import { User, Assignment } from "@prisma/client";
+import { User } from "@prisma/client";
 import { prisma } from "./db.server";
 
 export const emailClient = new SMTPClient({
@@ -40,8 +40,7 @@ export const emailNewAssignment = (assn) => {
   );
 };
 
-export const emailCompleteAssignment = async (assn) => {
-  console.log(assn);
+export const emailCompleteAssignment = async (assn) => {  
   const adminUsers = await Promise.all(
     assn.feature.layer.admins.map(
       async (a) =>
@@ -50,12 +49,10 @@ export const emailCompleteAssignment = async (assn) => {
           include: { user: true },
         })
     )
-  );
-  console.log(adminUsers);
+  );  
   const adminAddresses = adminUsers
     .map((a) => `${a.user.firstName} ${a.user.lastName} <${a.user.email}>`)
-    .join(", ");
-  console.log(adminAddresses);
+    .join(", ");  
   emailClient.send(
     {
       text: `An assignment has been completed by ${assn.assignee.user.firstName} ${assn.assignee.user.lastName}.`,
