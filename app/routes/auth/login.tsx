@@ -108,6 +108,9 @@ export default function Login() {
     firstName: actionData?.fields?.lastName || "",
     lastName: actionData?.fields?.firstName || "",
   });
+  const [showForgot, setShowForgot] = useState(
+    actionData?.form == "forgot" && actionData?.fields?.email
+  );
 
   // Updates the form data when an input changes
   const handleInputChange = (
@@ -155,6 +158,17 @@ export default function Login() {
       >
         {action === "login" ? "Sign Up" : "Sign In"}
       </button>
+      {showForgot && (
+        <div className="toast toast-top toast-center">
+          <div className="alert alert-info w-96">
+            <div>
+              <span className="text-center">
+                Password reset has been sent to {actionData.fields.email}.
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       <h1 className="uppercase text-white">Field Mapper</h1>
       <p className=" text-slate-500">
@@ -165,6 +179,7 @@ export default function Login() {
       <form
         method="POST"
         className="rounded-lg bg-slate-600 p-6 w-3/4 md:w-1/2 lg:w-1/3"
+        // onSubmit={(e) => e.preventDefault()}
       >
         <div className="text-xs font-semibold text-center tracking-wide text-red-500 w-full">
           {formError}
@@ -184,18 +199,6 @@ export default function Login() {
           onChange={(e) => handleInputChange(e, "password")}
           error={errors?.password}
         />
-        {action === "login" && (
-          <div className="flex w-full mb-5">
-            <button
-              type="submit"
-              name="_action"
-              value="forgot"
-              className="ml-auto text-sm text-black hover:text-red-500"
-            >
-              Forgot password?
-            </button>
-          </div>
-        )}
 
         {action === "register" && (
           <>
@@ -247,17 +250,28 @@ export default function Login() {
             </div>
           </>
         )}
-
         <div className="w-full text-center">
           <button
             type="submit"
             name="_action"
             value={action}
-            className="rounded-lg w-full mt-2 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
+            className="rounded-lg w-full mt-8 bg-black px-3 py-2 text-white font-semibold transition duration-300 ease-in-out hover:bg-red-500 hover:-translate-y-1"
           >
             {action === "login" ? "Sign In" : "Sign Up"}
           </button>
         </div>
+        {action === "login" && (
+          <div className="flex w-full mt-3">
+            <button
+              type="submit"
+              name="_action"
+              value="forgot"
+              className="ml-auto text-sm text-black hover:text-red-500"
+            >
+              Forgot password?
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

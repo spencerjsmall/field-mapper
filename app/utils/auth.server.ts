@@ -122,7 +122,13 @@ export async function forgot({ email }) {
 
   const updatedUser = await updateUser({ id: String(user.id), password: temp });
   emailPasswordReset(updatedUser, temp);
-  return updatedUser;
+  return json(
+    {
+      fields: { email: updatedUser.email },
+      form: "forgot",
+    },
+    { status: 200 }
+  );
 }
 
 export async function createUserSession(user: User, redirectTo: string) {
