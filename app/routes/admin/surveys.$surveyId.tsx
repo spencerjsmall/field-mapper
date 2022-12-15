@@ -5,8 +5,12 @@ import { useCatch, useLoaderData, useParams } from "@remix-run/react";
 import d_styles from "survey-core/defaultV2.min.css";
 import c_styles from "survey-creator-core/survey-creator-core.min.css";
 
-import { SurveyCreator, SurveyCreatorComponent } from "survey-creator-react";
-import { useOutletContext, useSubmit } from "@remix-run/react";
+import {
+  SurveyCreator,
+  SurveyCreatorComponent,
+  SurveyQuestionEditorDefinition,
+} from "survey-creator-react";
+import { useSubmit } from "@remix-run/react";
 import { prisma } from "~/utils/db.server";
 import { ErrorMessage } from "~/components/error-message";
 
@@ -79,6 +83,10 @@ export default function SurveyCreatorWidget() {
   };
 
   useEffect(() => {
+    SurveyQuestionEditorDefinition.definition["file"].properties.push({
+      name: "storeDataAsText",
+      visible: false,
+    });
     var creatorObj = new SurveyCreator(creatorOptions);
     creatorObj.addPluginTab("done", donePlugin, "Done", "svc-tab-template", 4);
     creatorObj.JSON = survey.json;

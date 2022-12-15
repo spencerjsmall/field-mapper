@@ -41,7 +41,7 @@ export const action: ActionFunction = async ({ request }) => {
 
 export default function SurveyCreatorWidget() {
   const submit = useSubmit();
-  const licensed = useLoaderData();  
+  const licensed = useLoaderData();
   const [creator, setCreator] = useState<SurveyCreator>();
 
   const creatorOptions = {
@@ -50,7 +50,7 @@ export default function SurveyCreatorWidget() {
     haveCommercialLicense: licensed === "true",
   };
 
-  const completePlugin = {
+  const donePlugin = {
     activate: () => {
       const survey = window.localStorage.getItem("survey-json");
       submit(
@@ -73,13 +73,7 @@ export default function SurveyCreatorWidget() {
     var creatorObj = new SurveyCreator(creatorOptions);
     var fileQ = creatorObj.toolbox.getItemByName("file");
     fileQ.json = { type: "file", storeDataAsText: "false" };
-    creatorObj.addPluginTab(
-      "complete",
-      completePlugin,
-      "Complete",
-      "svc-tab-template",
-      4
-    );
+    creatorObj.addPluginTab("done", donePlugin, "Done", "svc-tab-template", 4);
     creatorObj.saveSurveyFunc = (saveNo, callback) => {
       window.localStorage.setItem("survey-json", creatorObj.text);
       callback(saveNo, true);
