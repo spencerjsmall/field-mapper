@@ -3309,6 +3309,10 @@ Link {
   display: none !important;
 }
 
+.h-10 {
+  height: 2.5rem !important;
+}
+
 .h-full {
   height: 100% !important;
 }
@@ -3329,10 +3333,6 @@ Link {
 
 .h-\[246px\] {
   height: 246px !important;
-}
-
-.h-10 {
-  height: 2.5rem !important;
 }
 
 .h-64 {

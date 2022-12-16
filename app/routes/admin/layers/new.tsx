@@ -19,19 +19,10 @@ export const action: ActionFunction = async ({ request }) => {
     await request.formData()
   );
 
-  const parsedFeatures =
-    String(features) == ""
-      ? ""
-      : JSON.parse(String(features), (key, value) =>
-          typeof value == "string" &&
-          value.length == 254 &&
-          [...new Set(Array.from(value))].length == 1
-            ? ""
-            : value
-        );
+  const parsedFeatures = features == "" ? null : JSON.parse(features);
 
   let layer: Prisma.LayerCreateInput;
-  if (parsedFeatures == "") {
+  if (!parsedFeatures) {
     layer = {
       name: String(name),
       admins: { connect: { id: userId } },
@@ -94,7 +85,7 @@ export default function NewLayer() {
   const handleFileUpload = async (file: File) => {
     const loader = await selectLoader(file, [KMLLoader, GeoJSONLoader]);
     const data = await load(file, loader);
-    const features = data.features.map((f) => ({ geojson: f }));
+    const features = data.features.map((f) => ({ geojson: f }));    
     setFormData((form) => ({
       ...form,
       features: JSON.stringify(features),
@@ -111,7 +102,6 @@ export default function NewLayer() {
         method: "POST",
         body: inputFormData,
       });
-
       const layerUrl = await response.json();
       const extension = layerUrl.split(".").pop();
       if (extension == "shp") {
@@ -120,10 +110,12 @@ export default function NewLayer() {
     }
 
     const data = await load(shpUrl, ShapefileLoader);
-    const features = data.data.map((f) => ({ geojson: f }));
+    const features = data.data.map((f) => ({ geojson: f }));    
     setFormData((form) => ({
       ...form,
-      features: JSON.stringify(features),
+      features: JSON.stringify(features, (key, value) => {
+        return typeof value == "string" ? value.replace(/\0/g, "") : value;
+      }),
     }));
   };
 
