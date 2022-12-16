@@ -35,3 +35,23 @@ export const highlightedStyle = {
     "circle-color": "#FFB800",
   },
 };
+
+export const todoStyle_mobile = {
+  type: "circle",
+  paint: {
+    "circle-radius": 12,
+    "circle-color": "#3454D1",
+    "circle-stroke-color": "#ffffff",
+    "circle-stroke-width": 0.5,
+  },
+};
+
+export const doneStyle_mobile = {
+  type: "circle",
+  paint: {
+    "circle-radius": 12,
+    "circle-color": "#8CB369",
+    "circle-stroke-color": "#ffffff",
+    "circle-stroke-width": 0.5,
+  },
+};

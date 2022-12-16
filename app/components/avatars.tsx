@@ -4,7 +4,7 @@ export function Avatars({ profiles, add = false }) {
       <div className={`avatar-group ${profiles.length > 1 && "-space-x-3"}`}>
         {profiles.map((p) => (
           <div key={p.id} className="avatar placeholder">
-            <div className="bg-neutral-focus text-neutral-content rounded-full w-10">
+            <div className="bg-neutral-focus text-neutral-content rounded-full h-10 w-10">
               <span className="text-xs">
                 {p.user.firstName.charAt(0)}
                 {p.user.lastName.charAt(0)}

@@ -2,6 +2,9 @@
 module.exports = {
   important: true,
   content: ["./app/**/*.{js,ts,jsx,tsx}"],
+  daisyui: {
+    themes: ["dark"],
+  },
   theme: {
     extend: {
       fontFamily: {

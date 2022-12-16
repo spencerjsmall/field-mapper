@@ -118,7 +118,7 @@ export default function AdminLayout() {
         <ProfileIcon profile={userAdmin} admin />
       </div>
 
-      <div className="w-full max-h-full bg-ggp bg-blend-multiply bg-slate-800 bg-center h-full overflow-y-hidden z-0">
+      <div className="w-full grow max-h-full bg-ggp bg-blend-multiply bg-slate-800 bg-center h-full overflow-y-hidden z-0">
         <Outlet
           context={{
             userAdmin,

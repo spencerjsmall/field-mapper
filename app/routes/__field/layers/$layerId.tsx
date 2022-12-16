@@ -15,7 +15,7 @@ import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-direct
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 import m_styles from "../../../styles/mapbox.css";
-import { todoStyle, doneStyle } from "~/styles/features";
+import { todoStyle_mobile, doneStyle_mobile } from "~/styles/features";
 import crosshairs from "../../../../public/images/crosshairs.svg";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
@@ -295,10 +295,10 @@ export default function TaskMap() {
         </Source>
       )}
       <Source id="done" type="geojson" data={completedAssignments}>
-        <Layer beforeId="todo" id="done" {...doneStyle} />
+        <Layer beforeId="todo" id="done" {...doneStyle_mobile} />
       </Source>
       <Source id="todo" type="geojson" data={todoAssignments}>
-        <Layer id="todo" {...todoStyle} />
+        <Layer id="todo" {...todoStyle_mobile} />
       </Source>
 
       {showPopup && (
