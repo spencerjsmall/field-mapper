@@ -130,7 +130,7 @@ export default function AdminTaskMap() {
     setBeforeId(filter[0]);
   }, [filter]);
 
-  const onFeatureClick = (e) => {
+  const onFeatureClick = (e) => {    
     console.log(e.lngLat);
     if (e.features.length > 0) {
       console.log(e.features);

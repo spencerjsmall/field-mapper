@@ -180,12 +180,28 @@ export default function TaskMap() {
     });
   };
 
-  const onFeatureClick = (e) => {
-    console.log(e.features);
-    setDCoords(e.lngLat);
-    if (e.features.length > 0) {
-      mapRef.current.flyTo({ center: e.lngLat });
-      let feat = e.features[0];
+  const onFeatureClick = (e) => {    
+    const bbox = [
+      [e.point.x - 20, e.point.y - 20],
+      [e.point.x + 20, e.point.y + 20],
+    ];
+    // Find features intersecting the bounding box.
+    const nearFeats = mapRef.current.queryRenderedFeatures(bbox, {
+      layers: ["todo", "done"],
+    });
+    const feat =
+      e.features.length > 0
+        ? e.features[0]
+        : nearFeats.length > 0
+        ? nearFeats[0]
+        : null;
+    if (feat) {
+      const coords = {
+        lng: feat.geometry.coordinates[0],
+        lat: feat.geometry.coordinates[1],
+      };
+      setDCoords(coords);
+      mapRef.current.flyTo({ center: coords });
       setAddPoint(false);
       setShowPopup(true);
       setLabel(
