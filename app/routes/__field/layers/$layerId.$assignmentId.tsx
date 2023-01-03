@@ -78,14 +78,46 @@ export default function SurveyPage() {
   const submit = useSubmit();
   const [model, setModel] = useState<SurveyModel>();
 
+  async function uploadResult(file: File) {
+    let inputFormData = new FormData();
+    inputFormData.append("file", file);
+    const response = await fetch("/actions/file-upload", {
+      method: "POST",
+      body: inputFormData,
+    });
+    const fileUrl = await response.json();
+    return {
+      file: file,
+      content: fileUrl,
+    };
+  }
+
   const handleComplete = useCallback(
     (sender) => {
-      submit(
-        {
-          results: JSON.stringify(sender.data),
-        },
-        { method: "post" }
-      );
+      let survey = sender;
+      survey.getAllQuestions().forEach((q, i) => {
+        if (q.getType() == "signaturepad") {
+          const pngUrl = q.value;
+          const qName = q.name;
+          fetch(pngUrl)
+            .then((res) => res.blob())
+            .then(async (blob) => {
+              const file = new File([blob], `${q.name}.png`, {
+                type: "image/png",
+              });
+              const fileUrl = await uploadResult(file);
+              survey.setValue(qName, fileUrl);
+            });
+        }
+      });
+      setTimeout(() => { 
+        submit(
+          {
+            results: JSON.stringify(survey.data),
+          },
+          { method: "post" }
+        );
+      }, 2000);
     },
     [submit]
   );
@@ -97,17 +129,7 @@ export default function SurveyPage() {
         "success",
         await Promise.all(
           options.files.map(async (file) => {
-            let inputFormData = new FormData();
-            inputFormData.append("file", file);
-            const response = await fetch("/actions/file-upload", {
-              method: "POST",
-              body: inputFormData,
-            });
-            const fileUrl = await response.json();
-            return {
-              file: file,
-              content: fileUrl,
-            };
+            return uploadResult(file);
           })
         )
       );
