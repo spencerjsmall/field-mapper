@@ -113,7 +113,7 @@ export default function AdminTaskMap() {
         .filter((f) => f.assignment && !f.assignment.completed)
         .map((f) => ({ id: f.id, ...f.geojson })),
     }),
-    [layer.features]
+    [layer.features, fetcher]
   );
 
   const completedCollection = useMemo(
