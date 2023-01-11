@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useFetcher } from "@remix-run/react";
 import _ from "lodash";
 import clsx from "clsx";
@@ -7,6 +8,27 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
     (f) => !f.assignment || !f.assignment.completed
   );
   const fetcher = useFetcher();
+
+  const [formData, setFormData] = useState({
+    label: "",
+    assigneeId: "",
+    surveyId: "",
+  });
+
+  const handleInputChange = (event: React.ChangeEvent, field: string) => {
+    setFormData((form) => ({ ...form, [field]: event.target.value }));
+  };
+
+  const handleSubmit = (featureIds: Array<Number>) => {
+    fetcher.submit(
+      { ...formData, featureIds: JSON.stringify(featureIds) },
+      {
+        method: "post",
+        action: "/actions/assignment-create",
+      }
+    );
+  };
+
   return (
     <div className="max-h-full h-full max-w-md w-screen border-l border-slate-400 bg-ggp bg-blend-multiply bg-slate-800 bg-center p-4">
       {features && features.length > 0 ? (
@@ -32,22 +54,8 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                         <th>Surveyor</th>
                         <th>
                           <select
-                            name="assigneeId"
-                            className="select select-sm w-fit bg-black"
-                            onChange={(e) =>
-                              fetcher.submit(
-                                {
-                                  featureIds: JSON.stringify(
-                                    incomplete.map((f) => f.id)
-                                  ),
-                                  assigneeId: e.target.value,
-                                },
-                                {
-                                  method: "post",
-                                  action: "/actions/assignment-create",
-                                }
-                              )
-                            }
+                            className="select select-sm w-full bg-black"
+                            onChange={(e) => handleInputChange(e, "assigneeId")}
                           >
                             <option
                               selected={
@@ -85,22 +93,8 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                         <th>Survey</th>
                         <th>
                           <select
-                            name="surveyId"
-                            className="select select-sm w-fit bg-black"
-                            onChange={(e) =>
-                              fetcher.submit(
-                                {
-                                  featureIds: JSON.stringify(
-                                    incomplete.map((f) => f.id)
-                                  ),
-                                  surveyId: e.target.value,
-                                },
-                                {
-                                  method: "post",
-                                  action: "/actions/assignment-create",
-                                }
-                              )
-                            }
+                            className="select select-sm w-full bg-black"
+                            onChange={(e) => handleInputChange(e, "surveyId")}
                           >
                             <option
                               selected={
@@ -140,6 +134,14 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                           </select>
                         </th>
                       </tr>
+                      <button
+                        onClick={() =>
+                          handleSubmit(incomplete.map((f) => f.id))
+                        }
+                        className="btn w-full mt-4"
+                      >
+                        Save Assignments
+                      </button>
                     </tbody>
                   </table>
                 </div>
@@ -162,7 +164,13 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
               >
                 <input type="checkbox" />
                 <div className="collapse-title font-sans text-center text-xl text-white font-medium w-full">
-                  {feature.label ? feature.label : `Record #${feature.id}`}
+                  {fetcher.type === "done" &&
+                  fetcher.data.ids.includes(feature.id) &&
+                  fetcher.data.label
+                    ? fetcher.data.label
+                    : feature.label
+                    ? feature.label
+                    : `Record #${feature.id}`}
                 </div>
                 <div className="collapse-content w-full">
                   <div className="w-full overflow-x-auto">
@@ -189,7 +197,9 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                         {feature.assignment && feature.assignment.completed ? (
                           <>
                             <tr>
-                              <th className="bg-gray-800 text-gray-300">Surveyor</th>
+                              <th className="bg-gray-800 text-gray-300">
+                                Surveyor
+                              </th>
                               <th className="bg-gray-900 text-gray-300">
                                 {feature.assignment.assignee
                                   ? `${feature.assignment.assignee.user.firstName} ${feature.assignment.assignee.user.lastName}`
@@ -197,7 +207,9 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-gray-800 text-gray-300">Survey</th>
+                              <th className="bg-gray-800 text-gray-300">
+                                Survey
+                              </th>
                               <th className="bg-gray-900 text-gray-300">
                                 {
                                   surveys.filter(
@@ -207,7 +219,9 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-gray-800 text-gray-300">Completed</th>
+                              <th className="bg-gray-800 text-gray-300">
+                                Completed
+                              </th>
                               <th className="bg-gray-900 text-gray-300">
                                 {new Date(
                                   feature.assignment.completedAt
@@ -217,7 +231,9 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
 
                             {feature.assignment.notes && (
                               <tr>
-                                <th className="bg-gray-800 text-gray-300">Notes</th>
+                                <th className="bg-gray-800 text-gray-300">
+                                  Notes
+                                </th>
                                 <th className="bg-gray-900 text-gray-300">
                                   {feature.assignment.notes}
                                 </th>
@@ -227,16 +243,24 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                             {feature.assignment.results ? (
                               <>
                                 <tr>
-                                  <th className="bg-green-900 text-gray-300">Results</th>
+                                  <th className="bg-green-900 text-gray-300">
+                                    Results
+                                  </th>
                                   <th className="bg-green-900"></th>
                                 </tr>
                                 {Object.entries(feature.assignment.results).map(
                                   ([key, value], i) => (
                                     <tr key={i}>
-                                      <th className="bg-gray-800 text-gray-300" key={i}>
+                                      <th
+                                        className="bg-gray-800 text-gray-300"
+                                        key={i}
+                                      >
                                         {key}
                                       </th>
-                                      <th className="bg-gray-900 text-gray-300" key={i}>
+                                      <th
+                                        className="bg-gray-900 text-gray-300"
+                                        key={i}
+                                      >
                                         {typeof value == "object"
                                           ? JSON.stringify(value)
                                           : value}
@@ -255,25 +279,9 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               <th className="bg-slate-600">Surveyor</th>
                               <th className="bg-slate-700">
                                 <select
-                                  name="assigneeId"
-                                  className="select select-sm w-fit bg-slate-800"
-                                  disabled={
-                                    feature.assignment &&
-                                    feature.assignment.completed
-                                  }
+                                  className="select select-sm w-full bg-slate-800"
                                   onChange={(e) =>
-                                    fetcher.submit(
-                                      {
-                                        featureIds: JSON.stringify([
-                                          feature.id,
-                                        ]),
-                                        assigneeId: e.target.value,
-                                      },
-                                      {
-                                        method: "post",
-                                        action: "/actions/assignment-create",
-                                      }
-                                    )
+                                    handleInputChange(e, "assigneeId")
                                   }
                                 >
                                   <option
@@ -322,25 +330,9 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               <th className="bg-slate-600">Survey</th>
                               <th className="bg-slate-700">
                                 <select
-                                  name="surveyId"
-                                  className="select select-sm w-fit bg-slate-800"
-                                  disabled={
-                                    feature.assignment &&
-                                    feature.assignment.completed
-                                  }
+                                  className="select select-sm w-full bg-slate-800"
                                   onChange={(e) =>
-                                    fetcher.submit(
-                                      {
-                                        featureIds: JSON.stringify([
-                                          feature.id,
-                                        ]),
-                                        surveyId: e.target.value,
-                                      },
-                                      {
-                                        method: "post",
-                                        action: "/actions/assignment-create",
-                                      }
-                                    )
+                                    handleInputChange(e, "surveyId")
                                   }
                                 >
                                   <option
@@ -383,6 +375,37 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                                       </option>
                                     ))}
                                 </select>
+                              </th>
+                            </tr>
+                            <tr>
+                              <th className="bg-slate-600">Label</th>
+                              <th className="bg-slate-700">
+                                <input
+                                  type="text"
+                                  onChange={(e) =>
+                                    handleInputChange(e, "label")
+                                  }
+                                  placeholder="Add a label name"
+                                  value={
+                                    formData.label
+                                      ? formData.label
+                                      : feature.label
+                                      ? feature.label
+                                      : undefined
+                                  }
+                                  className="input bg-slate-800 w-full h-fit text-sm p-2"
+                                />
+                              </th>
+                            </tr>
+                            <tr>
+                              <th className="bg-slate-800"></th>
+                              <th className="bg-slate-800 flex">
+                                <button
+                                  onClick={() => handleSubmit([feature.id])}
+                                  className="btn w-fit mt-2 ml-auto"
+                                >
+                                  Save Assignment
+                                </button>
                               </th>
                             </tr>
                           </>
