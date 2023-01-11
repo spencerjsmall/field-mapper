@@ -53,7 +53,7 @@ export default function AssignmentNotes() {
         {note}
       </textarea>
       <button type="submit" className="btn mt-4 w-full">
-        {assn.notes ? "Update Note" : "Create Note"}
+        Save Note
       </button>
     </form>
   );

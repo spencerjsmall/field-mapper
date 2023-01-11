@@ -3249,6 +3249,14 @@ Link {
   margin-left: 0.25rem !important;
 }
 
+.mt-2 {
+  margin-top: 0.5rem !important;
+}
+
+.ml-auto {
+  margin-left: auto !important;
+}
+
 .ml-4 {
   margin-left: 1rem !important;
 }
@@ -3277,16 +3285,8 @@ Link {
   margin-top: 0.75rem !important;
 }
 
-.ml-auto {
-  margin-left: auto !important;
-}
-
 .mb-2 {
   margin-bottom: 0.5rem !important;
-}
-
-.mt-2 {
-  margin-top: 0.5rem !important;
 }
 
 .flex {
@@ -3945,14 +3945,14 @@ Link {
   line-height: 1 !important;
 }
 
-.text-4xl {
-  font-size: 2.25rem !important;
-  line-height: 2.5rem !important;
-}
-
 .text-sm {
   font-size: 0.875rem !important;
   line-height: 1.25rem !important;
+}
+
+.text-4xl {
+  font-size: 2.25rem !important;
+  line-height: 2.5rem !important;
 }
 
 .font-bold {
