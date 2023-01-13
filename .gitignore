@@ -22,3 +22,5 @@ node_modules
 
 new_user_credentials.csv
 working-gl-directions.js
+
+*.json
