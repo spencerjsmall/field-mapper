@@ -30,11 +30,6 @@ export const action: ActionFunction = async ({ request }) => {
           surveyor: true,
         },
       },
-      layer: {
-        include: {
-          defaultSurvey: true,
-        },
-      },
     },
   });
   if (newFeat.creator.surveyor) {
@@ -42,13 +37,6 @@ export const action: ActionFunction = async ({ request }) => {
       data: {
         feature: { connect: { id: newFeat.id } },
         assignee: { connect: { id: uId } },
-        survey: newFeat.layer.defaultSurveyId
-          ? {
-              connect: {
-                id: newFeat.layer.defaultSurveyId,
-              },
-            }
-          : undefined,
       },
     });
   }

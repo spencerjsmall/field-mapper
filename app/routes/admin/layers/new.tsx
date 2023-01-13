@@ -26,9 +26,7 @@ export const action: ActionFunction = async ({ request }) => {
     layer = {
       name: String(name),
       admins: { connect: { id: userId } },
-      defaultSurvey: surveyId
-        ? { connect: { id: parseInt(surveyId) } }
-        : undefined,
+      survey: surveyId ? { connect: { id: parseInt(surveyId) } } : undefined,
     };
   } else {
     layer = {
@@ -42,9 +40,7 @@ export const action: ActionFunction = async ({ request }) => {
           })),
         },
       },
-      defaultSurvey: surveyId
-        ? { connect: { id: parseInt(surveyId) } }
-        : undefined,
+      survey: surveyId ? { connect: { id: parseInt(surveyId) } } : undefined,
     };
   }
 
@@ -85,7 +81,7 @@ export default function NewLayer() {
   const handleFileUpload = async (file: File) => {
     const loader = await selectLoader(file, [KMLLoader, GeoJSONLoader]);
     const data = await load(file, loader);
-    const features = data.features.map((f) => ({ geojson: f }));    
+    const features = data.features.map((f) => ({ geojson: f }));
     setFormData((form) => ({
       ...form,
       features: JSON.stringify(features),
@@ -110,7 +106,7 @@ export default function NewLayer() {
     }
 
     const data = await load(shpUrl, ShapefileLoader);
-    const features = data.data.map((f) => ({ geojson: f }));    
+    const features = data.data.map((f) => ({ geojson: f }));
     setFormData((form) => ({
       ...form,
       features: JSON.stringify(features, (key, value) => {

@@ -30,11 +30,11 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       status: 404,
     });
   }
-  return assn;
+  return { assn };
 };
 
 export default function AssignmentNotes() {
-  const assn = useLoaderData();
+  const { assn } = useLoaderData();
   const [note, setNote] = useState("");
 
   useEffect(() => {

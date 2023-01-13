@@ -24,17 +24,22 @@ export function links() {
 Survey.StylesManager.applyTheme("defaultV2");
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  const layerId = parseInt(params.layerId);
   const assnId = parseInt(params.assignmentId);
+  const layer = await prisma.layer.findUnique({
+    where: { id: layerId },
+    include: { survey: true },
+  });
   const assn = await prisma.assignment.findUnique({
     where: { id: assnId },
-    include: { survey: true, feature: true },
+    include: { feature: true },
   });
-  if (!assn) {
-    throw new Response("Assignment not found.", {
+  if (!layer || !layer.survey || !assn) {
+    throw new Response("Data not found.", {
       status: 404,
     });
   }
-  return assn;
+  return { assn, layer };
 };
 
 export async function action({ request, params }) {
@@ -74,7 +79,7 @@ export async function action({ request, params }) {
 }
 
 export default function SurveyPage() {
-  const assn = useLoaderData();
+  const { assn, layer } = useLoaderData();
   const submit = useSubmit();
   const [model, setModel] = useState<SurveyModel>();
 
@@ -110,7 +115,7 @@ export default function SurveyPage() {
             });
         }
       });
-      setTimeout(() => { 
+      setTimeout(() => {
         submit(
           {
             results: JSON.stringify(survey.data),
@@ -123,7 +128,7 @@ export default function SurveyPage() {
   );
 
   useEffect(() => {
-    var survey = new Survey.Model(assn.survey.json);
+    var survey = new Survey.Model(layer.survey.json);
     survey.onUploadFiles.add(async (sender, options) => {
       options.callback(
         "success",

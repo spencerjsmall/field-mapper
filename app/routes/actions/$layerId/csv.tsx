@@ -1,22 +1,39 @@
 import { prisma } from "~/utils/db.server";
+import * as Survey from "survey-core";
 
 export async function loader({ request, params }) {
   const layerId = parseInt(params.layerId);
+  const layer = await prisma.layer.findUnique({
+    where: {
+      id: layerId,
+    },
+    include: {
+      survey: true,
+    },
+  });
+
+  const headerFeat = await prisma.feature.findFirst({
+    where: {
+      AND: {
+        layerId: layerId,
+        creatorId: null,
+      },
+    },
+  });
+
+  console.log("headerFeat", headerFeat);
+
   const rawFeatures = await prisma.feature.findMany({
     where: {
       layerId: layerId,
     },
     select: {
+      label: true,
       geojson: true,
       assignment: {
         select: {
           completedAt: true,
           results: true,
-          survey: {
-            select: {
-              name: true,
-            },
-          },
           assignee: {
             select: {
               user: {
@@ -33,12 +50,33 @@ export async function loader({ request, params }) {
     },
   });
 
+  let headers = [
+    "label",
+    "assignee",
+    "survey",
+    "completedAt",
+    "type",
+    "coordinates",
+  ];
+
+  if (headerFeat && headerFeat.geojson.properties) {
+    const props = Object.keys(headerFeat.geojson.properties);
+    headers = headers.concat(props);
+  }
+
+  if (layer.survey) {
+    var survey = new Survey.Model(layer.survey.json);
+    const qs = survey.getAllQuestions().map((q) => q.name);
+    headers = headers.concat(qs);
+  }
+
   const JSONfeatures = rawFeatures.map((f) => ({
+    label: f.label,
+    assignee: f.assignment?.assignee?.user.email,
+    survey: layer?.survey?.name,
+    completedAt: f.assignment?.completedAt,
     ...f.geojson?.geometry,
     ...f.geojson?.properties,
-    completedAt: f.assignment?.completedAt,
-    survey: f.assignment?.survey?.name,
-    assignee: f.assignment?.assignee?.user.email,
     ...f.assignment?.results,
   }));
 
@@ -51,5 +89,5 @@ export async function loader({ request, params }) {
     )
   );
 
-  return cleanJSON;
+  return { cleanJSON, headers };
 }

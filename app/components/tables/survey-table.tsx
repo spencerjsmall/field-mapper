@@ -18,7 +18,6 @@ export function SurveyTable({ surveys, preview = false }) {
               </>
             )}
             <th>Assigned In</th>
-            <th>Assignments</th>
             {!preview && <th></th>}
           </tr>
         </thead>
@@ -64,10 +63,6 @@ export function SurveyTable({ surveys, preview = false }) {
                 </>
               )}
               <td>{survey.layers.map((l) => l.name).join(", ")}</td>
-              <td>
-                {survey.assignments.filter((a) => a.completed).length} /
-                {" " + survey._count.assignments} completed
-              </td>
               {!preview && (
                 <td>
                   <div
@@ -75,7 +70,7 @@ export function SurveyTable({ surveys, preview = false }) {
                     className="tooltip tooltip-bottom z-50"
                   >
                     <Link
-                      className="cursor-pointer hover:text-white text-xl"
+                      className="cursor-pointer text-slate-600 hover:text-slate-100 text-xl"
                       to={`/admin/surveys/${survey.id}/delete`}
                     >
                       <BsTrash />

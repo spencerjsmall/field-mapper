@@ -28,7 +28,7 @@ export default function FieldLayout() {
 
   return (
     <div className="min-safe-h-screen w-screen flex flex-col">
-      <div className="flex flex-row bg-black items-center border-b border-slate-600 sticky top-0 z-50 justify-between text-white text-2xl py-3 px-4">
+      <div className="flex flex-row bg-black items-center border-b border-slate-600 shadow-lg sticky top-0 z-50 justify-between text-white text-2xl py-3 px-4">
         {matches[2].id != "routes/__field/home" ? (
           <div onClick={() => navigate(-1)} className="text-3xl">
             <BsArrowLeftShort />
@@ -50,9 +50,9 @@ export default function FieldLayout() {
             ? matches[2].data.layer.name
             : matches[2].id == "routes/__field/home"
             ? "assignments"
-            : matches[2].data.feature && matches[2].data.feature.label
-            ? matches[2].data.feature.label
-            : `Record #${matches[2].data.feature.id}`}
+            : matches[2].data.assn && matches[2].data.assn.feature.label
+            ? matches[2].data.assn.feature.label
+            : `Record #${matches[2].data.assn.feature.id}`}
         </h2>
         <ProfileIcon profile={userSurveyor} />
       </div>

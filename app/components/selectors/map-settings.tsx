@@ -83,12 +83,14 @@ export function MapSettings({
               className="text-lg text-center cursor-pointer hover:text-white"
               onClick={() => {
                 setFilterMenu(false);
-                setFilter(["todo", "assigned", "done"]);
+                setFilter(["todo", "mandatory", "optional", "done"]);
               }}
             >
               <a
                 className={
-                  _.isEmpty(_.xor(filter, ["todo", "assigned", "done"]))
+                  _.isEmpty(
+                    _.xor(filter, ["todo", "mandatory", "optional", "done"])
+                  )
                     ? "active"
                     : ""
                 }
@@ -111,15 +113,30 @@ export function MapSettings({
               className="text-lg text-center cursor-pointer hover:text-white"
               onClick={() => {
                 setFilterMenu(false);
-                setFilter(["assigned"]);
+                setFilter(["mandatory"]);
               }}
             >
               <a
                 className={
-                  _.isEmpty(_.xor(filter, ["assigned"])) ? "active" : ""
+                  _.isEmpty(_.xor(filter, ["mandatory"])) ? "active" : ""
                 }
               >
-                Assigned
+                Mandatory
+              </a>
+            </li>
+            <li
+              className="text-lg text-center cursor-pointer hover:text-white"
+              onClick={() => {
+                setFilterMenu(false);
+                setFilter(["optional"]);
+              }}
+            >
+              <a
+                className={
+                  _.isEmpty(_.xor(filter, ["optional"])) ? "active" : ""
+                }
+              >
+                Optional
               </a>
             </li>
             <li

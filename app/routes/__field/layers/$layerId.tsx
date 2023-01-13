@@ -15,7 +15,11 @@ import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-direct
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import d_styles from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 import m_styles from "../../../styles/mapbox.css";
-import { todoStyle_mobile, doneStyle_mobile } from "~/styles/features";
+import {
+  mandatoryStyle_mobile,
+  optionalStyle_mobile,
+  doneStyle_mobile,
+} from "~/styles/features";
 import crosshairs from "../../../../public/images/crosshairs.svg";
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 
@@ -97,6 +101,7 @@ export default function TaskMap() {
   const mapRef = useRef();
 
   const [showPopup, setShowPopup] = useState(false);
+  const [showLegend, setShowLegend] = useState(true);
   const [addPoint, setAddPoint] = useState(false);
   const [basemap, setBasemap] = useState("satellite");
   const [dCoords, setDCoords] = useState({ lng: 0, lat: 0 });
@@ -113,7 +118,7 @@ export default function TaskMap() {
   );
   const [completed, setCompleted] = useState<Boolean>();
   const [assignment, setAssignment] = useState();
-  const [hasSurvey, setHasSurvey] = useState(false);
+  const [hasSurvey, setHasSurvey] = useState(layer.surveyId);
   const [label, setLabel] = useState("");
 
   const completedAssignments = {
@@ -126,26 +131,42 @@ export default function TaskMap() {
         properties: {
           ...a.feature.geojson.properties,
           label: a.feature.label,
-          surveyId: a.surveyId,
           assignmentId: a.id,
           completed: true,
         },
       })),
   };
 
-  const todoAssignments = {
+  const mandatoryAssignments = {
     type: "FeatureCollection",
     features: assignments
-      .filter((a) => !a.completed)
+      .filter((a) => !a.completed && a.mandatory)
       .map((a) => ({
         id: a.feature.id,
         geometry: a.feature.geojson.geometry,
         properties: {
           ...a.feature.geojson.properties,
           label: a.feature.label,
-          surveyId: a.surveyId,
           assignmentId: a.id,
           completed: false,
+          mandatory: true,
+        },
+      })),
+  };
+
+  const optionalAssignments = {
+    type: "FeatureCollection",
+    features: assignments
+      .filter((a) => !a.completed && !a.mandatory)
+      .map((a) => ({
+        id: a.feature.id,
+        geometry: a.feature.geojson.geometry,
+        properties: {
+          ...a.feature.geojson.properties,
+          label: a.feature.label,
+          assignmentId: a.id,
+          completed: false,
+          mandatory: false,
         },
       })),
   };
@@ -180,14 +201,14 @@ export default function TaskMap() {
     });
   };
 
-  const onFeatureClick = (e) => {    
+  const onFeatureClick = (e) => {
     const bbox = [
       [e.point.x - 20, e.point.y - 20],
       [e.point.x + 20, e.point.y + 20],
     ];
     // Find features intersecting the bounding box.
     const nearFeats = mapRef.current.queryRenderedFeatures(bbox, {
-      layers: ["todo", "done"],
+      layers: ["optional", "mandatory", "done"],
     });
     const feat =
       e.features.length > 0
@@ -210,17 +231,18 @@ export default function TaskMap() {
           : feat.properties.label
       );
       setAssignment(feat.properties.assignmentId);
-      setHasSurvey(feat.properties.surveyId !== undefined);
       setCompleted(feat.properties.completed);
     } else if (addPoint) {
       setAddPoint(false);
     } else {
       mapDirections.removeRoutes();
+      setShowLegend(true);
     }
   };
 
   const getDirections = () => {
     setShowPopup(false);
+    setShowLegend(false);
     mapDirections.setOrigin([cCoords.lng, cCoords.lat]);
     mapDirections.setDestination([dCoords.lng, dCoords.lat]);
     mapDirections.on("route", () => {
@@ -296,7 +318,7 @@ export default function TaskMap() {
           : `mapbox://styles/mapbox/${basemap}`
       }
       mapboxAccessToken={token}
-      interactiveLayerIds={["todo", "done"]}
+      interactiveLayerIds={["optional", "mandatory", "done"]}
       onClick={onFeatureClick}
       style={{ flexGrow: 1, position: "relative", width: "100%" }}
     >
@@ -307,14 +329,17 @@ export default function TaskMap() {
           tiles={["https://til.3dg.is/api/tiles/p2021_rgb8cm/{z}/{x}/{y}.png"]}
           tileSize={256}
         >
-          <Layer beforeId="todo" type="raster" />
+          <Layer beforeId="mandatory" type="raster" />
         </Source>
       )}
       <Source id="done" type="geojson" data={completedAssignments}>
-        <Layer beforeId="todo" id="done" {...doneStyle_mobile} />
+        <Layer beforeId="mandatory" id="done" {...doneStyle_mobile} />
       </Source>
-      <Source id="todo" type="geojson" data={todoAssignments}>
-        <Layer id="todo" {...todoStyle_mobile} />
+      <Source id="optional" type="geojson" data={optionalAssignments}>
+        <Layer id="optional" beforeId="mandatory" {...optionalStyle_mobile} />
+      </Source>
+      <Source id="mandatory" type="geojson" data={mandatoryAssignments}>
+        <Layer id="mandatory" {...mandatoryStyle_mobile} />
       </Source>
 
       {showPopup && (
@@ -344,6 +369,33 @@ export default function TaskMap() {
             </li>
           </ul>
         </Popup>
+      )}
+
+      {showLegend && (
+        <div className="toast toast-bottom toast-center">
+          <div className="alert bg-slate-800 bg-opacity-40 transition-all duration-200 hover:bg-opacity-70 hover:shadow-sm mb-6 shadow-md">
+            <div className="flex flex-row space-x-4 items-center">
+              <div className="flex items-center space-x-1">
+                <div
+                  className={`bg-optional-mobile border border-white rounded-full w-4 h-4`}
+                />
+                <p className="text-white text-base">Optional</p>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div
+                  className={`bg-mandatory-mobile border border-white rounded-full w-4 h-4`}
+                />
+                <p className="text-white text-base">Mandatory</p>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div
+                  className={`bg-done-mobile border border-white rounded-full w-4 h-4`}
+                />
+                <p className="text-white text-base">Completed</p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {addPoint && (

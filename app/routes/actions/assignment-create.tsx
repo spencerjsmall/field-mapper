@@ -5,12 +5,14 @@ import { emailNewAssignment } from "~/utils/email.server";
 export async function action({ request }) {
   const form = await request.formData();
   const featureIds = form.get("featureIds");
-  const label = form.get("label") !== "" ? form.get("label") : null;
   const assigneeId =
     form.get("assigneeId") !== "" ? parseInt(form.get("assigneeId")) : null;
-  const surveyId =
-    form.get("surveyId") !== "" ? parseInt(form.get("surveyId")) : null;
+  const label = form.get("label") !== "" ? form.get("label") : null;
   const featIds = JSON.parse(featureIds);
+  const mandatory =
+    form.get("mandatory") === "Mixed"
+      ? undefined
+      : form.get("mandatory") === "True";
 
   for (const fid of featIds) {
     if (label) {
@@ -24,13 +26,13 @@ export async function action({ request }) {
     const assn = await prisma.assignment.upsert({
       where: { featureId: fid },
       update: {
-        survey: surveyId ? { connect: { id: surveyId } } : undefined,
         assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
+        mandatory: mandatory,
       },
       create: {
         feature: { connect: { id: fid } },
-        survey: surveyId ? { connect: { id: surveyId } } : undefined,
         assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
+        mandatory: mandatory,
       },
       include: {
         assignee: {
@@ -50,7 +52,7 @@ export async function action({ request }) {
     ok: true,
     ids: featIds,
     assigneeId: assigneeId,
-    surveyId: surveyId,
     label: label,
+    mandatory: mandatory,
   });
 }

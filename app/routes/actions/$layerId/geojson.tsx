@@ -2,19 +2,24 @@ import { prisma } from "~/utils/db.server";
 
 export async function loader({ request, params }) {
   const layerId = parseInt(params.layerId);
+  const layer = await prisma.layer.findUnique({
+    where: {
+      id: layerId,
+    },
+    include: {
+      survey: true,
+    },
+  });
+
   const rawFeatures = await prisma.feature.findMany({
     where: { layerId: layerId },
     select: {
+      label: true,
       geojson: true,
       assignment: {
         select: {
           completedAt: true,
           results: true,
-          survey: {
-            select: {
-              name: true,
-            },
-          },
           assignee: {
             select: {
               user: {
@@ -35,10 +40,11 @@ export async function loader({ request, params }) {
       type: f.geojson.type,
       geometry: f.geojson.geometry,
       properties: {
-        ...f.geojson.properties,
-        surveyId: f.assignment?.survey?.name,
-        surveyor: f.assignment?.assignee?.user.email,
+        label: f.label,
+        assignee: f.assignment?.assignee?.user.email,
+        survey: layer?.survey?.name,
         completedAt: f.assignment?.completedAt,
+        ...f.geojson.properties,
         ...f.assignment?.results,
       },
     })),

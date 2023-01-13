@@ -85,13 +85,7 @@ export const getUserSurveys = async (id: number) => {
         include: {
           user: true,
         },
-      },
-      assignments: true,
-      _count: {
-        select: {
-          assignments: true,
-        },
-      },
+      },   
     },
     orderBy: {
       createdAt: "desc",
@@ -139,7 +133,7 @@ export const getUserLayers = async (id: number) => {
           user: true,
         },
       },
-      defaultSurvey: true,
+      survey: true,
       features: {
         include: {
           assignment: true,

@@ -5,7 +5,7 @@ import { Link, useFetcher } from "@remix-run/react";
 import { Avatars } from "../avatars";
 
 export function LayerTable({ layers, surveys, preview = false }) {
-  const [csv, setCSV] = useState({ data: null, fileName: "" });
+  const [csv, setCSV] = useState({ data: null, headers: [], fileName: "" });
   const [prev, setPrev] = useState(preview);
   const csvLink = useRef(null);
   const fetcher = useFetcher();
@@ -44,9 +44,11 @@ export function LayerTable({ layers, surveys, preview = false }) {
     const response = await fetch(`/actions/${layer.id}/csv`, {
       method: "GET",
     });
-    const data = await response.json();
+    const { cleanJSON, headers } = await response.json();
+    console.log(cleanJSON);
+    console.log(headers);
     const fileName = layer.name.replace(/\s/g, "") + Date.now() + ".csv";
-    setCSV({ data: data, fileName: fileName });
+    setCSV({ data: cleanJSON, headers: headers, fileName: fileName });
     csvLink.current.link.click();
   };
 
@@ -142,13 +144,13 @@ export function LayerTable({ layers, surveys, preview = false }) {
                     }
                     className="select select-sm w-fit"
                   >
-                    <option selected={!layer.defaultSurvey} value={undefined}>
+                    <option selected={!layer.survey} value={undefined}>
                       None
                     </option>
                     {surveys.map((survey, i) => (
                       <option
                         key={i}
-                        selected={layer.defaultSurveyId == survey.id}
+                        selected={layer.surveyId == survey.id}
                         value={survey.id}
                       >
                         {survey.name}
@@ -184,14 +186,16 @@ export function LayerTable({ layers, surveys, preview = false }) {
                       >
                         CSV
                       </button>
-                      {csv.data && (
-                        <CSVLink
-                          ref={csvLink}
-                          data={csv.data}
-                          filename={csv.fileName}
-                          target="_blank"
-                        />
-                      )}
+                      {csv.data &&
+                        csv.headers.length > 0 &&
+                        csv.fileName !== "" && (
+                          <CSVLink
+                            ref={csvLink}
+                            data={csv.data}
+                            headers={csv.headers}
+                            filename={csv.fileName}
+                          />
+                        )}
                     </div>
                   </td>
                   <td>
@@ -200,7 +204,7 @@ export function LayerTable({ layers, surveys, preview = false }) {
                       className="tooltip tooltip-bottom z-50"
                     >
                       <Link
-                        className="cursor-pointer hover:text-white text-xl"
+                        className="cursor-pointer text-slate-600 hover:text-slate-100 text-xl"
                         to={`/admin/layers/${layer.id}/delete`}
                       >
                         <BsTrash />

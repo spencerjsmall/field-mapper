@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["filteredRelationCount"]
 }
 
@@ -22,7 +22,7 @@ model User {
 }
 
 model Surveyor {
-  id          Int          @id 
+  id          Int          @id
   user        User         @relation(fields: [id], references: [id], onDelete: Cascade)
   assignments Assignment[]
   admins      Admin[]
@@ -40,37 +40,35 @@ model Assignment {
   id          Int       @id @default(autoincrement())
   createdAt   DateTime  @default(now())
   completed   Boolean   @default(false)
-  completedAt DateTime? 
+  completedAt DateTime?
   results     Json?
   assigneeId  Int?
   featureId   Int       @unique
-  surveyId    Int?
+  notes       String?
+  mandatory   Boolean   @default(true)
   assignee    Surveyor? @relation(fields: [assigneeId], references: [id], onDelete: Cascade)
   feature     Feature   @relation(fields: [featureId], references: [id], onDelete: Cascade)
-  survey      Survey?    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  notes       String?
 }
 
 model Survey {
-  id          Int          @id @default(autoincrement())
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  name        String
-  json        Json
-  assignments Assignment[]
-  layers      Layer[]
-  admins      Admin[]
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  json      Json
+  layers    Layer[]
+  admins    Admin[]
 }
 
 model Layer {
-  id              Int       @id @default(autoincrement())
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  name            String    @unique  
-  defaultSurveyId Int?
-  defaultSurvey   Survey?   @relation(fields: [defaultSurveyId], references: [id])
-  features        Feature[]
-  admins          Admin[]
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  name      String    @unique
+  surveyId  Int?
+  survey    Survey?   @relation(fields: [surveyId], references: [id])
+  features  Feature[]
+  admins    Admin[]
 }
 
 model Feature {
@@ -78,9 +76,9 @@ model Feature {
   createdAt    DateTime    @default(now())
   layerId      Int
   creatorId    Int?
-  label        String?
   geojson      Json
   assignmentId Int?        @unique
+  label        String?
   creator      User?       @relation(fields: [creatorId], references: [id])
   layer        Layer       @relation(fields: [layerId], references: [id], onDelete: Cascade)
   assignment   Assignment?

@@ -3,7 +3,7 @@ import { useFetcher } from "@remix-run/react";
 import _ from "lodash";
 import clsx from "clsx";
 
-export function AssignmentSelect({ layer, features, surveys, surveyors }) {
+export function AssignmentSelect({ layer, features, surveyors }) {
   const incomplete = features.filter(
     (f) => !f.assignment || !f.assignment.completed
   );
@@ -12,11 +12,11 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
   const [formData, setFormData] = useState({
     label: "",
     assigneeId: "",
-    surveyId: "",
+    mandatory: "True",
   });
 
-  const handleInputChange = (event: React.ChangeEvent, field: string) => {
-    setFormData((form) => ({ ...form, [field]: event.target.value }));
+  const handleInputChange = (value: any, field: string) => {
+    setFormData((form) => ({ ...form, [field]: value }));
   };
 
   const handleSubmit = (featureIds: Array<Number>) => {
@@ -55,7 +55,9 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                         <th>
                           <select
                             className="select select-sm w-full bg-black"
-                            onChange={(e) => handleInputChange(e, "assigneeId")}
+                            onChange={(e) =>
+                              handleInputChange(e.target.value, "assigneeId")
+                            }
                           >
                             <option
                               selected={
@@ -90,58 +92,74 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                         </th>
                       </tr>
                       <tr>
-                        <th>Survey</th>
+                        <th>Mandatory</th>
                         <th>
                           <select
                             className="select select-sm w-full bg-black"
-                            onChange={(e) => handleInputChange(e, "surveyId")}
+                            onChange={(e) =>
+                              handleInputChange(e.target.value, "mandatory")
+                            }
                           >
-                            <option
-                              selected={
-                                !incomplete.every(
-                                  (f) =>
-                                    f.assignment &&
-                                    incomplete[0].assignment &&
-                                    f.assignment.surveyId ==
-                                      incomplete[0].assignment.surveyId
-                                )
-                              }
-                            >
-                              Choose a survey
+                            <option selected disabled>
+                              Mixed
                             </option>
-                            {surveys &&
-                              surveys.length > 0 &&
-                              surveys.map((survey, i) => (
-                                <option
-                                  key={i}
-                                  selected={
-                                    incomplete.every(
-                                      (f) =>
-                                        f.assignment &&
-                                        f.assignment.surveyId == survey.id
-                                    ) ||
-                                    incomplete.every(
-                                      (f) =>
-                                        !f.assignment &&
-                                        layer.defaultSurveyId == survey.id
-                                    )
-                                  }
-                                  value={survey.id}
-                                >
-                                  {survey.name}
-                                </option>
-                              ))}
+                            <option
+                              selected={incomplete.every(
+                                (f) =>
+                                  (f.assignment && f.assignment.mandatory) ||
+                                  !f.assignment
+                              )}
+                            >
+                              True
+                            </option>
+                            <option
+                              selected={incomplete.every(
+                                (f) => f.assignment && !f.assignment.mandatory
+                              )}
+                            >
+                              False
+                            </option>
                           </select>
                         </th>
                       </tr>
-                      <button
-                        onClick={() =>
-                          handleSubmit(incomplete.map((f) => f.id))
-                        }
-                        className="btn w-full mt-4"
-                      >
-                        Save Assignments
-                      </button>
+                      <tr>
+                        <th className="bg-black"></th>
+                        <th className="bg-black flex">
+                          <div
+                            className={clsx("tooltip-top uppercase ml-auto", {
+                              tooltip: !layer.surveyId,
+                            })}
+                            data-tip="Layer has no survey"
+                          >
+                            <button
+                              onClick={() =>
+                                handleSubmit(incomplete.map((f) => f.id))
+                              }
+                              className={clsx("btn w-fit mt-2", {
+                                "btn-success":
+                                  fetcher.type === "done" &&
+                                  _.isEmpty(
+                                    _.xor(
+                                      fetcher.data.ids,
+                                      incomplete.map((f) => f.id)
+                                    )
+                                  ),
+                              })}
+                              disabled={!layer.surveyId}
+                            >
+                              {fetcher.type === "done" &&
+                              _.isEmpty(
+                                _.xor(
+                                  fetcher.data.ids,
+                                  incomplete.map((f) => f.id)
+                                )
+                              )
+                                ? "Assigned"
+                                : "Save Assignments"}
+                            </button>
+                          </div>
+                        </th>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -208,18 +226,6 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                             </tr>
                             <tr>
                               <th className="bg-gray-800 text-gray-300">
-                                Survey
-                              </th>
-                              <th className="bg-gray-900 text-gray-300">
-                                {
-                                  surveys.filter(
-                                    (s) => s.id == feature.assignment.surveyId
-                                  )[0].name
-                                }
-                              </th>
-                            </tr>
-                            <tr>
-                              <th className="bg-gray-800 text-gray-300">
                                 Completed
                               </th>
                               <th className="bg-gray-900 text-gray-300">
@@ -281,7 +287,10 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                                 <select
                                   className="select select-sm w-full bg-slate-800"
                                   onChange={(e) =>
-                                    handleInputChange(e, "assigneeId")
+                                    handleInputChange(
+                                      e.target.value,
+                                      "assigneeId"
+                                    )
                                   }
                                 >
                                   <option
@@ -327,63 +336,12 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-slate-600">Survey</th>
-                              <th className="bg-slate-700">
-                                <select
-                                  className="select select-sm w-full bg-slate-800"
-                                  onChange={(e) =>
-                                    handleInputChange(e, "surveyId")
-                                  }
-                                >
-                                  <option
-                                    selected={
-                                      !(
-                                        (fetcher.type === "done" &&
-                                          fetcher.data.surveyId &&
-                                          fetcher.data.ids.includes(
-                                            feature.id
-                                          )) ||
-                                        (feature.assignment &&
-                                          feature.assignment.surveyId)
-                                      )
-                                    }
-                                  >
-                                    Choose a survey
-                                  </option>
-                                  {surveys &&
-                                    surveys.length > 0 &&
-                                    surveys.map((survey, i) => (
-                                      <option
-                                        key={i}
-                                        selected={
-                                          fetcher.type === "done" &&
-                                          fetcher.data.ids.includes(
-                                            feature.id
-                                          ) &&
-                                          fetcher.data.surveyId
-                                            ? fetcher.data.surveyId == survey.id
-                                            : feature.assignment
-                                            ? feature.assignment.surveyId ==
-                                              survey.id
-                                            : layer.defaultSurveyId
-                                            ? layer.defaultSurveyId == survey.id
-                                            : false
-                                        }
-                                        value={survey.id}
-                                      >
-                                        {survey.name}
-                                      </option>
-                                    ))}
-                                </select>
-                              </th>
-                            </tr>
-                            <tr>
                               <th className="bg-slate-600">Label</th>
                               <th className="bg-slate-700">
                                 <input
                                   type="text"
                                   onChange={(e) =>
-                                    handleInputChange(e, "label")
+                                    handleInputChange(e.target.value, "label")
                                   }
                                   placeholder="Add a label name"
                                   value={
@@ -398,14 +356,47 @@ export function AssignmentSelect({ layer, features, surveys, surveyors }) {
                               </th>
                             </tr>
                             <tr>
+                              <th className="bg-slate-600">Mandatory</th>
+                              <th className="bg-slate-700">
+                                <select
+                                  className="select select-sm w-full bg-slate-800"
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      e.target.value,
+                                      "mandatory"
+                                    )
+                                  }
+                                >
+                                  <option selected>True</option>
+                                  <option>False</option>
+                                </select>
+                              </th>
+                            </tr>
+                            <tr>
                               <th className="bg-slate-800"></th>
                               <th className="bg-slate-800 flex">
-                                <button
-                                  onClick={() => handleSubmit([feature.id])}
-                                  className="btn w-fit mt-2 ml-auto"
+                                <div
+                                  className={clsx(
+                                    "tooltip-top uppercase ml-auto",
+                                    { tooltip: !layer.surveyId }
+                                  )}
+                                  data-tip="Layer has no survey"
                                 >
-                                  Save Assignment
-                                </button>
+                                  <button
+                                    onClick={() => handleSubmit([feature.id])}
+                                    className={clsx("btn w-fit mt-2", {
+                                      "btn-success":
+                                        fetcher.type === "done" &&
+                                        fetcher.data.ids.includes(feature.id),
+                                    })}
+                                    disabled={!layer.surveyId}
+                                  >
+                                    {fetcher.type === "done" &&
+                                    fetcher.data.ids.includes(feature.id)
+                                      ? "Assigned"
+                                      : "Save Assignment"}
+                                  </button>
+                                </div>
                               </th>
                             </tr>
                           </>

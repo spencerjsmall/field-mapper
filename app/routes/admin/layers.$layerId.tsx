@@ -7,7 +7,6 @@ import {
   useFetcher,
   useCatch,
   useParams,
-  Link,
 } from "@remix-run/react";
 
 import Map, { Source, Layer } from "react-map-gl";
@@ -16,7 +15,8 @@ import { commitSession, getSession } from "~/utils/auth.server";
 import mb_styles from "mapbox-gl/dist/mapbox-gl.css";
 import m_styles from "../../styles/mapbox.css";
 import {
-  assignedStyle,
+  mandatoryStyle,
+  optionalStyle,
   highlightedStyle,
   todoStyle,
   doneStyle,
@@ -75,7 +75,12 @@ export default function AdminTaskMap() {
   const fetcher = useFetcher();
 
   const [basemap, setBasemap] = useState("satellite");
-  const [filter, setFilter] = useState(["todo", "assigned", "done"]);
+  const [filter, setFilter] = useState([
+    "todo",
+    "mandatory",
+    "optional",
+    "done",
+  ]);
   const [beforeId, setBeforeId] = useState("todo");
   const [addPoint, setAddPoint] = useState(false);
   const [start, setStart] = useState<Number[]>();
@@ -106,11 +111,27 @@ export default function AdminTaskMap() {
     [layer.features, fetcher.data]
   );
 
-  const assignedCollection = useMemo(
+  const mandatoryCollection = useMemo(
     () => ({
       type: "FeatureCollection",
       features: layer.features
-        .filter((f) => f.assignment && !f.assignment.completed)
+        .filter(
+          (f) =>
+            f.assignment && !f.assignment.completed && f.assignment.mandatory
+        )
+        .map((f) => ({ id: f.id, ...f.geojson })),
+    }),
+    [layer.features, fetcher.data]
+  );
+
+  const optionalCollection = useMemo(
+    () => ({
+      type: "FeatureCollection",
+      features: layer.features
+        .filter(
+          (f) =>
+            f.assignment && !f.assignment.completed && !f.assignment.mandatory
+        )
         .map((f) => ({ id: f.id, ...f.geojson })),
     }),
     [layer.features, fetcher.data]
@@ -130,7 +151,7 @@ export default function AdminTaskMap() {
     setBeforeId(filter[0]);
   }, [filter]);
 
-  const onFeatureClick = (e) => {    
+  const onFeatureClick = (e) => {
     console.log(e.lngLat);
     if (e.features.length > 0) {
       console.log(e.features);
@@ -224,12 +245,21 @@ export default function AdminTaskMap() {
                 <Layer id="todo" beforeId="highlighted" {...todoStyle} />
               </Source>
             )}
-            {filter.includes("assigned") && (
-              <Source id="assigned" type="geojson" data={assignedCollection}>
+            {filter.includes("mandatory") && (
+              <Source id="mandatory" type="geojson" data={mandatoryCollection}>
                 <Layer
-                  id="assigned"
+                  id="mandatory"
                   beforeId="highlighted"
-                  {...assignedStyle}
+                  {...mandatoryStyle}
+                />
+              </Source>
+            )}
+            {filter.includes("optional") && (
+              <Source id="optional" type="geojson" data={optionalCollection}>
+                <Layer
+                  id="optional"
+                  beforeId="highlighted"
+                  {...optionalStyle}
                 />
               </Source>
             )}

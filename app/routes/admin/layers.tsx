@@ -12,7 +12,7 @@ export const action: ActionFunction = async ({ request }) => {
       id: parseInt(layerId),
     },
     data: {
-      defaultSurvey:
+      survey:
         surveyId == "None"
           ? { disconnect: true }
           : {
