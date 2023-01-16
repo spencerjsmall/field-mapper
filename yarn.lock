@@ -2563,6 +2563,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@remix-run/node@npm:1.10.1":
+  version: 1.10.1
+  resolution: "@remix-run/node@npm:1.10.1"
+  dependencies:
+    "@remix-run/server-runtime": 1.10.1
+    "@remix-run/web-fetch": ^4.3.2
+    "@remix-run/web-file": ^3.0.2
+    "@remix-run/web-stream": ^1.0.3
+    "@web3-storage/multipart-parser": ^1.0.0
+    abort-controller: ^3.0.0
+    cookie-signature: ^1.1.0
+    source-map-support: ^0.5.21
+    stream-slice: ^0.1.2
+  checksum: 01374a9c993cdd429ae00c2515ccd36fb5bfbabe4102e5493a1f40aca43cff341abf9bf5c7ecf1b1d7ba63ed8cb537a9371bfd4edff54c5f228980541ed290a7
+  languageName: node
+  linkType: hard
+
 "@remix-run/react@npm:^1.10.0":
   version: 1.10.0
   resolution: "@remix-run/react@npm:1.10.0"
@@ -2612,6 +2629,34 @@ __metadata:
     react: ">=16.8"
     react-dom: ">=16.8"
   checksum: 6ce8a0947c6b64265a3b431cd5a1e90ed29f5335083becea199a96e5b2368ce51ebe6ffd4919990738cdcbc836c25fe301a215ce5ab9ca15ec1353caf7decd19
+  languageName: node
+  linkType: hard
+
+"@remix-run/server-runtime@npm:1.10.1":
+  version: 1.10.1
+  resolution: "@remix-run/server-runtime@npm:1.10.1"
+  dependencies:
+    "@remix-run/router": 1.2.1
+    "@types/cookie": ^0.4.0
+    "@web3-storage/multipart-parser": ^1.0.0
+    cookie: ^0.4.1
+    set-cookie-parser: ^2.4.8
+    source-map: ^0.7.3
+  peerDependencies:
+    react: ">=16.8"
+    react-dom: ">=16.8"
+  checksum: 4d1633773f16b00843ec8d37524940f51ad84355100eb1199c6477d414596dfd4ec26fa30cd3ccf2d235fb1e285dfeb8867cd8012f6386a13ad102368e6487a7
+  languageName: node
+  linkType: hard
+
+"@remix-run/vercel@npm:^1.10.1":
+  version: 1.10.1
+  resolution: "@remix-run/vercel@npm:1.10.1"
+  dependencies:
+    "@remix-run/node": 1.10.1
+  peerDependencies:
+    "@vercel/node": ^1.8.3 || ^2.4.0
+  checksum: 4ec7a7cce8e4ac7d7fd65e04554951c80cd8a2a07c1d98e724f2215b39bf8a4ff74af3aa93da40200b24923fcea15efda439822ba399c42d057be56cb38cdca3
   languageName: node
   linkType: hard
 
@@ -11558,6 +11603,7 @@ __metadata:
     "@remix-run/node": ^1.10.0
     "@remix-run/react": ^1.10.0
     "@remix-run/serve": ^1.10.0
+    "@remix-run/vercel": ^1.10.1
     "@types/bcryptjs": ^2.4.2
     "@types/lodash": ^4.14.186
     "@types/node": ^18.7.18
