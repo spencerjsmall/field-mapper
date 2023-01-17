@@ -20,6 +20,7 @@ export async function loader({ request, params }) {
         select: {
           completedAt: true,
           results: true,
+          notes: true,
           assignee: {
             select: {
               user: {
@@ -45,6 +46,7 @@ export async function loader({ request, params }) {
         survey: layer?.survey?.name,
         completedAt: f.assignment?.completedAt,
         ...f.geojson.properties,
+        notes: f.assignment?.notes,
         ...f.assignment?.results,
       },
     })),

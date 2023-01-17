@@ -21,8 +21,6 @@ export async function loader({ request, params }) {
     },
   });
 
-  console.log("headerFeat", headerFeat);
-
   const rawFeatures = await prisma.feature.findMany({
     where: {
       layerId: layerId,
@@ -34,6 +32,7 @@ export async function loader({ request, params }) {
         select: {
           completedAt: true,
           results: true,
+          notes: true,
           assignee: {
             select: {
               user: {
@@ -57,6 +56,7 @@ export async function loader({ request, params }) {
     "completedAt",
     "type",
     "coordinates",
+    "notes",
   ];
 
   if (headerFeat && headerFeat.geojson.properties) {
@@ -77,6 +77,7 @@ export async function loader({ request, params }) {
     completedAt: f.assignment?.completedAt,
     ...f.geojson?.geometry,
     ...f.geojson?.properties,
+    notes: f.assignment?.notes,
     ...f.assignment?.results,
   }));
 
