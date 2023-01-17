@@ -30,7 +30,7 @@ export function AssignmentSelect({ layer, features, surveyors }) {
   };
 
   return (
-    <div className="max-h-full h-full max-w-md w-screen border-l border-slate-400 bg-ggp bg-blend-multiply bg-slate-800 bg-center p-4">
+    <div className="max-h-full h-full max-w-lg w-screen border-l border-slate-400 bg-ggp bg-blend-multiply bg-slate-800 bg-center p-4">
       {features && features.length > 0 ? (
         <ul className="justify-center items-center w-full flex flex-col space-y-2">
           {incomplete && incomplete.length > 1 && (
@@ -282,7 +282,9 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                         ) : (
                           <>
                             <tr>
-                              <th className="bg-slate-600">Surveyor</th>
+                              <th className="bg-slate-600 max-w-[50px] overflow-x-scroll">
+                                Surveyor
+                              </th>
                               <th className="bg-slate-700">
                                 <select
                                   className="select select-sm w-full bg-slate-800"
@@ -336,7 +338,9 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-slate-600">Label</th>
+                              <th className="bg-slate-600 max-w-[50px] overflow-x-scroll">
+                                Label
+                              </th>
                               <th className="bg-slate-700">
                                 <input
                                   type="text"
@@ -356,7 +360,9 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-slate-600">Mandatory</th>
+                              <th className="bg-slate-600 max-w-[50px] overflow-x-scroll">
+                                Mandatory
+                              </th>
                               <th className="bg-slate-700">
                                 <select
                                   className="select select-sm w-full bg-slate-800"
@@ -373,7 +379,7 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-slate-800"></th>
+                              <th className="bg-slate-800 max-w-[50px] overflow-x-scroll"></th>
                               <th className="bg-slate-800 flex">
                                 <div
                                   className={clsx(
@@ -408,8 +414,8 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                                 className={
                                   feature.assignment &&
                                   feature.assignment.completed
-                                    ? "bg-green-900 text-gray-300"
-                                    : "bg-slate-800"
+                                    ? "bg-green-900 text-gray-300 max-w-[50px] overflow-x-scroll"
+                                    : "bg-slate-800 max-w-[50px] overflow-x-scroll"
                                 }
                               >
                                 Feature
@@ -430,8 +436,8 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                                     className={
                                       feature.assignment &&
                                       feature.assignment.completed
-                                        ? "bg-gray-800 text-gray-300"
-                                        : "bg-slate-600"
+                                        ? "bg-gray-800 text-gray-300 max-w-[50px] overflow-x-scroll"
+                                        : "bg-slate-600 max-w-[50px] overflow-x-scroll"
                                     }
                                     key={i}
                                   >
@@ -442,7 +448,7 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                                       feature.assignment &&
                                       feature.assignment.completed
                                         ? "bg-gray-900 text-gray-300"
-                                        : "bg-slate-700"
+                                        : "bg-slate-700 max-w-[65px] whitespace-normal overflow-x-scroll"
                                     }
                                     key={i}
                                   >
@@ -464,7 +470,7 @@ export function AssignmentSelect({ layer, features, surveyors }) {
           ))}
         </ul>
       ) : (
-        <div className="invisible max-w-md w-screen h-full" />
+        <div className="invisible max-w-lg w-screen h-full" />
       )}
     </div>
   );
