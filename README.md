@@ -1,6 +1,4 @@
-# SFGIS Field Mapper
-
-## [fieldmapper.vercel.app](https://fieldmapper.vercel.app/)
+# [SFGIS Field Mapper](https://fieldmapper.vercel.app/)
 
 Watch the demo below:
 
