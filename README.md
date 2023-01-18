@@ -1,10 +1,10 @@
 # SFGIS Field Mapper
 
-Click below to watch demo:
+## [fieldmapper.vercel.app](https://fieldmapper.vercel.app/)
 
+Watch the demo below:
 
-[![FM_thumbnail](https://user-images.githubusercontent.com/61337412/213267026-92c62ccb-748c-4036-9f3d-8ce18a17551b.jpg)](https://www.loom.com/share/bcee14de4c40458dad56f4d813dbbb0e)
-
+[![Field Mapper Demo](https://cdn.loom.com/sessions/thumbnails/bcee14de4c40458dad56f4d813dbbb0e-with-play.gif)](https://www.loom.com/share/bcee14de4c40458dad56f4d813dbbb0e "Field Mapper Demo")
 
 ## Development
 
