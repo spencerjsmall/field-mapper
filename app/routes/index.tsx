@@ -67,7 +67,7 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-col mx-5 relative items-center justify-center">
             <iframe
-              src="https://www.loom.com/embed/02d1c86fb5064a2485b258a7eeafb9f3?hide_owner=true&hide_share=true&hide_title=true&hideEmbedTopBar=true"
+              src="https://www.loom.com/embed/bcee14de4c40458dad56f4d813dbbb0e?hide_owner=true&hide_share=true&hide_title=true&hideEmbedTopBar=true"
               frameBorder="0"
               title="demo"
               allowFullScreen
