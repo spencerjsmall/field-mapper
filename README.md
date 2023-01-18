@@ -2,7 +2,8 @@
 
 Click below to watch demo:
 
-[![FM_thumbnail](https://user-images.githubusercontent.com/61337412/204908726-bb3ba6fc-53a4-4bb1-9f92-03e5f3abe7dd.png)](https://www.loom.com/share/02d1c86fb5064a2485b258a7eeafb9f3)
+
+[![FM_thumbnail](https://user-images.githubusercontent.com/61337412/213267026-92c62ccb-748c-4036-9f3d-8ce18a17551b.jpg)](https://www.loom.com/share/bcee14de4c40458dad56f4d813dbbb0e)
 
 
 ## Development
