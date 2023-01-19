@@ -215,20 +215,20 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                         {feature.assignment && feature.assignment.completed ? (
                           <>
                             <tr>
-                              <th className="bg-gray-800 text-gray-300">
+                              <th className="bg-gray-800 text-gray-300 max-w-[145px] w-[145px] overflow-x-scroll">
                                 Surveyor
                               </th>
-                              <th className="bg-gray-900 text-gray-300">
+                              <th className="bg-gray-900 text-gray-300 max-w-[300px] w-[300px] whitespace-normal overflow-x-scroll">
                                 {feature.assignment.assignee
                                   ? `${feature.assignment.assignee.user.firstName} ${feature.assignment.assignee.user.lastName}`
                                   : "None"}
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-gray-800 text-gray-300">
+                              <th className="bg-gray-800 text-gray-300 max-w-[145px] w-[145px] overflow-x-scroll">
                                 Completed
                               </th>
-                              <th className="bg-gray-900 text-gray-300">
+                              <th className="bg-gray-900 text-gray-300 max-w-[300px] w-[300px] whitespace-normal overflow-x-scroll">
                                 {new Date(
                                   feature.assignment.completedAt
                                 ).toDateString()}
@@ -237,10 +237,10 @@ export function AssignmentSelect({ layer, features, surveyors }) {
 
                             {feature.assignment.notes && (
                               <tr>
-                                <th className="bg-gray-800 text-gray-300">
+                                <th className="bg-gray-800 text-gray-300 max-w-[145px] w-[145px] overflow-x-scroll">
                                   Notes
                                 </th>
-                                <th className="bg-gray-900 text-gray-300">
+                                <th className="bg-gray-900 text-gray-300 max-w-[300px] w-[300px] whitespace-normal overflow-x-scroll">
                                   {feature.assignment.notes}
                                 </th>
                               </tr>
@@ -249,22 +249,22 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                             {feature.assignment.results ? (
                               <>
                                 <tr>
-                                  <th className="bg-green-900 text-gray-300">
+                                  <th className="bg-green-900 text-gray-300 max-w-[145px] w-[145px] overflow-x-scroll">
                                     Results
                                   </th>
-                                  <th className="bg-green-900"></th>
+                                  <th className="bg-green-900 max-w-[300px] w-[300px] whitespace-normal overflow-x-scroll"></th>
                                 </tr>
                                 {Object.entries(feature.assignment.results).map(
                                   ([key, value], i) => (
                                     <tr key={i}>
                                       <th
-                                        className="bg-gray-800 text-gray-300"
+                                        className="bg-gray-800 text-gray-300 max-w-[145px] w-[145px] overflow-x-scroll"
                                         key={i}
                                       >
                                         {key}
                                       </th>
                                       <th
-                                        className="bg-gray-900 text-gray-300"
+                                        className="bg-gray-900 text-gray-300 max-w-[300px] w-[300px] whitespace-normal overflow-x-scroll"
                                         key={i}
                                       >
                                         {typeof value == "object"
@@ -282,7 +282,7 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                         ) : (
                           <>
                             <tr>
-                              <th className="bg-slate-600 max-w-[50px] overflow-x-scroll">
+                              <th className="bg-slate-600 max-w-[145px] w-[145px] overflow-x-scroll">
                                 Surveyor
                               </th>
                               <th className="bg-slate-700">
@@ -338,7 +338,7 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-slate-600 max-w-[50px] overflow-x-scroll">
+                              <th className="bg-slate-600 max-w-[145px] w-[145px] overflow-x-scroll">
                                 Label
                               </th>
                               <th className="bg-slate-700">
@@ -360,7 +360,7 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-slate-600 max-w-[50px] overflow-x-scroll">
+                              <th className="bg-slate-600 max-w-[145px] w-[145px] overflow-x-scroll">
                                 Mandatory
                               </th>
                               <th className="bg-slate-700">
@@ -379,7 +379,7 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                               </th>
                             </tr>
                             <tr>
-                              <th className="bg-slate-800 max-w-[50px] overflow-x-scroll"></th>
+                              <th className="bg-slate-800 max-w-[145px] w-[145px] overflow-x-scroll"></th>
                               <th className="bg-slate-800 flex">
                                 <div
                                   className={clsx(
@@ -414,8 +414,8 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                                 className={
                                   feature.assignment &&
                                   feature.assignment.completed
-                                    ? "bg-green-900 text-gray-300 max-w-[50px] overflow-x-scroll"
-                                    : "bg-slate-800 max-w-[50px] overflow-x-scroll"
+                                    ? "bg-green-900 text-gray-300 max-w-[145px] w-[145px] overflow-x-scroll"
+                                    : "bg-slate-800 max-w-[145px] w-[145px] overflow-x-scroll"
                                 }
                               >
                                 Feature
@@ -436,8 +436,8 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                                     className={
                                       feature.assignment &&
                                       feature.assignment.completed
-                                        ? "bg-gray-800 text-gray-300 max-w-[50px] overflow-x-scroll"
-                                        : "bg-slate-600 max-w-[50px] overflow-x-scroll"
+                                        ? "bg-gray-800 text-gray-300 max-w-[145px] w-[145px] overflow-x-scroll"
+                                        : "bg-slate-600 max-w-[145px] w-[145px] overflow-x-scroll"
                                     }
                                     key={i}
                                   >
@@ -448,7 +448,7 @@ export function AssignmentSelect({ layer, features, surveyors }) {
                                       feature.assignment &&
                                       feature.assignment.completed
                                         ? "bg-gray-900 text-gray-300"
-                                        : "bg-slate-700 max-w-[65px] whitespace-normal overflow-x-scroll"
+                                        : "bg-slate-700 max-w-[300px] w-[300px] whitespace-normal overflow-x-scroll"
                                     }
                                     key={i}
                                   >
