@@ -12,6 +12,7 @@ node_modules
 /build
 /public/build
 .env
+.env.development.local
 .DS_Store
 
 /app/styles/tailwind.css
@@ -21,3 +22,4 @@ new_user_credentials.csv
 working-gl-directions.js
 
 *.json
+.vercel
